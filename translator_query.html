@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>TCT.translator_query &#8212; Translator Component Toolkit 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TCT.translator_node" href="translator_node.html" />
+    <link rel="prev" title="TCT.translator_metakg" href="translator_metakg.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="tct-translator-query">
+<h1>TCT.translator_query<a class="headerlink" href="#tct-translator-query" title="Link to this heading">¶</a></h1>
+<span class="target" id="module-TCT.translator_query"></span><dl class="py function">
+<dt class="sig sig-object py" id="TCT.translator_query.get_translator_API_predicates">
+<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">get_translator_API_predicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#get_translator_API_predicates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.get_translator_API_predicates" title="Link to this definition">¶</a></dt>
+<dd><section id="get-the-predicates-supported-by-each-api">
+<h2>Get the predicates supported by each API.<a class="headerlink" href="#get-the-predicates-supported-by-each-api" title="Link to this heading">¶</a></h2>
+<p>Returns:
+A dictionary of API names and their predicates.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">API_predicates</span> <span class="o">=</span> <span class="n">get_translator_API_predicates</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.translator_query.optimize_query_json">
+<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">optimize_query_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_name_cur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#optimize_query_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.optimize_query_json" title="Link to this definition">¶</a></dt>
+<dd><section id="optimize-the-query-json-by-removing-predicates-that-are-not-supported-by-the-selected-apis">
+<h2>Optimize the query JSON by removing predicates that are not supported by the selected APIs.<a class="headerlink" href="#optimize-the-query-json-by-removing-predicates-that-are-not-supported-by-the-selected-apis" title="Link to this heading">¶</a></h2>
+</section>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
+<p>query_json1: a query in TRAPI 1.5.0 format
+API_name_cur: the name of the API to query
+API_predicates: a dictionary of API names and their predicates</p>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.translator_query.parallel_api_query">
+<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">parallel_api_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_APIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#parallel_api_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.parallel_api_query" title="Link to this definition">¶</a></dt>
+<dd><p>Queries multiple APIs in parallel and merges the results into a single knowledge graph.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.translator_query.query_KP">
+<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">query_KP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">API_name_cur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#query_KP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.query_KP" title="Link to this definition">¶</a></dt>
+<dd><p>Query an individual API with a TRAPI 1.5.0 query JSON,
+without modifying the original query_json.</p>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Translator Component Toolkit</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="components.html">Translator Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="name_resolver.html">TCT.name_resolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_normalizer.html">TCT.node_normalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_kpinfo.html">TCT.translator_kpinfo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_metakg.html">TCT.translator_metakg</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.translator_query</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.get_translator_API_predicates"><code class="docutils literal notranslate"><span class="pre">get_translator_API_predicates()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.optimize_query_json"><code class="docutils literal notranslate"><span class="pre">optimize_query_json()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.parallel_api_query"><code class="docutils literal notranslate"><span class="pre">parallel_api_query()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.query_KP"><code class="docutils literal notranslate"><span class="pre">query_KP()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="translator_metakg.html" title="previous chapter">TCT.translator_metakg</a></li>
+      <li>Next: <a href="translator_node.html" title="next chapter">TCT.translator_node</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Guangrong Qin, Yue Zhang.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/translator_query.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

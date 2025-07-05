@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Translator Components &#8212; Translator Component Toolkit 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=2709fde1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TCT.name_resolver" href="name_resolver.html" />
+    <link rel="prev" title="Introduction" href="intro.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="translator-components">
+<h1>Translator Components<a class="headerlink" href="#translator-components" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>Translator is a National Center for Advancing Translational Sciences (NCATS) program that aims to accelerate the process of translating basic scientific discoveries into new therapies.
+TCT is a Python package that provides a set of tools for building and managing Translator components.
+TCT is designed to be used by developers who want to build components that can be used in the Translator ecosystem.
+If you would like to direct interact with the Translator UI, please visit https://ui.transltr.io/</p>
+</section>
+<section id="key-components">
+<h2>Key components<a class="headerlink" href="#key-components" title="Link to this heading">¶</a></h2>
+<p>In the translator ecosystem, there are several groups of components that can be used for standaradization, Translator standard API development, reasoning, and visualization.</p>
+<section id="translator-component-toolkit-tct">
+<h3>Translator Component Toolkit (TCT)<a class="headerlink" href="#translator-component-toolkit-tct" title="Link to this heading">¶</a></h3>
+<p>A python library and related jupyter notebooks for users to explore the APIs in Translator with functionalities for pathfinder etc. It would be useful for developers or computational biologists who would like to build their own use cases using the resources in the Translator ecosystem. Key functions currently available include 1) Neighborhood finding: to explore anything that is connected to an entity of interest;  2) PathFinder: to find the intermediate nodes between two entities; 3) Network annotation: to find the interactions among the entities of interest.</p>
+<p>TCT link: https://github.com/NCATSTranslator/Translator_component_toolkit.</p>
+</section>
+<section id="biolink">
+<h3>Biolink<a class="headerlink" href="#biolink" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Tree-viz-biolink: https://biolink.github.io/biolink-model/categories.html</p></li>
+<li><p>Biolink repo: https://biolink.github.io/biolink-model/</p></li>
+<li><p>Biolink Model Toolkit (BMT): A python library for working with the biolink-model.</p></li>
+<li><p>BMT codebase: https://github.com/biolink/biolink-model-toolkit</p></li>
+<li><p>Latest release: https://pypi.org/project/bmt/</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="knowledge-source-related">
+<h3>Knowledge source related:<a class="headerlink" href="#knowledge-source-related" title="Link to this heading">¶</a></h3>
+<p><strong>KGX_format:</strong> KGX is a format for distributing Biolink-compliant knowledge graphs.</p>
+<p><strong>KGXTool:</strong> The translator team also developed a KGX tool that allows transforming KGs from one graph formalism to another, creating KGs or subgraphs, merging two or more KGs, validating KG against the Biolink Model etc.</p>
+<p><strong>KGXTool link:</strong> https://github.com/biolink/kgx/blob/master/README.md</p>
+<p><strong>KGhub:</strong> KGhub is a resource that hosts a number of KGX formatted biomedical knowledge graphs.</p>
+<p><strong>KGhub link:</strong> https://kghub.org/kg-registry/</p>
+</section>
+<hr class="docutils" />
+<section id="translator-api-standard-trapi">
+<h3>Translator API standard (TRAPI)<a class="headerlink" href="#translator-api-standard-trapi" title="Link to this heading">¶</a></h3>
+<p><strong>TRAPI standard:</strong> A data model and API definition that enables query by graph template and responses by graph and ranked results. It will be useful for anyone who 1) wants to write code that queries existing Translator components; 2) build a KP/tool that integrates into the Translator ecosystem; 3) reuse a carefully thought out schema for other projects that aim to pose/answer biomedical questions via graph template.</p>
+<p><strong>TRAPI standard repo:</strong> https://github.com/NCATSTranslator/ReasonerAPI.</p>
+<hr class="docutils" />
+<section id="trapi-validator">
+<h4>TRAPI validator:<a class="headerlink" href="#trapi-validator" title="Link to this heading">¶</a></h4>
+<p>A python library of methods to validate TRAPI and Biolink Model compliance of biomedical data processing software. It would be useful for developers of Biolink Model components accessed using TRAPI web services. Key functions include: given a TRAPI response (or comparable knowledge query inputs), validates compliance to TRAPI and Biolink Model standards (current release or user specified releases of the standards).</p>
+<p><strong>TRAPI validator link:</strong> https://github.com/NCATSTranslator/reasoner-validator</p>
+</section>
+<hr class="docutils" />
+<section id="translator-apis">
+<h4>Translator APIs:<a class="headerlink" href="#translator-apis" title="Link to this heading">¶</a></h4>
+<p>Translator KG APIs are a set of APIs that follows the TRAPI standard and biolink standard to explore underline biomedical knowledge graphs.</p>
+<p>Link: https://smart-api.info/registry/translator?tags=translator&amp;tags.name=TRAPI</p>
+</section>
+<hr class="docutils" />
+<section id="translator-api-deployment-tool">
+<h4>Translator API deployment tool:<a class="headerlink" href="#translator-api-deployment-tool" title="Link to this heading">¶</a></h4>
+<p><strong>Plover description:</strong> an in-memory knowledge graph database server system, built for Translator. Potential users include knowledge providers (who might use PloverDB to host a KP); ARAs (who can programmatically access KPs hosted in PloverDB); other application developers. Key functions: /query, /meta_knowledge_graph, /sri_test_triples, /code_version, /logs.</p>
+<p><strong>Plover link:</strong> https://github.com/RTXteam/PloverDB</p>
+</section>
+<section id="knowledge-graph-node-normalization">
+<h4>knowledge graph node normalization:<a class="headerlink" href="#knowledge-graph-node-normalization" title="Link to this heading">¶</a></h4>
+<p><strong>NodeNorm description:</strong> An API based tool to normalize identifiers (such as genes, diseases, drugs). The potential users include anybody who wants to translate different identifier systems into a single consistent set of identifiers, such as bioinformaticians.</p>
+<p><strong>NodeNorm Links:</strong> https://nodenorm.transltr.io/docs (Translator Prod); https://nodenormalization-sri.renci.org/docs (RENCI Dev).</p>
+<hr class="docutils" />
+<p><strong>Name Resolver:</strong> An API for named entity linker for Translator. It allows a user to look up possible CURIEs for biomedical terms. It will be useful for anybody who would like to look up a CURIE for biomedical concepts.</p>
+<p><strong>NameRes Link:</strong> https://name-lookup.transltr.io/ (Translator Prod); https://name-resolution-sri.renci.org/docs (RENCI Dev).</p>
+<hr class="docutils" />
+<section id="to-be-continued">
+<h5>To be continued<a class="headerlink" href="#to-be-continued" title="Link to this heading">¶</a></h5>
+</section>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Translator Component Toolkit</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Translator Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-components">Key components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="name_resolver.html">TCT.name_resolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_normalizer.html">TCT.node_normalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_kpinfo.html">TCT.translator_kpinfo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_metakg.html">TCT.translator_metakg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
+<li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intro.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="name_resolver.html" title="next chapter">TCT.name_resolver</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Guangrong Qin, Yue Zhang.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/components.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

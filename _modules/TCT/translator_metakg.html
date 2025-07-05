@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TCT.translator_metakg &#8212; Translator Component Toolkit 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=686e5160" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for TCT.translator_metakg</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">find_link</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="c1">#pre = &quot;https://dev.smart-api.info/api/metakg/consolidated?size=2000&amp;q=%28api.x-translator.component%3AKP+AND+api.name%3A&quot; # This works for the previous version</span>
+    <span class="n">pre</span> <span class="o">=</span> <span class="s2">&quot;https://smart-api.info/api/metakg/consolidated?size=2000&amp;q=</span><span class="si">%28a</span><span class="s2">pi.x-translator.component%3AKP+AND+api.name%3A&quot;</span> 
+    <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;%5C%28Trapi+v1.5.0%5C</span><span class="si">%29%</span><span class="s2">29&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;(Trapi v1.5.0)&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">pre</span>
+        <span class="n">name_raw</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">name_raw</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+    
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">length</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">end</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">+</span><span class="n">words</span><span class="p">[</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">end</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">pre</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">url</span> <span class="o">+</span> <span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">+</span><span class="n">words</span><span class="p">[</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;%29&quot;</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+<div class="viewcode-block" id="get_KP_metadata">
+<a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.get_KP_metadata">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function is used to get the metadata of the KPs in the APInames dictionary.</span>
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; metaKG = TCT.get_KP_metadata(APInames) </span>
+<span class="sd">    &gt;&gt;&gt; All_predicates = list(set(metaKG[&#39;Predicate&#39;]))</span>
+<span class="sd">    All_categories = list((set(list(set(metaKG[&#39;Subject&#39;]))+list(set(metaKG[&#39;Object&#39;])))))</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="n">API_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">URL_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Predicate_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">subject_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">object_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">url_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1">#for KP in KPnames:</span>
+    <span class="k">for</span> <span class="n">KP</span> <span class="ow">in</span> <span class="n">APInames</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">json_text</span> <span class="o">=</span><span class="p">{}</span>
+        <span class="k">if</span> <span class="n">KP</span> <span class="o">==</span> <span class="s2">&quot;RTX KG2 - TRAPI 1.5.0&quot;</span><span class="p">:</span> 
+            <span class="n">text</span> <span class="o">=</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;https://smart-api.info/api/metakg/consolidated?size=20&amp;q=</span><span class="si">%28a</span><span class="s2">pi.x-translator.component%3AKP+AND+api.name%3ARTX+KG2+%5C-+TRAPI+1%5C.4%5C.0%29&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>  <span class="c1"># This works for the previous version</span>
+            <span class="n">json_text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>   
+            <span class="n">text</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">find_link</span><span class="p">(</span><span class="n">KP</span><span class="p">))</span><span class="o">.</span><span class="n">text</span>
+            <span class="n">json_text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="n">json_text</span><span class="p">[</span><span class="s1">&#39;hits&#39;</span><span class="p">]):</span>
+            <span class="n">Predicate_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;biolink:&quot;</span><span class="o">+</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">API_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">KP</span><span class="p">)</span>
+            <span class="n">subject_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;biolink:&#39;</span><span class="o">+</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">object_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;biolink:&#39;</span><span class="o">+</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">APInames</span><span class="p">[</span><span class="n">KP</span><span class="p">])</span>
+
+    <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span> <span class="s1">&#39;API&#39;</span><span class="p">:</span> <span class="n">API_list</span><span class="p">,</span> <span class="s1">&#39;Predicate&#39;</span><span class="p">:</span> <span class="n">Predicate_list</span><span class="p">,</span> <span class="s2">&quot;Subject&quot;</span><span class="p">:</span><span class="n">subject_list</span><span class="p">,</span> <span class="s2">&quot;Object&quot;</span><span class="p">:</span><span class="n">object_list</span><span class="p">,</span> <span class="s2">&quot;URL&quot;</span><span class="p">:</span><span class="n">url_list</span><span class="p">})</span>
+    
+    <span class="k">return</span><span class="p">(</span><span class="n">result_df</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="add_new_API_for_query">
+<a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.add_new_API_for_query">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">newAPIname</span><span class="p">,</span> <span class="n">newAPIurl</span><span class="p">,</span> <span class="n">newAPIpredicate</span><span class="p">,</span> <span class="n">newAPIsubject</span><span class="p">,</span> <span class="n">newAPIobject</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function is used to add a new API beyond the current list of APIs for query</span>
+<span class="sd">    Example: APInames, metaKG = add_new_API_for_query(APInames, metaKG, &quot;BigGIM_BMG&quot;, &quot;http://127.0.0.1:8000/find_path_by_predicate&quot;, &quot;Gene-physically_interacts_with-gene&quot;, &quot;Gene&quot;, &quot;Gene&quot;)</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">APInames</span><span class="p">[</span><span class="n">newAPIname</span><span class="p">]</span> <span class="o">=</span> <span class="n">newAPIurl</span>
+
+    <span class="n">new_row</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;API&quot;</span><span class="p">:</span><span class="n">newAPIname</span><span class="p">,</span>
+                            <span class="s2">&quot;Predicate&quot;</span><span class="p">:</span><span class="n">newAPIpredicate</span><span class="p">,</span>
+                            <span class="s2">&quot;Subject&quot;</span><span class="p">:</span><span class="n">newAPIsubject</span><span class="p">,</span> <span class="s2">&quot;Object&quot;</span><span class="p">:</span><span class="n">newAPIobject</span><span class="p">,</span>
+                            <span class="s2">&quot;URL&quot;</span><span class="p">:</span><span class="n">newAPIurl</span><span class="p">},</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">metaKG</span><span class="p">,</span> <span class="n">new_row</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span></div>
+
+
+
+<div class="viewcode-block" id="add_plover_API">
+<a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.add_plover_API">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.</span>
+<span class="sd">    Current APIs include :</span>
+<span class="sd">    CATRAX BigGIM DrugResponse Performance Phase, </span>
+<span class="sd">    CATRAX Pharmacogenomics, </span>
+<span class="sd">    Clinical Trials, </span>
+<span class="sd">    Drug Approvals, </span>
+<span class="sd">    Multiomics, </span>
+<span class="sd">    Microbiome, </span>
+<span class="sd">    and RTX KG2.</span>
+
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Example: </span>
+<span class="sd">    &gt;&gt;&gt; APInames, metaKG = add_plover_API(APInames, metaKG)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/PharmacogenomicsKG/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;CATRAX Pharmacogenomics KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/PharmacogenomicsKG/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/ctkp/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;Clinical Trials KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/ctkp/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;Drug Approvals KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/dakp/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;Multiomics KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/multiomics/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/mbkp/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;Microbiome KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/mbkp/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://kg2cploverdb.ci.transltr.io/kg2c/meta_knowledge_graph&#39;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
+        <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;RTX KG2 - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://kg2cploverdb.ci.transltr.io/kg2c/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
+
+    
+    <span class="k">return</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Translator Component Toolkit</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../components.html">Translator Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../name_resolver.html">TCT.name_resolver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../node_normalizer.html">TCT.node_normalizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../translator_kpinfo.html">TCT.translator_kpinfo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../translator_metakg.html">TCT.translator_metakg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../translator_query.html">TCT.translator_query</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../translator_node.html">TCT.translator_node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../TCT.html">TCT utility functions</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Guangrong Qin, Yue Zhang.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
