@@ -43,10 +43,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_translator_API_predicates</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Get the predicates supported by each API.</span>
+
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    Returns:</span>
 <span class="sd">    A dictionary of API names and their predicates.</span>
 
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; API_predicates = get_translator_API_predicates()</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">translator_kpinfo</span><span class="o">.</span><span class="n">get_translator_kp_info</span><span class="p">()</span>
@@ -75,17 +78,22 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">optimize_query_json</span><span class="p">(</span><span class="n">query_json</span><span class="p">,</span> <span class="n">API_name_cur</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Optimize the query JSON by removing predicates that are not supported by the selected APIs.</span>
-<span class="sd">    --------</span>
-<span class="sd">    Parameters:</span>
-<span class="sd">    --------</span>
-<span class="sd">    query_json1: a query in TRAPI 1.5.0 format</span>
-<span class="sd">    API_name_cur: the name of the API to query</span>
-<span class="sd">    API_predicates: a dictionary of API names and their predicates</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    query_json1 : str</span>
+<span class="sd">        a query in TRAPI 1.5.0 format</span>
+<span class="sd">    API_name_cur : str</span>
+<span class="sd">        the name of the API to query</span>
+<span class="sd">    API_predicates : dict</span>
+<span class="sd">        a dictionary of API names and their predicates</span>
+
+<span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    A modified query JSON with only the predicates supported by the selected APIs.</span>
 <span class="sd">    </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; </span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">query_json_cur</span> <span class="o">=</span> <span class="n">query_json</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># copy the query_json to avoid modifying the original query_json</span>
@@ -138,14 +146,21 @@
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Queries multiple APIs in parallel and merges the results into a single knowledge graph.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    URLS: list of API URLs to query</span>
-<span class="sd">    query_json: the query JSON to be sent to each API</span>
-<span class="sd">    max_workers: number of parallel workers to use for querying</span>
-<span class="sd">    Returns a merged knowledge graph from all successful API responses.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    URLS</span>
+<span class="sd">        list of API URLs to query</span>
+<span class="sd">    query_json</span>
+<span class="sd">        the query JSON to be sent to each API</span>
+<span class="sd">    max_workers</span>
+<span class="sd">        number of parallel workers to use for querying</span>
+
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Example:</span>
+<span class="sd">    Returns a merged knowledge graph from all successful API responses.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; result = TCT.parallel_api_query(API_URLs,query_json=query_json, max_workers=len(API_URLs1))</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>

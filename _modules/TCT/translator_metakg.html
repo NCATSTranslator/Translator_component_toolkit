@@ -70,7 +70,9 @@
 
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to get the metadata of the KPs in the APInames dictionary.</span>
-<span class="sd">    Example:</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; metaKG = TCT.get_KP_metadata(APInames) </span>
 <span class="sd">    &gt;&gt;&gt; All_predicates = list(set(metaKG[&#39;Predicate&#39;]))</span>
 <span class="sd">    All_categories = list((set(list(set(metaKG[&#39;Subject&#39;]))+list(set(metaKG[&#39;Object&#39;])))))</span>
@@ -112,7 +114,10 @@
 
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to add a new API beyond the current list of APIs for query</span>
-<span class="sd">    Example: APInames, metaKG = add_new_API_for_query(APInames, metaKG, &quot;BigGIM_BMG&quot;, &quot;http://127.0.0.1:8000/find_path_by_predicate&quot;, &quot;Gene-physically_interacts_with-gene&quot;, &quot;Gene&quot;, &quot;Gene&quot;)</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; APInames, metaKG = add_new_API_for_query(APInames, metaKG, &quot;BigGIM_BMG&quot;, &quot;http://127.0.0.1:8000/find_path_by_predicate&quot;, &quot;Gene-physically_interacts_with-gene&quot;, &quot;Gene&quot;, &quot;Gene&quot;)</span>
 
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">APInames</span><span class="p">[</span><span class="n">newAPIname</span><span class="p">]</span> <span class="o">=</span> <span class="n">newAPIurl</span>
@@ -131,6 +136,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.</span>
+
 <span class="sd">    Current APIs include :</span>
 <span class="sd">    CATRAX BigGIM DrugResponse Performance Phase, </span>
 <span class="sd">    CATRAX Pharmacogenomics, </span>
@@ -143,7 +149,6 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    Example: </span>
 <span class="sd">    &gt;&gt;&gt; APInames, metaKG = add_plover_API(APInames, metaKG)</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     

@@ -38,34 +38,72 @@
 <span class="target" id="module-TCT.translator_query"></span><dl class="py function">
 <dt class="sig sig-object py" id="TCT.translator_query.get_translator_API_predicates">
 <span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">get_translator_API_predicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#get_translator_API_predicates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.get_translator_API_predicates" title="Link to this definition">¶</a></dt>
-<dd><section id="get-the-predicates-supported-by-each-api">
-<h2>Get the predicates supported by each API.<a class="headerlink" href="#get-the-predicates-supported-by-each-api" title="Link to this heading">¶</a></h2>
-<p>Returns:
-A dictionary of API names and their predicates.</p>
+<dd><p>Get the predicates supported by each API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A dictionary of API names and their predicates.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">API_predicates</span> <span class="o">=</span> <span class="n">get_translator_API_predicates</span><span class="p">()</span>
 </pre></div>
 </div>
-</section>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.translator_query.optimize_query_json">
 <span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">optimize_query_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_name_cur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#optimize_query_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.optimize_query_json" title="Link to this definition">¶</a></dt>
-<dd><section id="optimize-the-query-json-by-removing-predicates-that-are-not-supported-by-the-selected-apis">
-<h2>Optimize the query JSON by removing predicates that are not supported by the selected APIs.<a class="headerlink" href="#optimize-the-query-json-by-removing-predicates-that-are-not-supported-by-the-selected-apis" title="Link to this heading">¶</a></h2>
-</section>
-<section id="parameters">
-<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h2>
-<p>query_json1: a query in TRAPI 1.5.0 format
-API_name_cur: the name of the API to query
-API_predicates: a dictionary of API names and their predicates</p>
-</section>
+<dd><p>Optimize the query JSON by removing predicates that are not supported by the selected APIs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query_json1</strong><span class="classifier">str</span></dt><dd><p>a query in TRAPI 1.5.0 format</p>
+</dd>
+<dt><strong>API_name_cur</strong><span class="classifier">str</span></dt><dd><p>the name of the API to query</p>
+</dd>
+<dt><strong>API_predicates</strong><span class="classifier">dict</span></dt><dd><p>a dictionary of API names and their predicates</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>A modified query JSON with only the predicates supported by the selected APIs.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.translator_query.parallel_api_query">
 <span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">parallel_api_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_APIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#parallel_api_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.parallel_api_query" title="Link to this definition">¶</a></dt>
 <dd><p>Queries multiple APIs in parallel and merges the results into a single knowledge graph.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>URLS</strong></dt><dd><p>list of API URLs to query</p>
+</dd>
+<dt><strong>query_json</strong></dt><dd><p>the query JSON to be sent to each API</p>
+</dd>
+<dt><strong>max_workers</strong></dt><dd><p>number of parallel workers to use for querying</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>Returns a merged knowledge graph from all successful API responses.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">TCT</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">API_URLs</span><span class="p">,</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">API_URLs1</span><span class="p">))</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
