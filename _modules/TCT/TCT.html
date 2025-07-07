@@ -858,10 +858,10 @@
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                                  <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
                                  <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
-    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+    <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
     
-    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ranking of one-hop nodes by primary infores&quot;</span>
-    <span class="n">ylab</span> <span class="o">=</span> <span class="s2">&quot;infores&quot;</span>
+    <span class="c1">#title = &quot;Ranking of one-hop nodes by primary infores&quot;</span>
+    <span class="c1">#ylab = &quot;infores&quot;</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">num_of_nodes</span><span class="p">]</span>
     <span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
     <span class="c1"># create teh figure and subplot</span>
@@ -875,8 +875,8 @@
     <span class="n">p1</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
     <span class="n">p1</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
 
-    <span class="n">p1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-    <span class="n">p1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylab</span><span class="p">)</span>
+    <span class="c1">#p1.set_title(title)</span>
+    <span class="c1">#p1.set_ylabel(ylab)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">())</span>
     <span class="c1"># set xticklabels with colnames</span>
 
@@ -1577,7 +1577,7 @@
                     <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
                     <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
                     <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
-    <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+    <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
     
     <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Bridging nodes&quot;</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">dpi</span> <span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
