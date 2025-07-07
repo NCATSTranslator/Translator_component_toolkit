@@ -35,6 +35,27 @@
   <section id="module-TCT.TCT">
 <span id="tct-utility-functions"></span><h1>TCT utility functions<a class="headerlink" href="#module-TCT.TCT" title="Link to this heading">¶</a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT.Neiborhood_finder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Neiborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Neiborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Neiborhood_finder" title="Link to this definition">¶</a></dt>
+<dd><p>This function is used to find the neighborhood of a given input node with intermediate categories.</p>
+<p>node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.
+APInames (dict): A dictionary containing the names of the APIs to be used.
+metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.
+API_predicates (dict): A dictionary containing the predicates for each API.
+input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node’s types.</p>
+<p>result (dict): The result of the query for the input node.
+result_parsed (DataFrame): The parsed results for the input node.
+result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.</p>
+<blockquote>
+<div><p>node2_categories = [‘biolink:SmallMolecule’, ‘biolink:Drug’, ‘biolink:ChemicalEntity’],
+APInames = APInames,
+metaKG = metaKG,
+API_predicates = API_predicates)</p>
+</div></blockquote>
+<hr class="docutils" />
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT.Path_finder">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Path_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node1_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Path_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Path_finder" title="Link to this definition">¶</a></dt>
 <dd><p>This function is used to find paths between two input nodes with intermediate categories.</p>
@@ -188,6 +209,7 @@ KPname = “” # it should be one of the names in APInames</p>
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TCT utility functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Neiborhood_finder"><code class="docutils literal notranslate"><span class="pre">Neiborhood_finder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Path_finder"><code class="docutils literal notranslate"><span class="pre">Path_finder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.format_query_json"><code class="docutils literal notranslate"><span class="pre">format_query_json()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.get_SmartAPI_Translator_KP_info"><code class="docutils literal notranslate"><span class="pre">get_SmartAPI_Translator_KP_info()</span></code></a></li>
