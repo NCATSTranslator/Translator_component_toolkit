@@ -33,9 +33,9 @@
   <h1>Source code for TCT.translator_kpinfo</h1><div class="highlight"><pre>
 <span></span>
 <span class="c1"># used May 30, 2025</span>
+
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="sd">&quot;&quot;&quot;This is the root URL for the resource.&quot;&quot;&quot;</span>
@@ -43,14 +43,23 @@
 
 <div class="viewcode-block" id="get_translator_kp_info">
 <a class="viewcode-back" href="../../translator_kpinfo.html#TCT.translator_kpinfo.get_translator_kp_info">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_translator_kp_info</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_translator_kp_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the SmartAPI Translator KP info from the smart-api.info API.</span>
 <span class="sd">    Returns a DataFrame with the SmartAPI Translator KP info.</span>
 
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    smartapi_df : pandas.DataFrame</span>
+<span class="sd">        Dataframe containing information about the APIS [TODO]</span>
+
+<span class="sd">    API_names : dict</span>
+<span class="sd">        dict of API names to URLs</span>
+
+
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames = get_SmartAPI_Translator_KP_info()</span>
+<span class="sd">    &gt;&gt;&gt; Translator_KP_info, APInames = get_translator_kp_info()</span>
 <span class="sd">    &gt;&gt;&gt; print(Translator_KP_info.head())</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     

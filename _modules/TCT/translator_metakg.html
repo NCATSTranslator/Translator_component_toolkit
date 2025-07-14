@@ -66,10 +66,19 @@
 
 <div class="viewcode-block" id="get_KP_metadata">
 <a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.get_KP_metadata">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">):</span>
-
+<span class="k">def</span><span class="w"> </span><span class="nf">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">:</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to get the metadata of the KPs in the APInames dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    APInames : dict</span>
+<span class="sd">        This is the second output of `TCT.translator_kpinfo.get_translator_kpinfo()`. This is a dict of API name to API URL.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    metaKG : pandas.DataFrame</span>
+<span class="sd">        This is a dataframe that represents the meta KG for the KPs in the APInames input - columns include [TODO].</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -110,10 +119,31 @@
 
 <div class="viewcode-block" id="add_new_API_for_query">
 <a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.add_new_API_for_query">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">newAPIname</span><span class="p">,</span> <span class="n">newAPIurl</span><span class="p">,</span> <span class="n">newAPIpredicate</span><span class="p">,</span> <span class="n">newAPIsubject</span><span class="p">,</span> <span class="n">newAPIobject</span><span class="p">):</span>
-
+<span class="k">def</span><span class="w"> </span><span class="nf">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">:</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">metaKG</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">newAPIname</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">newAPIurl</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">newAPIpredicate</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">newAPIsubject</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">newAPIobject</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to add a new API beyond the current list of APIs for query</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    APInames : dict</span>
+<span class="sd">        This is the second output of `TCT.translator_kpinfo.get_translator_kpinfo()`.</span>
+
+<span class="sd">    metaKG : pandas.DataFrame</span>
+<span class="sd">        This is the output of `get_kp_metadata`.</span>
+
+<span class="sd">    newAPIname : str</span>
+
+<span class="sd">    newAPIurl : str</span>
+
+<span class="sd">    newAPIpredicate : str</span>
+
+<span class="sd">    newAPIsubject : str</span>
+
+<span class="sd">    newAPIobject : str</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -133,7 +163,7 @@
 
 <div class="viewcode-block" id="add_plover_API">
 <a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.add_plover_API">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">:</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">metaKG</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.</span>
 
@@ -145,6 +175,16 @@
 <span class="sd">    Multiomics, </span>
 <span class="sd">    Microbiome, </span>
 <span class="sd">    and RTX KG2.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    APInames : dict</span>
+<span class="sd">        This is the second output of `TCT.translator_kpinfo.get_translator_kpinfo()`. This is a dict of API name to API URL.</span>
+
+<span class="sd">    metaKG : pandas.DataFrame</span>
+<span class="sd">        This is the output of `get_kp_metadata`.</span>
+
+
 
 
 <span class="sd">    Examples</span>
