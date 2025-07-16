@@ -21,7 +21,9 @@ Guangrong Qin, guangrong.qin@isbscience.org
 ## How to use TCT
 ### Install Requirments
 
-To install TCT as a python library, first clone this repository, and then run `pip install -e .` from this folder.
+To install TCT as a python library, you can install the library using `pip install TCT` from the command line. The current released version is TCT.0.1.0. This the recommended approach for installation. 
+
+The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this repository, and then run `pip install -e .` from this folder.
 
 ### Please follow the example notebooks (four utilities) below to explore the Translator APIs.
 
