@@ -2,7 +2,7 @@ Introduction
 ============
 ## What is TCT?
 Translator Component Toolkit is a python library that allowing users to explore and use KGs in the Translator ecosystems.
-Users can check out the key functions here: https://gloriachin.github.io/Translator_component_toolkit/ 
+Users can check out the key functions here: https://ncatstranslator.github.io/Translator_component_toolkit/ 
 
 ## Key features for TCT
 Allowing users to select APIs, predicates according to the user's intention. <br>
@@ -21,7 +21,7 @@ Guangrong Qin, guangrong.qin@isbscience.org
 ## How to use TCT
 ### Install Requirments
 
-To install TCT as a python library, you can install the library using `pip install TCT` from the command line. The current released version is TCT.0.1.0. This the recommended approach for installation. 
+To install TCT as a python library, you can install the library using `pip install TCT` from the command line. The current released version is TCT.0.1.1. This the recommended approach for installation. 
 
 The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this repository, and then run `pip install -e .` from this folder.
 
