@@ -34,8 +34,7 @@
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">find_link</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="c1">#pre = &quot;https://dev.smart-api.info/api/metakg/consolidated?size=2000&amp;q=%28api.x-translator.component%3AKP+AND+api.name%3A&quot; # This works for the previous version</span>
@@ -64,6 +63,7 @@
         <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">+</span><span class="n">words</span><span class="p">[</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;%29&quot;</span>
     <span class="k">return</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
+
 <div class="viewcode-block" id="get_KP_metadata">
 <a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.get_KP_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">:</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -82,14 +82,13 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; metaKG = TCT.get_KP_metadata(APInames) </span>
+<span class="sd">    &gt;&gt;&gt; metaKG = get_KP_metadata(APInames) </span>
 <span class="sd">    &gt;&gt;&gt; All_predicates = list(set(metaKG[&#39;Predicate&#39;]))</span>
 <span class="sd">    All_categories = list((set(list(set(metaKG[&#39;Subject&#39;]))+list(set(metaKG[&#39;Object&#39;])))))</span>
 <span class="sd">    &#39;&#39;&#39;</span>
 
     <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
     <span class="n">API_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">URL_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">Predicate_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">subject_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">object_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -191,8 +190,6 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; APInames, metaKG = add_plover_API(APInames, metaKG)</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    
-
     <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph&#39;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
@@ -231,7 +228,7 @@
         <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;Microbiome KP - TRAPI 1.5.0&quot;</span><span class="p">,</span> <span class="s2">&quot;https://multiomics.rtx.ai:9990/mbkp/query&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
 
 
-    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://kg2cploverdb.ci.transltr.io/kg2c/meta_knowledge_graph&#39;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://kg2cplover.rtx.ai:9990/kg2c/meta_knowledge_graph&#39;</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;edges&quot;</span><span class="p">])):</span>
@@ -239,6 +236,25 @@
 
     
     <span class="k">return</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span></div>
+
+
+<div class="viewcode-block" id="load_translator_resources">
+<a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.load_translator_resources">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_translator_resources</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load the necessary resources for the Translator.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    APInames</span>
+<span class="sd">    metaKG</span>
+<span class="sd">    Translator_KP_info</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.translator_kpinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_translator_kp_info</span>
+    <span class="n">Translator_KP_info</span><span class="p">,</span> <span class="n">APInames</span> <span class="o">=</span> <span class="n">get_translator_kp_info</span><span class="p">()</span>
+    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span>
+    <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
+    <span class="k">return</span>  <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">Translator_KP_info</span></div>
 
 </pre></div>
 

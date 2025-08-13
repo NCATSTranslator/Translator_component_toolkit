@@ -109,11 +109,26 @@ and RTX KG2.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">TCT</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
 <span class="gp">&gt;&gt;&gt; </span><span class="n">All_predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Predicate&#39;</span><span class="p">]))</span>
 <span class="go">All_categories = list((set(list(set(metaKG[&#39;Subject&#39;]))+list(set(metaKG[&#39;Object&#39;])))))</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.translator_metakg.load_translator_resources">
+<span class="sig-prename descclassname"><span class="pre">TCT.translator_metakg.</span></span><span class="sig-name descname"><span class="pre">load_translator_resources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_metakg.html#load_translator_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_metakg.load_translator_resources" title="Link to this definition">¶</a></dt>
+<dd><p>Load the necessary resources for the Translator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>APInames</dt><dd></dd>
+<dt>metaKG</dt><dd></dd>
+<dt>Translator_KP_info</dt><dd></dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -155,6 +170,7 @@ and RTX KG2.</p>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.translator_metakg.add_new_API_for_query"><code class="docutils literal notranslate"><span class="pre">add_new_API_for_query()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.translator_metakg.add_plover_API"><code class="docutils literal notranslate"><span class="pre">add_plover_API()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.translator_metakg.get_KP_metadata"><code class="docutils literal notranslate"><span class="pre">get_KP_metadata()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_metakg.load_translator_resources"><code class="docutils literal notranslate"><span class="pre">load_translator_resources()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>

@@ -39,14 +39,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">ipycytoscape</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">ipycytoscape</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
 
 <span class="c1"># plt.switch_backend(&#39;module://ipykernel.pylab.backend_inline&#39;)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">TCT_help</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -102,8 +102,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
     <span class="c1"># several APIs should be excluded:</span>
@@ -642,7 +640,6 @@
     <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
         <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
@@ -756,7 +753,6 @@
     <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesIO</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
         <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
@@ -1061,10 +1057,7 @@
 <span class="sd">    --------------</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
 
     <span class="c1"># Step 1: Resolve the input node to get its curie id and categories</span>
     <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node</span><span class="p">)</span>
@@ -1131,10 +1124,8 @@
 <span class="sd">    --------------</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
     <span class="n">input_node1_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node1</span><span class="p">)</span>
     <span class="n">input_node1_id</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">curie</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">)</span>
@@ -2232,6 +2223,21 @@
     <span class="n">current_predicates2</span> <span class="o">=</span> <span class="n">query_json_cur_clean</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="s1">&#39;n1&#39;</span><span class="p">][</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">ask_chatGPT4</span><span class="p">(</span><span class="s2">&quot;The categories in the KG are: &quot;</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ALL_categories</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;. The category in the current query are: &quot;</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">current_predicates1</span> <span class="o">+</span> <span class="n">current_predicates2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;. What categories are similar to the categories in the current query?&quot;</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+<div class="viewcode-block" id="load_translator_resources">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.load_translator_resources">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_translator_resources</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load the necessary resources for the Translator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
+
+    <span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">translator_kpinfo</span><span class="o">.</span><span class="n">get_translator_kp_info</span><span class="p">()</span>
+    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
+    <span class="n">APInames</span><span class="p">,</span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
+    <span class="k">return</span>  <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">Translator_KP_info</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">visulize_path</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">,</span> <span class="n">intermediate_node</span><span class="p">,</span> <span class="n">input_node3_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">result2</span><span class="p">):</span>
