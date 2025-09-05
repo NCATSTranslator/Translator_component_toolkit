@@ -6,8 +6,8 @@ Users can check out the key functions here: https://ncatstranslator.github.io/Tr
 
 ## Key features for TCT
 Allowing users to select APIs, predicates according to the user's intention. <br>
-Parallel and fast quering of the selected APIs.<br>
-Providing reproducible results by setting contraints.<br>
+Parallel and fast querying of the selected APIs.<br>
+Providing reproducible results by setting constraints.<br>
 Allowing testing whether a user defined API follows a [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI) standard or not. <br>
 Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
 Connecting large language models to convert user's questions into TRAPI queries. <br>
@@ -19,7 +19,7 @@ TCT is a tool that helps to explore knowledge graphs developed in the Biomedical
 Guangrong Qin, guangrong.qin@isbscience.org
 
 ## How to use TCT
-### Install Requirments
+### Install Requirements
 
 To install TCT as a python library, you can install the library using `pip install TCT` from the command line. The current released version is TCT.0.1.1. This the recommended approach for installation. 
 

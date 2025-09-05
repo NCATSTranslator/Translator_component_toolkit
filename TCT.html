@@ -102,7 +102,7 @@ Returns a DataFrame with the SmartAPI Translator KP info.</p>
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">get_Translator_APIs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#get_Translator_APIs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.get_Translator_APIs" title="Link to this definition">¶</a></dt>
 <dd><p>Get a list of Translator APIs from the smart-api.info and return the detailed information for each API in a data frame and the list of API names.</p>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">TCT</span><span class="o">.</span><span class="n">get_SmartAPI_Translator_KP_info</span><span class="p">()</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">TCT</span><span class="o">.</span><span class="n">get_SmartAPI_Translator_KP_info</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -150,10 +150,10 @@ subject_predicate_object_primary_knowledge_sources_aggregator_knowledge_sources<
 <p>sub_list = [“biolink:Gene”, “biolink:Protein”]
 obj_list = [“biolink:Gene”, “biolink:Disease”]</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">obj_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biolink:Gene&quot;</span><span class="p">,</span> <span class="s2">&quot;biolink:Disease&quot;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span>
+<span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">translator_kpinfo</span><span class="o">.</span><span class="n">get_translator_kp_info</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Translator_KP_info</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">metaKG</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">APInames</span><span class="p">,</span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">selected_apis</span> <span class="o">=</span> <span class="n">select_API</span><span class="p">(</span><span class="n">sub_list</span><span class="p">,</span> <span class="n">obj_list</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
@@ -166,14 +166,6 @@ obj_list = [“biolink:Gene”, “biolink:Disease”]</p>
 <dt class="sig sig-object py" id="TCT.TCT.select_concept">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">select_concept</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#select_concept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.select_concept" title="Link to this definition">¶</a></dt>
 <dd><p>Selects the predicates connecting the given subject and object categories in the meta knowledge graph.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.TCT.select_predicates_inKP">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">select_predicates_inKP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">KPname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#select_predicates_inKP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.select_predicates_inKP" title="Link to this definition">¶</a></dt>
-<dd><p>sub_list = [“biolink:Gene”, “biolink:Protein”]
-obj_list = [“biolink:Gene”, “biolink:Disease”]
-KPname = “” # it should be one of the names in APInames</p>
 </dd></dl>
 
 </section>
@@ -227,7 +219,6 @@ KPname = “” # it should be one of the names in APInames</p>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.sele_predicates_API"><code class="docutils literal notranslate"><span class="pre">sele_predicates_API()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.select_API"><code class="docutils literal notranslate"><span class="pre">select_API()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.select_concept"><code class="docutils literal notranslate"><span class="pre">select_concept()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.select_predicates_inKP"><code class="docutils literal notranslate"><span class="pre">select_predicates_inKP()</span></code></a></li>
 </ul>
 </li>
 </ul>

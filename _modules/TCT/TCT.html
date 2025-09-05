@@ -39,12 +39,51 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">ipycytoscape</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
 
 <span class="c1"># plt.switch_backend(&#39;module://ipykernel.pylab.backend_inline&#39;)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;TCT_help&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;list_functions&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_Translator_APIs&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_SmartAPI_Translator_KP_info&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;list_Translator_APIs&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_translator_resources&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Neiborhood_finder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Path_finder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;format_query_json&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;select_API&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;select_concept&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;sele_predicates_API&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parse_KG&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rank_by_primary_infores&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rank_by_primary_infores_input_as_list&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ID_convert_to_preferred_name_nodeNormalizer&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;visulization_one_hop_ranking&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;visulization_one_hop_ranking_input_as_list&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;plot_heatmap&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;plot_heatmap_ui&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;plot_graph_by_predicates&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;plot_graph_by_infores&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;plot_graph_by_API&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;visulize_path&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_curie&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;merge_ranking_by_number_of_infores&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;merge_by_ranking_index&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_pair_annotation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;parse_pair_annotation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ask_chatGPT&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ask_chatGPT4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;query_chatGPT&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;query_chatGPT4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;load_json_template&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;extract_json&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TRAPI_json_validation&#39;</span>
+<span class="p">]</span>
 
 
 
@@ -60,7 +99,7 @@
         <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
             <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">functions</span>
-    
+
 <span class="c1"># used. Jan 5, 2024</span>
 <div class="viewcode-block" id="get_Translator_APIs">
 <a class="viewcode-back" href="../../TCT.html#TCT.TCT.get_Translator_APIs">[docs]</a>
@@ -70,7 +109,7 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames= TCT.get_SmartAPI_Translator_KP_info() </span>
+<span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames= TCT.get_SmartAPI_Translator_KP_info()</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">Translator_APIs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1">#Translator_apps_url = &quot;https://smart-api.info/api/query?q=tags.name:translator&amp;fields=info,_meta,tags&amp;meta=1&amp;size=500&quot;</span>
@@ -93,14 +132,14 @@
 <span class="sd">    Get the SmartAPI Translator KP info from the smart-api.info API.</span>
 <span class="sd">    Returns a DataFrame with the SmartAPI Translator KP info.</span>
 
-<span class="sd">    </span>
+
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames = get_SmartAPI_Translator_KP_info(&#39;AML&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    
+
     <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
@@ -125,17 +164,17 @@
     <span class="n">ci_url_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">test_url_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="n">smartapis</span><span class="p">:</span>
-        
-        
+
+
         <span class="n">ci_found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">test_found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">])):</span>
-            
+
             <span class="n">server</span> <span class="o">=</span> <span class="n">api</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
             <span class="k">if</span> <span class="s1">&#39;x-maturity&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">server</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping server without x-maturity: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                
+
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;production&#39;</span><span class="p">:</span>
                     <span class="c1"># if prod_ur is not ars-prod.transltr.io</span>
@@ -148,9 +187,9 @@
                         <span class="k">else</span><span class="p">:</span>
                             <span class="c1"># if prod_url does not end with /, add &#39;/query/&#39; to the end</span>
                             <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/query/&#39;</span>
-                    
+
                     <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">True</span>
-                
+
                 <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;staging&#39;</span> <span class="ow">or</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;development&#39;</span><span class="p">:</span>
                     <span class="c1"># if ci_url is not ars.ci.transltr.io</span>
                     <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;https://ars.ci.transltr.io&#39;</span><span class="p">:</span>
@@ -197,7 +236,7 @@
                 <span class="n">test_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_url</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">test_url</span> <span class="o">=</span> <span class="n">test_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-                
+
     <span class="c1"># write all the smartapis to a dataframe</span>
 
     <span class="n">smartapi_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
@@ -211,7 +250,7 @@
 
     <span class="c1"># remove the excluded APIs from the dataframe</span>
     <span class="c1">#excluded_APIs = [&#39;https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1&#39;,#RaMP]</span>
-    
+
     <span class="c1">#smartapi_df = smartapi_df[~smartapi_df[&#39;id&#39;].isin(excluded_APIs)]</span>
 
     <span class="n">API_names</span> <span class="o">=</span> <span class="p">{}</span>
@@ -220,14 +259,14 @@
             <span class="c1">#API_names[smartapi_df[&#39;title&#39;][i]] = smartapi_df[&#39;prod_url&#39;][i] + &#39;query/&#39;</span>
             <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> 
+            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">smartapi_df</span><span class="p">,</span> <span class="n">API_names</span></div>
 
 
 <span class="c1"># used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">list_Translator_APIs</span><span class="p">():</span>
     <span class="n">APInames</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s1">&#39;Sri-name-resolver&#39;</span><span class="p">:</span><span class="s1">&#39;https://name-lookup.ci.transltr.io/query/&#39;</span><span class="p">,</span> <span class="c1">#https://smart-api.info/ui/9995fed757acd034ef099dbb483c4c82 </span>
+            <span class="s1">&#39;Sri-name-resolver&#39;</span><span class="p">:</span><span class="s1">&#39;https://name-lookup.ci.transltr.io/query/&#39;</span><span class="p">,</span> <span class="c1">#https://smart-api.info/ui/9995fed757acd034ef099dbb483c4c82</span>
             <span class="c1">#&#39;Monarch API&#39;:&#39;https://api-v3.monarchinitiative.org/query/&#39; #https://smart-api.info/ui/d22b657426375a5295e7da8a303b9893</span>
             <span class="c1">#Complex Portal Web Service : #https://smart-api.info/ui/326eb1e437303bee27d3cef29227125d</span>
             <span class="s1">&#39;Sri-answer-appraiser(Trapi v1.5.0)&#39;</span><span class="p">:</span><span class="s1">&#39;https://answerappraiser.renci.org/get_appraisal/&#39;</span><span class="p">,</span> <span class="c1">#https://smart-api.info/ui/6dcc5454fe4e0095090d8a956781c438</span>
@@ -271,7 +310,7 @@
             <span class="c1">#Biolink Lookup : 02f84c50043e94970316568439b7b384</span>
             <span class="s1">&#39;COHD TRAPI&#39;</span> <span class="p">:</span> <span class="s1">&#39;https://cohd-api.transltr.io/api/query/&#39;</span><span class="p">,</span> <span class="c1">##d4290b6b5741e6da6cc6a6f42e0cfdb5</span>
             <span class="c1">#&#39;Text Mined Cooccurrence API&#39; : &quot;https://cooccurence.ci.transltr.io/query/&quot;, #aa9c668df9d217409891cc7afb7ac039</span>
-            <span class="s1">&#39;Text Mined Cooccurrence API&#39;</span> <span class="p">:</span> <span class="s2">&quot;https//cooccurrence.transltr.io/query&quot;</span><span class="p">,</span> <span class="c1">#71fa2e0f0f1fe1ec67f4ddb719db5ef3</span>
+            <span class="c1">#&#39;Text Mined Cooccurrence API&#39; : &quot;https//cooccurrence.transltr.io/query&quot;, #71fa2e0f0f1fe1ec67f4ddb719db5ef3</span>
             <span class="c1">#BioThings Rhea API : 03283cc2b21c077be6794e1704b1d230</span>
             <span class="c1">#SmartAPI API : 27a5b60716c3a401f2c021a5b718c5b1</span>
             <span class="c1">#MyDisease.info API : 671b45c0301c8624abbd26ae78449ca2</span>
@@ -365,8 +404,7 @@
         <span class="s2">&quot;ARAX Translator Reasoner - TRAPI 1.4.0&quot;</span><span class="p">:</span><span class="s2">&quot;https://arax.transltr.io/api/arax/v1.4/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;RTX KG2 - TRAPI 1.4.0&quot;</span><span class="p">:</span><span class="s2">&quot;https://arax.ncats.io/api/rtxkg2/v1.4/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SPOKE KP for TRAPI 1.4&quot;</span><span class="p">:</span><span class="s2">&quot;https://spokekp.transltr.io/api/v1.4/query&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Multiomics BigGIM-DrugResponse KP API&quot;</span><span class="p">:</span><span class="s2">&quot;https://bte.transltr.io/v1/smartapi/adf20dd6ff23dfe18e8e012bde686e31/query&quot;</span><span class="p">,</span>
-        <span class="c1">#&quot;Multiomics BigGIM-DrugResponse KP API&quot;:&quot;https://bte.test.transltr.io/v1/smartapi/adf20dd6ff23dfe18e8e012bde686e31/query&quot;,</span>
+        <span class="c1"># Duplicate removed - &quot;Multiomics BigGIM-DrugResponse KP API&quot;:&quot;https://bte.transltr.io/v1/smartapi/adf20dd6ff23dfe18e8e012bde686e31/query&quot;,</span>
         <span class="s2">&quot;Multiomics ClinicalTrials KP&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/smartapi/d86a24f6027ffe778f84ba10a7a1861a/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Multiomics Wellness KP API&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/smartapi/02af7d098ab304e80d6f4806c3527027/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Multiomics EHR Risk KP API&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/smartapi/d86a24f6027ffe778f84ba10a7a1861a/query&quot;</span><span class="p">,</span>
@@ -401,7 +439,7 @@
         <span class="s2">&quot;Automat-ubergraph-nonredundant(Trapi v1.4.0)&quot;</span><span class="p">:</span> <span class="s2">&quot;https://automat.ci.transltr.io/ubergraph-nonredundant/1.4/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;Automat-viral-proteome(Trapi v1.4.0)&quot;</span><span class="p">:</span> <span class="s2">&quot;https://automat.ci.transltr.io/viral-proteome/1.4/query&quot;</span><span class="p">,</span>
         <span class="s2">&quot;CTD API&quot;</span><span class="p">:</span><span class="s2">&quot;https://automat.ci.transltr.io/ctd/1.4/query&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;Connections Hypothesis Provider API&quot;</span><span class="p">:</span><span class="s2">&quot;https://chp-api.transltr.io/query&quot;</span><span class="p">,</span> <span class="c1">#no knowledge_graph is defined in the response</span>
+        <span class="c1"># Duplicate removed - &quot;Connections Hypothesis Provider API&quot;:&quot;https://chp-api.transltr.io/query&quot;, #no knowledge_graph is defined in the response</span>
         <span class="s2">&quot;MyGene.info API&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/smartapi/59dce17363dce279d389100834e43648/query&quot;</span><span class="p">,</span> <span class="c1">#check with chunlei</span>
         <span class="s2">&quot;MyDisease.info API&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/smartapi/671b45c0301c8624abbd26ae78449ca2/query&quot;</span><span class="p">,</span> <span class="c1">#check with chunlei</span>
         <span class="s2">&quot;MyChem.info API&quot;</span><span class="p">:</span><span class="s2">&quot;https://api.bte.ncats.io/v1/8f08d1446e0bb9c2b323713ce83e2bd3/query&quot;</span><span class="p">,</span> <span class="c1">#check with chunlei</span>
@@ -444,7 +482,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">select_API</span><span class="p">(</span><span class="n">sub_list</span><span class="p">,</span><span class="n">obj_list</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    selects the APIs that can connect the given subject and object categories in the meta knowledge graph.</span>
-<span class="sd">    </span>
+
 <span class="sd">    sub_list = [&quot;biolink:Gene&quot;, &quot;biolink:Protein&quot;]</span>
 <span class="sd">    obj_list = [&quot;biolink:Gene&quot;, &quot;biolink:Disease&quot;]</span>
 
@@ -452,10 +490,10 @@
 <span class="sd">    Example:</span>
 <span class="sd">    &gt;&gt;&gt; sub_list = [&quot;biolink:Gene&quot;, &quot;biolink:Protein&quot;]</span>
 <span class="sd">    &gt;&gt;&gt; obj_list = [&quot;biolink:Gene&quot;, &quot;biolink:Disease&quot;]</span>
-<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt;</span>
 <span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames= translator_kpinfo.get_translator_kp_info()</span>
 <span class="sd">    &gt;&gt;&gt; print(len(Translator_KP_info))</span>
-<span class="sd">    &gt;&gt;&gt; metaKG = translator_metakg.get_KP_metadata(APInames) </span>
+<span class="sd">    &gt;&gt;&gt; metaKG = translator_metakg.get_KP_metadata(APInames)</span>
 <span class="sd">    &gt;&gt;&gt; print(metaKG.shape)</span>
 <span class="sd">    &gt;&gt;&gt; APInames,metaKG = translator_metakg.add_plover_API(APInames, metaKG)</span>
 <span class="sd">    &gt;&gt;&gt; selected_apis = select_API(sub_list, obj_list, metaKG)</span>
@@ -499,7 +537,7 @@
 <span class="sd">    -----------</span>
 <span class="sd">    Example:</span>
 <span class="sd">    &gt;&gt;&gt; sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node1_category,input_node2_category,metaKG, APInames)</span>
-<span class="sd">    </span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">sele_predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">select_concept</span><span class="p">(</span><span class="n">sub_list</span><span class="o">=</span><span class="n">input_node1_category</span><span class="p">,</span>
                                                  <span class="n">obj_list</span><span class="o">=</span><span class="n">input_node2_category</span><span class="p">,</span>
@@ -507,7 +545,7 @@
     <span class="n">sele_APIs</span> <span class="o">=</span> <span class="n">select_API</span><span class="p">(</span><span class="n">sub_list</span><span class="o">=</span><span class="n">input_node1_category</span><span class="p">,</span>
                            <span class="n">obj_list</span><span class="o">=</span><span class="n">input_node2_category</span><span class="p">,</span>
                            <span class="n">metaKG</span><span class="o">=</span><span class="n">metaKG</span><span class="p">)</span>
-    
+
     <span class="n">API_URLs</span> <span class="o">=</span> <span class="n">get_Translator_API_URL</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sele_predicates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No predicates found for the given categories.&quot;</span><span class="p">)</span>
@@ -533,13 +571,11 @@
 <span class="c1"># select APIs based on the predicates. Dec 10, 2023</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">filter_APIs</span><span class="p">(</span><span class="n">sele_predicates</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">sele_predicates</span> <span class="o">==</span> <span class="p">[]:</span>
-        <span class="n">sele_API_URL</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;KG_category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>    
+        <span class="n">sele_API_URL</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;KG_category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">sele_API_URL</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metaKG</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;KG_category&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sele_predicates</span><span class="p">)][</span><span class="s1">&#39;URL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">sele_API_URL</span>
 
-<div class="viewcode-block" id="select_predicates_inKP">
-<a class="viewcode-back" href="../../TCT.html#TCT.TCT.select_predicates_inKP">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">select_predicates_inKP</span><span class="p">(</span><span class="n">sub_list</span><span class="p">,</span><span class="n">obj_list</span><span class="p">,</span><span class="n">KPname</span><span class="p">,</span><span class="n">metaKG</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;sub_list = [&quot;biolink:Gene&quot;, &quot;biolink:Protein&quot;]</span>
 <span class="sd">      obj_list = [&quot;biolink:Gene&quot;, &quot;biolink:Disease&quot;]</span>
@@ -562,10 +598,9 @@
     <span class="k">for</span> <span class="n">concept</span> <span class="ow">in</span> <span class="n">temp_set</span><span class="p">:</span>
         <span class="c1">#final_set.append(&quot;biolink:&quot;+concept.split(&quot;-&quot;)[1])</span>
         <span class="n">final_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">concept</span><span class="p">)</span>
-    <span class="k">return</span><span class="p">(</span><span class="n">final_set</span><span class="p">)</span></div>
+    <span class="k">return</span><span class="p">(</span><span class="n">final_set</span><span class="p">)</span>
 
 
-    
 <span class="c1">#def Generate_Gene_id_map():</span>
 <span class="c1">#    id_file = open(&quot;../metaData/Homo_sapiens.gene_info&quot;, &quot;r&quot;)</span>
 <span class="c1">#    Gene_id_map = {}</span>
@@ -619,16 +654,16 @@
                     <span class="n">dic_id_map</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="o">=</span> <span class="n">curie</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">unrecoglized_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curie</span><span class="p">)</span>
-                
+
                 <span class="n">dic_id_map</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="o">=</span> <span class="n">curie</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unrecoglized_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NodeNorm does not know about these identifiers: &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unrecoglized_ids</span><span class="p">))</span>
-    
+
     <span class="k">return</span> <span class="n">dic_id_map</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">visulization_one_hop_ranking_input_as_list</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span><span class="n">result_parsed</span> <span class="p">,</span> 
-                                 <span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">visulization_one_hop_ranking_input_as_list</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span><span class="n">result_parsed</span> <span class="p">,</span>
+                                 <span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">input_query</span> <span class="o">=</span> <span class="s2">&quot;NCBIGene:3845&quot;</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                                  <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
@@ -649,17 +684,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
             <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
-            
+
         <span class="n">predicates_list</span> <span class="o">=</span> <span class="n">predicates_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
         <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="n">primary_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
-        
+
         <span class="k">if</span> <span class="s1">&#39;aggregator_knowledge_source&#39;</span> <span class="ow">in</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">]:</span>
             <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="n">aggregator_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;aggregator_knowledge_source&#39;</span><span class="p">]</span>
             <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">aggregator_infore_list</span><span class="p">))</span>
 
         <span class="n">predicates_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates_list</span><span class="p">))</span>
         <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">primary_infore_list</span><span class="p">))</span>
-        
+
 
     <span class="n">predicates_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
@@ -672,11 +707,11 @@
     <span class="n">aggregator_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">aggregator_infore_list</span><span class="p">:</span>
         <span class="n">aggregator_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        
+
     <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
     <span class="c1">#for i in range(0, 10):</span>
-        <span class="n">input_nodes</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;input_node&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># input_nodes = result_ranked_by_primary_infores[&#39;input_node&#39;].values[i]  # Unused variable</span>
 
         <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oupput_node</span><span class="p">)</span>
@@ -720,11 +755,11 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>    
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="c1">#else:</span>
     <span class="c1">#    new_colnames = colnames</span>
-            
+
     <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">primary_infore_by_nodes</span><span class="p">)</span>
     <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
     <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
@@ -740,8 +775,8 @@
     <span class="k">return</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">)</span>
 
 <span class="c1"># Used. Jan 5, 2024</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">visulization_one_hop_ranking</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span><span class="n">result_parsed</span> <span class="p">,</span> 
-                                 <span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">visulization_one_hop_ranking</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span><span class="n">result_parsed</span> <span class="p">,</span>
+                                 <span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">input_query</span> <span class="o">=</span> <span class="s2">&quot;NCBIGene:3845&quot;</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                                  <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
@@ -762,17 +797,17 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
             <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
-            
+
         <span class="n">predicates_list</span> <span class="o">=</span> <span class="n">predicates_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
         <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="n">primary_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
-        
+
         <span class="k">if</span> <span class="s1">&#39;aggregator_knowledge_source&#39;</span> <span class="ow">in</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">]:</span>
             <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="n">aggregator_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;aggregator_knowledge_source&#39;</span><span class="p">]</span>
             <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">aggregator_infore_list</span><span class="p">))</span>
 
         <span class="n">predicates_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates_list</span><span class="p">))</span>
         <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">primary_infore_list</span><span class="p">))</span>
-        
+
 
     <span class="n">predicates_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
@@ -785,7 +820,7 @@
     <span class="n">aggregator_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">aggregator_infore_list</span><span class="p">:</span>
         <span class="n">aggregator_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        
+
     <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
     <span class="c1">#for i in range(0, 10):</span>
@@ -831,11 +866,11 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>    
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="c1">#else:</span>
     <span class="c1">#    new_colnames = colnames</span>
-            
+
     <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">primary_infore_by_nodes</span><span class="p">)</span>
     <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
     <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
@@ -850,17 +885,17 @@
 
     <span class="k">return</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
-                                 <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
+                                 <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                                  <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
     <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
-    
+
     <span class="c1">#title = &quot;Ranking of one-hop nodes by primary infores&quot;</span>
     <span class="c1">#ylab = &quot;infores&quot;</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">num_of_nodes</span><span class="p">]</span>
-    <span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-    <span class="c1"># create teh figure and subplot</span>
+    <span class="c1"># colnames = list(df.columns)  # Unused variable</span>
+    <span class="c1"># create the figure and subplot</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.8</span><span class="o">+</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mf">0.11</span><span class="p">,</span><span class="mf">3.5</span><span class="p">),</span><span class="n">dpi</span> <span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
 
@@ -887,17 +922,17 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap_ui</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap_ui</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
-                                 <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
+                                 <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                                  <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
-   
-    
+
+
     <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ranking of one-hop nodes by primary infores&quot;</span>
     <span class="n">ylab</span> <span class="o">=</span> <span class="s2">&quot;infores&quot;</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">num_of_nodes</span><span class="p">]</span>
-    <span class="n">colnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-    <span class="c1"># create teh figure and subplot</span>
+    <span class="c1"># colnames = list(df.columns)  # Unused variable</span>
+    <span class="c1"># create the figure and subplot</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.8</span><span class="o">+</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">3.5</span><span class="p">),</span><span class="n">dpi</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
 
@@ -981,7 +1016,7 @@
     <span class="n">query_json_temp</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
-                
+
                 <span class="s2">&quot;edges&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="s2">&quot;e00&quot;</span><span class="p">:</span> <span class="p">{</span>
                     <span class="c1">#&quot;e1&quot;: {</span>
@@ -991,7 +1026,7 @@
                         <span class="p">}</span>
                     <span class="p">},</span>
                 <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;n00&quot;</span><span class="p">:</span> <span class="p">{</span>    
+                    <span class="s2">&quot;n00&quot;</span><span class="p">:</span> <span class="p">{</span>
                         <span class="s2">&quot;ids&quot;</span><span class="p">:</span><span class="n">subject_ids</span><span class="p">,</span> <span class="c1"># required</span>
                         <span class="c1">#&quot;categories&quot;:[] # optional, if not provided, it will be empty</span>
                         <span class="p">},</span>
@@ -1030,7 +1065,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">Neiborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function is used to find the neighborhood of a given input node with intermediate categories.</span>
-<span class="sd">    </span>
+
 <span class="sd">    --------------</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">    input_node (str): The input node, can be a gene name, protein name, or any other identifier.</span>
@@ -1039,23 +1074,23 @@
 <span class="sd">    metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.</span>
 <span class="sd">    API_predicates (dict): A dictionary containing the predicates for each API.</span>
 <span class="sd">    input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
-<span class="sd">    </span>
+
 <span class="sd">    --------------</span>
 <span class="sd">    Returns:</span>
 <span class="sd">    input_node_id (str): The curie id of the input node.</span>
 <span class="sd">    result (dict): The result of the query for the input node.</span>
 <span class="sd">    result_parsed (DataFrame): The parsed results for the input node.</span>
 <span class="sd">    result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.</span>
-<span class="sd">    </span>
+
 <span class="sd">    --------------</span>
 <span class="sd">    Example:</span>
 <span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder(&#39;Ovarian cancer&#39;,</span>
 <span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
 <span class="sd">                                                                                            APInames = APInames,</span>
 <span class="sd">                                                                                            metaKG = metaKG,</span>
-<span class="sd">                                                                                            API_predicates = API_predicates)   </span>
+<span class="sd">                                                                                            API_predicates = API_predicates)</span>
 <span class="sd">    --------------</span>
-<span class="sd">    </span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
 
@@ -1063,9 +1098,9 @@
     <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node</span><span class="p">)</span>
     <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">curie</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
-    
+
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span> 
+        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">input_node_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1077,14 +1112,14 @@
                                                                 <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
 
     <span class="c1"># Step 3: Format the query JSON for the input node</span>
-    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">([</span><span class="n">input_node_id</span><span class="p">],</span> <span class="p">[],</span> 
-                                   <span class="p">[</span><span class="n">input_node_category</span><span class="p">],</span> 
-                                   <span class="n">node2_categories</span><span class="p">,</span> 
+    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">([</span><span class="n">input_node_id</span><span class="p">],</span> <span class="p">[],</span>
+                                   <span class="p">[</span><span class="n">input_node_category</span><span class="p">],</span>
+                                   <span class="n">node2_categories</span><span class="p">,</span>
                                    <span class="n">sele_predicates</span><span class="p">)</span>
 
     <span class="c1"># Step 4: Query the APIs in parallel</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span> 
-                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span> 
+    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span>
+                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span>
                              <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
                              <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
                              <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">))</span>
@@ -1100,13 +1135,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">Path_finder</span><span class="p">(</span><span class="n">input_node1</span><span class="p">,</span> <span class="n">input_node2</span><span class="p">,</span> <span class="n">intermediate_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node1_category</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">input_node2_category</span> <span class="o">=</span> <span class="p">[]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function is used to find paths between two input nodes with intermediate categories.</span>
-<span class="sd">    </span>
+
 <span class="sd">    --------------</span>
 <span class="sd">    Parameters:</span>
 <span class="sd">    input_node1 (str): The first input node, can be a gene name, protein name, or any other identifier.</span>
 <span class="sd">    input_node2 (str): The second input node, can be a gene name, protein name, or any other identifier.</span>
 <span class="sd">    intermediate_categories (list): A list of intermediate categories to be used in the path finding process.</span>
-<span class="sd">    </span>
+
 <span class="sd">    --------------</span>
 <span class="sd">    Returns:</span>
 <span class="sd">    paths (DataFrame): A DataFrame containing the paths found between the two input nodes.</span>
@@ -1131,7 +1166,7 @@
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">)</span>
     <span class="n">input_node1_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node1_id</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span> 
+        <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">input_node1_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1143,7 +1178,7 @@
     <span class="n">input_node2_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node2_id</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node2_category</span> <span class="o">=</span> <span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span> 
+        <span class="n">input_node2_category</span> <span class="o">=</span> <span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">input_node2_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1156,7 +1191,7 @@
                                                                 <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
     <span class="n">sele_predicates2</span><span class="p">,</span> <span class="n">sele_APIs2</span><span class="p">,</span> <span class="n">API_URLs2</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">,</span>
                                                                 <span class="n">intermediate_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>    
+                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
 
     <span class="n">query_json1</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">input_node1_list</span><span class="p">,</span>  <span class="c1"># a list of identifiers for input node1</span>
                                     <span class="p">[],</span>  <span class="c1"># id list for the intermediate node, it can be empty list if only want to query node1</span>
@@ -1169,16 +1204,16 @@
                                     <span class="n">input_node2_category</span><span class="p">,</span>  <span class="c1"># a list of categories of input node2</span>
                                     <span class="n">intermediate_categories</span><span class="p">,</span>  <span class="c1"># a list of categories of the intermediate node</span>
                                     <span class="n">sele_predicates2</span><span class="p">)</span> <span class="c1"># a list of predicates</span>
-    
-    <span class="n">result1</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json1</span><span class="p">,</span> 
-                             <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs1</span><span class="p">,</span> 
-                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span> 
-                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span> 
+
+    <span class="n">result1</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json1</span><span class="p">,</span>
+                             <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs1</span><span class="p">,</span>
+                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
+                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
                              <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs1</span><span class="p">))</span>
-    <span class="n">result2</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json2</span><span class="p">,</span> 
-                                <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs2</span><span class="p">,</span> 
-                                <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span> 
-                                <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span> 
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json2</span><span class="p">,</span>
+                                <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs2</span><span class="p">,</span>
+                                <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
+                                <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
                                 <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs2</span><span class="p">))</span>
 
     <span class="n">result_parsed1</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result1</span><span class="p">)</span>
@@ -1192,11 +1227,11 @@
     <span class="n">possible_paths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores2</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">])))</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of possible paths: &quot;</span><span class="p">,</span> <span class="n">possible_paths</span><span class="p">)</span>
 
-    <span class="n">paths</span> <span class="o">=</span> <span class="n">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores2</span><span class="p">,</span> 
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores2</span><span class="p">,</span>
                                             <span class="n">top_n</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                                             <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                                             <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,)</span>
-    
+
     <span class="k">return</span> <span class="n">paths</span><span class="p">,</span>  <span class="n">input_node1_id</span><span class="p">,</span> <span class="n">input_node2_id</span><span class="p">,</span> <span class="n">result1</span><span class="p">,</span> <span class="n">result2</span><span class="p">,</span> <span class="n">result_parsed1</span><span class="p">,</span> <span class="n">result_parsed2</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores2</span></div>
 
 
@@ -1215,15 +1250,15 @@
 <span class="sd">    primary_knowledge_sources</span>
 <span class="sd">    aggregator_knowledge_sources</span>
 <span class="sd">    subject_predicate_object_primary_knowledge_sources_aggregator_knowledge_sources</span>
-<span class="sd">    </span>
+
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="c1"># edited Dec 5, 2023</span>
 
     <span class="n">result_parsed</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-        
+
         <span class="n">subject_object</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-        <span class="n">object_subject</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
+        <span class="c1"># object_subject = result[i][&#39;object&#39;] + &quot;_&quot; + result[i][&#39;subject&#39;]  # Unused variable</span>
         <span class="c1">#result_parsed[&quot;predicate&quot;].append(result[i][&#39;predicate&#39;])</span>
         <span class="c1">#result_parsed[&quot;sources&quot;].append(result[i][&#39;sources&#39;])</span>
         <span class="c1">#result_parsed[&quot;subject&quot;].append(result[i][&#39;subject&#39;])</span>
@@ -1233,8 +1268,8 @@
             <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject_object</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]]</span>
             <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject_object</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
             <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject_object</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-            
-            
+
+
             <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;sources&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;resource_role&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">:</span>
                     <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject_object</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="s1">&#39;resource_id&#39;</span><span class="p">]]</span>
@@ -1270,17 +1305,17 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
         <span class="n">subject</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
         <span class="nb">object</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-        <span class="n">predicate</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
-        <span class="n">sources</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span>
+        <span class="c1"># predicate = result[i][&#39;predicate&#39;]  # Unused variable</span>
+        <span class="c1"># sources = result[i][&#39;sources&#39;]  # Unused variable</span>
 
         <span class="k">if</span> <span class="n">subject</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
             <span class="k">continue</span>
-        
+
         <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">dic_nodes</span><span class="p">:</span>
             <span class="n">dic_nodes</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dic_nodes</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">object</span><span class="p">]</span>
-        
+
         <span class="k">if</span> <span class="nb">object</span> <span class="ow">in</span> <span class="n">dic_nodes</span><span class="p">:</span>
             <span class="n">dic_nodes</span><span class="p">[</span><span class="nb">object</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1307,7 +1342,7 @@
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic_with_input_nodes</span><span class="p">:</span>
         <span class="n">dic_with_input_nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dic_with_input_nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-            
+
 
 
 
@@ -1357,14 +1392,14 @@
             <span class="n">type_of_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
             <span class="n">Num_of_primary_infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">])))</span>
             <span class="n">unique_predicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_predict</span><span class="p">)</span>
-            
+
 
         <span class="k">elif</span> <span class="nb">object</span> <span class="ow">in</span> <span class="n">input_nodes</span><span class="p">:</span>
             <span class="n">input_nodes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
             <span class="n">output_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
             <span class="n">type_of_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;subject&#39;</span><span class="p">)</span>
             <span class="n">unique_predicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_predict</span><span class="p">)</span>
-        
+
             <span class="n">Num_of_primary_infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">])))</span>
 
     <span class="n">colnames</span> <span class="o">=</span> <span class="n">output_nodes</span>
@@ -1375,16 +1410,16 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_nodes</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_colnames</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;Num_of_primary_infores&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Num_of_primary_infores</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_of_nodes</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;unique_predicates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_predicates</span>
-    
+
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;input_node&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_nodes_list</span>
-    
+
     <span class="n">rank_df_ranked</span> <span class="o">=</span> <span class="n">rank_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Num_of_primary_infores&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">rank_df_ranked</span><span class="p">)</span></div>
 
@@ -1412,13 +1447,13 @@
             <span class="n">type_of_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
             <span class="n">Num_of_primary_infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">])))</span>
             <span class="n">unique_predicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_predict</span><span class="p">)</span>
-            
+
 
         <span class="k">elif</span> <span class="nb">object</span> <span class="o">==</span> <span class="n">input_node</span><span class="p">:</span>
             <span class="n">output_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
             <span class="n">type_of_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;subject&#39;</span><span class="p">)</span>
             <span class="n">unique_predicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curr_predict</span><span class="p">)</span>
-        
+
             <span class="n">Num_of_primary_infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">])))</span>
 
     <span class="n">colnames</span> <span class="o">=</span> <span class="n">output_nodes</span>
@@ -1429,16 +1464,16 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_nodes</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_colnames</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;Num_of_primary_infores&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Num_of_primary_infores</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">type_of_nodes</span>
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;unique_predicates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_predicates</span>
-    
-    
-    
+
+
+
     <span class="n">rank_df_ranked</span> <span class="o">=</span> <span class="n">rank_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Num_of_primary_infores&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">rank_df_ranked</span><span class="p">)</span></div>
 
@@ -1447,13 +1482,13 @@
 
 <span class="c1"># used. Dec 5, 2023 (Example_query_rank_the_path.ipynb)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_by_ranking_index</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span>
-                           <span class="n">result_ranked_by_primary_infores2</span><span class="p">,</span> 
+                           <span class="n">result_ranked_by_primary_infores2</span><span class="p">,</span>
                            <span class="n">top_n</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                            <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                            <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                            <span class="p">):</span>
 
-    
+
     <span class="n">dic_rank1</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="n">dic_rank1</span><span class="p">[</span><span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span> <span class="o">/</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1484,7 +1519,7 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
     <span class="n">result_xy_sorted</span> <span class="o">=</span> <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1502,8 +1537,8 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span> 
-                                       <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span>
+                                       <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span>
                                        <span class="n">top_n</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                                        <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                                        <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
@@ -1533,15 +1568,15 @@
     <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_xy</span><span class="o">.</span><span class="n">index</span>
     <span class="c1"># convert the output_node to preferred name</span>
 
-    
-        
+
+
     <span class="c1">#result_xy[&quot;output_node_name&quot;] = new_colnames</span>
     <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predictes1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list1</span>
     <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predictes2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list2</span>
 
     <span class="n">result_xy_sorted</span> <span class="o">=</span> <span class="n">result_xy</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-    <span class="n">convert</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1"># convert = False  # Unused variable</span>
     <span class="n">colnames</span> <span class="o">=</span> <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
 
     <span class="n">names</span> <span class="o">=</span> <span class="n">colnames</span>
@@ -1551,7 +1586,7 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
 
     <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
@@ -1566,11 +1601,11 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_path_bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span>
                   <span class="n">y</span><span class="p">,</span>
                     <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
-                    <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
+                    <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                     <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
     <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
-    
-    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Bridging nodes&quot;</span>
+
+    <span class="c1"># title = &quot;Bridging nodes&quot;  # Unused variable</span>
     <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">dpi</span> <span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">)</span>
@@ -1600,7 +1635,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_pair_annotation</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">input_node_list</span><span class="p">):</span>
     <span class="n">pairs_found</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        
+
         <span class="k">if</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">input_node_list</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">input_node_list</span> <span class="ow">and</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]:</span>
             <span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">pairs_found</span>
@@ -1622,38 +1657,6 @@
         <span class="n">edge_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">],</span><span class="n">dic_names</span><span class="p">[</span><span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;subject&#39;</span><span class="p">]],</span>  <span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">],</span> <span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">],</span> <span class="n">dic_names</span><span class="p">[</span><span class="n">pairs_found</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;object&#39;</span><span class="p">]],</span> <span class="n">primary_source</span> <span class="p">])</span>
     <span class="k">return</span> <span class="n">edge_list</span>
 
-<span class="c1">#used</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">query_chatGPT4</span><span class="p">(</span><span class="n">customized_input</span><span class="p">):</span>
-    <span class="n">message</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> 
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">customized_input</span><span class="p">}]</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">ChatCompletion</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-    <span class="c1">#model=&quot;gpt-3.5-turbo&quot;,</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4&quot;</span><span class="p">,</span>
-    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
-    <span class="n">messages</span> <span class="o">=</span> <span class="n">message</span><span class="p">)</span>
-
-    <span class="c1">#print(len(response.choices[0].message.content.split(&quot; &quot;)))</span>
-
-    <span class="k">return</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">query_chatGPT</span><span class="p">(</span><span class="n">customized_input</span><span class="p">):</span>
-    <span class="n">message</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> 
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">customized_input</span><span class="p">}]</span>
-
-    <span class="n">response</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">ChatCompletion</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">,</span>
-    <span class="c1">#model=&quot;gpt-4&quot;,</span>
-    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
-    <span class="n">messages</span> <span class="o">=</span> <span class="n">message</span><span class="p">)</span>
-
-    <span class="c1">#print(len(response.choices[0].message.content.split(&quot; &quot;)))</span>
-
-    <span class="k">return</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-
 <span class="c1"># to be removed</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">query_KP_all</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">object_ids</span><span class="p">,</span> <span class="n">subject_categories</span><span class="p">,</span> <span class="n">object_categories</span><span class="p">,</span> <span class="n">predicates</span><span class="p">,</span> <span class="n">API_list</span><span class="p">,</span><span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">):</span>
 
@@ -1666,9 +1669,9 @@
     <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">result_concept</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># Query individual KP</span>
-    
+
     <span class="c1"># Needs parallel query</span>
-    
+
 
     <span class="k">for</span> <span class="n">API_sele</span> <span class="ow">in</span> <span class="n">API_list</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">API_sele</span><span class="p">)</span>
@@ -1676,24 +1679,25 @@
             <span class="n">predicates_used</span> <span class="o">=</span> <span class="n">select_predicates_inKP</span><span class="p">(</span><span class="n">subject_categories</span><span class="p">,</span><span class="n">object_categories</span><span class="p">,</span><span class="n">API_sele</span><span class="p">,</span><span class="n">metaKG</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">predicates_used</span> <span class="o">=</span> <span class="n">predicates</span>
-        
+
         <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> <span class="n">object_ids</span><span class="p">,</span> <span class="n">subject_categories</span><span class="p">,</span> <span class="n">object_categories</span><span class="p">,</span> <span class="n">predicates_used</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="n">query_json</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">kg_output</span> <span class="o">=</span> <span class="n">query_KP</span><span class="p">(</span><span class="n">APInames</span><span class="p">[</span><span class="n">API_sele</span><span class="p">],</span><span class="n">query_json</span><span class="p">)</span>
-            
-        <span class="k">except</span><span class="p">:</span>
+            <span class="c1"># kg_output = query_KP(APInames[API_sele],query_json)  # query_KP function not defined</span>
+            <span class="n">kg_output</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Placeholder - function not available</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Connection Error&quot;</span><span class="p">)</span>
             <span class="n">kg_output</span> <span class="o">=</span> <span class="kc">None</span>
-            
+
         <span class="k">if</span> <span class="n">kg_output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># if kg_output is  a dictionary</span>
 
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kg_output</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span> <span class="ow">and</span> <span class="s1">&#39;nodes&#39;</span> <span class="ow">in</span> <span class="n">kg_output</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kg_output</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;nodes&#39;</span> <span class="ow">in</span> <span class="n">kg_output</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">kg_output</span><span class="p">[</span><span class="s1">&#39;nodes&#39;</span><span class="p">])</span> <span class="o">&gt;</span><span class="mi">0</span><span class="p">:</span>
 
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kg_output</span><span class="p">[</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">+</span> <span class="s2">&quot; nodes in &quot;</span> <span class="o">+</span> <span class="n">API_sele</span><span class="p">)</span> 
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Found: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kg_output</span><span class="p">[</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">+</span> <span class="s2">&quot; nodes in &quot;</span> <span class="o">+</span> <span class="n">API_sele</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">predicates_used</span><span class="p">)</span>
                     <span class="n">result_concept</span><span class="p">[</span><span class="n">API_sele</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicates_used</span>
                     <span class="n">result_dict</span><span class="p">[</span><span class="n">API_sele</span><span class="p">]</span> <span class="o">=</span> <span class="n">kg_output</span>
@@ -1738,25 +1742,25 @@
                 <span class="nb">object</span> <span class="o">=</span> <span class="p">(</span><span class="n">curr_graph</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">])</span>
                 <span class="k">if</span> <span class="nb">object</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;CL:&quot;</span><span class="p">):</span>
                     <span class="nb">object</span> <span class="o">=</span> <span class="s2">&quot;CL&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-                
+
                 <span class="c1">#exclude subclass_of</span>
-                
+
                 <span class="n">Temp_APIkey</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">API_key</span><span class="p">)</span>
                 <span class="n">Temp_subject_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subject</span><span class="p">)</span>
                 <span class="n">Temp_object_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
                 <span class="n">Temp_predicate_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">predicate</span><span class="p">)</span>
                 <span class="n">Temp_infores_key</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">infores</span><span class="p">)</span>
-            
+
             <span class="c1">#Temp_APIkey.append(API_key)</span>
             <span class="c1">#Temp_subject_key.append(subject)</span>
             <span class="c1">#Temp_object_key.append(object)</span>
             <span class="c1">#Temp_predicate_key.append(predicate)</span>
             <span class="c1">#Temp_infores_key.append(infores)</span>
 
-    <span class="n">Temp_result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;API&#39;</span><span class="p">:</span> <span class="n">Temp_APIkey</span><span class="p">,</span> 
+    <span class="n">Temp_result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;API&#39;</span><span class="p">:</span> <span class="n">Temp_APIkey</span><span class="p">,</span>
                                    <span class="s1">&#39;Subject&#39;</span><span class="p">:</span> <span class="n">Temp_subject_key</span><span class="p">,</span>
-                                   <span class="s2">&quot;Object&quot;</span><span class="p">:</span><span class="n">Temp_object_key</span><span class="p">,</span> 
-                                   <span class="s2">&quot;Predicate&quot;</span><span class="p">:</span><span class="n">Temp_predicate_key</span><span class="p">,</span> 
+                                   <span class="s2">&quot;Object&quot;</span><span class="p">:</span><span class="n">Temp_object_key</span><span class="p">,</span>
+                                   <span class="s2">&quot;Predicate&quot;</span><span class="p">:</span><span class="n">Temp_predicate_key</span><span class="p">,</span>
                                    <span class="s2">&quot;Infores&quot;</span><span class="p">:</span><span class="n">Temp_infores_key</span><span class="p">})</span>
 
     <span class="n">Temp_result_df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1771,11 +1775,11 @@
     <span class="n">object_val_list</span> <span class="o">=</span> <span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="n">object_val_value</span> <span class="o">=</span> <span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 
-    
+
     <span class="n">dic_rank</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">object_val_list</span><span class="p">)):</span>
         <span class="n">dic_rank</span><span class="p">[</span><span class="n">object_val_list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">object_val_value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-  
+
 
     <span class="n">sorted_dic</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dic_rank</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">sorted_dic</span><span class="p">)</span>
@@ -1788,7 +1792,7 @@
     <span class="n">dic_rank</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">subject_val_list</span><span class="p">)):</span>
         <span class="n">dic_rank</span><span class="p">[</span><span class="n">subject_val_list</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">subject_val_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-  
+
 
     <span class="n">sorted_dic</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dic_rank</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">sorted_dic</span><span class="p">)</span>
@@ -1806,7 +1810,7 @@
         <span class="c1">#item_ranking.append(sorted_dic[i][0])</span>
         <span class="n">sele_result</span> <span class="o">=</span> <span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dic_ranking</span><span class="p">[</span><span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])],</span> <span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Predicate&#39;</span><span class="p">])))</span>
-    
+
     <span class="k">return</span><span class="p">(</span><span class="n">dic_ranking</span><span class="p">)</span>
 
 <span class="c1"># to be removed</span>
@@ -1821,7 +1825,7 @@
         <span class="c1">#item_ranking.append(sorted_dic[i][0])</span>
         <span class="n">sele_result</span> <span class="o">=</span> <span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dic_ranking</span><span class="p">[</span><span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])],</span> <span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;Infores&#39;</span><span class="p">])))</span>
-    
+
     <span class="k">return</span><span class="p">(</span><span class="n">dic_ranking</span><span class="p">)</span>
 
 <span class="c1"># to be removed</span>
@@ -1836,7 +1840,7 @@
         <span class="c1">#item_ranking.append(sorted_dic[i][0])</span>
         <span class="n">sele_result</span> <span class="o">=</span> <span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">dic_ranking</span><span class="p">[</span><span class="n">sorted_dic</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])],</span> <span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">sele_result</span><span class="p">])]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="s1">&#39;API&#39;</span><span class="p">])))</span>
-    
+
     <span class="k">return</span><span class="p">(</span><span class="n">dic_ranking</span><span class="p">)</span>
 
 <span class="c1"># to be revised</span>
@@ -1866,20 +1870,14 @@
 
     <span class="k">return</span><span class="p">(</span><span class="n">res_df</span><span class="p">)</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">select_result_to_analysis</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">,</span><span class="n">Temp_result_df</span><span class="p">,</span> <span class="n">Temp_result_df1</span> <span class="p">):</span>
-    
-    <span class="nb">print</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">)</span>
-    <span class="n">for_plot</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">Temp_result_df1</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df1</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">)],</span>
-            <span class="n">Temp_result_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">)]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">return</span><span class="p">(</span><span class="n">for_plot</span><span class="p">)</span>
+<span class="c1"># First definition of select_result_to_analysis removed - duplicate function</span>
 
 <span class="c1"># need revision</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">find_path_by_two_ends</span><span class="p">(</span><span class="n">subject1_ids</span><span class="p">,</span> 
-                          <span class="n">subject1_categories</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">find_path_by_two_ends</span><span class="p">(</span><span class="n">subject1_ids</span><span class="p">,</span>
+                          <span class="n">subject1_categories</span><span class="p">,</span>
                           <span class="n">predicates1</span><span class="p">,</span>
                           <span class="n">object_categories</span><span class="p">,</span>
-                          <span class="n">subject2_ids</span><span class="p">,</span> 
+                          <span class="n">subject2_ids</span><span class="p">,</span>
                           <span class="n">subject2_categories</span><span class="p">,</span>
                           <span class="n">predicates2</span><span class="p">,</span>
                           <span class="n">API_list1</span><span class="p">,</span>
@@ -1891,21 +1889,23 @@
                           <span class="n">metaKG</span><span class="p">,</span>
                           <span class="n">APInames</span>
                           <span class="p">):</span>
-    
+
     <span class="n">result_dic_node1</span><span class="p">,</span> <span class="n">result_concept_node1</span> <span class="o">=</span> <span class="n">query_KP_all</span><span class="p">(</span><span class="n">subject1_ids</span><span class="p">,</span> <span class="p">[],</span> <span class="n">subject1_categories</span><span class="p">,</span> <span class="n">object_categories</span><span class="p">,</span> <span class="n">predicates1</span><span class="p">,</span> <span class="n">API_list1</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
     <span class="n">result_dic_node2</span><span class="p">,</span> <span class="n">result_concept_node2</span> <span class="o">=</span> <span class="n">query_KP_all</span><span class="p">(</span><span class="n">subject2_ids</span><span class="p">,</span> <span class="p">[],</span> <span class="n">subject2_categories</span><span class="p">,</span> <span class="n">object_categories</span><span class="p">,</span> <span class="n">predicates2</span><span class="p">,</span> <span class="n">API_list2</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
 
-    
-    <span class="n">Temp_result_df1</span> <span class="o">=</span> <span class="n">parse_result</span><span class="p">(</span><span class="n">API1_keys_forAnalysis</span><span class="p">,</span><span class="n">API1_keys_NotforAnalysis</span><span class="p">,</span> <span class="n">result_concept_node1</span><span class="p">,</span> <span class="n">result_dic_node1</span><span class="p">)</span>
+
+    <span class="c1"># Temp_result_df1 = parse_result(API1_keys_forAnalysis,API1_keys_NotforAnalysis, result_concept_node1, result_dic_node1)  # parse_result function not defined</span>
+    <span class="n">Temp_result_df1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Placeholder - function not available</span>
     <span class="n">sorted_dic1</span> <span class="o">=</span> <span class="n">ranking_result_by_predicates_object</span><span class="p">(</span><span class="n">Temp_result_df1</span><span class="p">)</span>
 
     <span class="n">dic_ranking1</span> <span class="o">=</span> <span class="n">get_ranking_by_infores</span><span class="p">(</span><span class="n">sorted_dic1</span><span class="p">,</span> <span class="n">Temp_result_df1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 
-    <span class="n">Temp_result_df2</span> <span class="o">=</span> <span class="n">parse_result</span><span class="p">(</span><span class="n">API2_keys_forAnalysis</span><span class="p">,</span><span class="n">API2_keys_NotforAnalysis</span><span class="p">,</span> <span class="n">result_concept_node2</span><span class="p">,</span> <span class="n">result_dic_node2</span><span class="p">)</span>
+    <span class="c1"># Temp_result_df2 = parse_result(API2_keys_forAnalysis,API2_keys_NotforAnalysis, result_concept_node2, result_dic_node2)  # parse_result function not defined</span>
+    <span class="n">Temp_result_df2</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Placeholder - function not available</span>
     <span class="n">sorted_dic2</span> <span class="o">=</span> <span class="n">ranking_result_by_predicates_object</span><span class="p">(</span><span class="n">Temp_result_df2</span><span class="p">)</span>
 
     <span class="n">dic_ranking2</span> <span class="o">=</span> <span class="n">get_ranking_by_infores</span><span class="p">(</span><span class="n">sorted_dic2</span><span class="p">,</span> <span class="n">Temp_result_df2</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
-    
+
     <span class="n">connection_nodes_df</span> <span class="o">=</span> <span class="n">connecting_two_dots_two_hops</span><span class="p">(</span><span class="n">sorted_dic1</span><span class="p">,</span> <span class="n">sorted_dic2</span><span class="p">)</span>
 
     <span class="c1"># bind all results in to a dictionary</span>
@@ -1924,7 +1924,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">select_result_to_analysis</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">,</span><span class="n">Temp_result_df1</span><span class="p">,</span> <span class="n">Temp_result_df2</span> <span class="p">):</span>
-    
+
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;selected_path: &quot;</span><span class="o">+</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">))</span>
     <span class="n">for_plot</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>  <span class="n">Temp_result_df1</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df1</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">)],</span>
                             <span class="n">Temp_result_df2</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">Temp_result_df2</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sele_genes</span><span class="p">)]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1934,10 +1934,10 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_predicates</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span> 
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                 <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
-                                <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span> 
-                                <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Predicate&quot;</span><span class="p">],</span> 
+                                <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span>
+                                <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Predicate&quot;</span><span class="p">],</span>
                                 <span class="n">create_using</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">)</span>
 
 
@@ -1981,11 +1981,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_infores</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
-        
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span> 
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                     <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
-                                    <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span> 
-                                    <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Infores&quot;</span><span class="p">],</span> 
+                                    <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span>
+                                    <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Infores&quot;</span><span class="p">],</span>
                                     <span class="n">create_using</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">)</span>
 
 
@@ -2029,11 +2029,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_API</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
-        
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span> 
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                     <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
-                                    <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span> 
-                                    <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;API&quot;</span><span class="p">],</span> 
+                                    <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span>
+                                    <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;API&quot;</span><span class="p">],</span>
                                     <span class="n">create_using</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiDiGraph</span><span class="p">)</span>
 
 
@@ -2111,7 +2111,7 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">jsn</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">substr</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">jsn</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">rgt</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;}&#39;</span><span class="p">,</span> <span class="n">rgt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">lft</span> <span class="o">=</span> <span class="n">txt</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">,</span> <span class="n">lft</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">None</span>
@@ -2132,13 +2132,13 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="s1">&#39;predicates&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">query_json_cur_clean</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="s1">&#39;e1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;predicates is missing&#39;</span><span class="p">)</span>
-                    
+
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">query_json_cur_clean</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="s1">&#39;e1&#39;</span><span class="p">][</span><span class="s1">&#39;predicates&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ALL_predicates</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;predicates is not in the KG&#39;</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Predicates ok!&quot;</span><span class="p">)</span>
-                    
+
                 <span class="k">if</span> <span class="s1">&#39;nodes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">query_json_cur_clean</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;nodes is missing&#39;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -2152,7 +2152,7 @@
                                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;categories is not in the KG&#39;</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;node0 category OK!&quot;</span><span class="p">)</span>
-                    
+
                     <span class="k">if</span> <span class="s1">&#39;n1&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">query_json_cur_clean</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;n1 is missing&#39;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -2189,25 +2189,25 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_chatGPT</span><span class="p">(</span><span class="n">customized_input</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-3.5-turbo&quot;</span><span class="p">):</span>
     <span class="n">message</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">customized_input</span><span class="p">}]</span>
-    
+
     <span class="n">response</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
         <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="n">temperature</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
         <span class="n">messages</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
     <span class="p">)</span>
-    
+
     <span class="c1"># print(len(response.choices[0].message.content.split(&quot; &quot;)))</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_chatGPT4</span><span class="p">(</span><span class="n">customized_input</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">query_chatGPT</span><span class="p">(</span><span class="n">customized_input</span><span class="p">,</span> <span class="s2">&quot;gpt-4&quot;</span><span class="p">)</span>
-    
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_chatGPT</span><span class="p">(</span><span class="n">prompt_text</span><span class="p">):</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_chatGPT</span><span class="p">(</span><span class="n">prompt_text</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
-        
+
 
 <span class="k">def</span><span class="w"> </span><span class="nf">ask_chatGPT4</span><span class="p">(</span><span class="n">prompt_text</span><span class="p">):</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">query_chatGPT4</span><span class="p">(</span><span class="n">prompt_text</span><span class="p">)</span>
@@ -2234,7 +2234,7 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
 
     <span class="n">Translator_KP_info</span><span class="p">,</span><span class="n">APInames</span><span class="o">=</span> <span class="n">translator_kpinfo</span><span class="o">.</span><span class="n">get_translator_kp_info</span><span class="p">()</span>
-    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
+    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span>
     <span class="n">APInames</span><span class="p">,</span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
     <span class="k">return</span>  <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">Translator_KP_info</span></div>
 
@@ -2253,11 +2253,11 @@
             <span class="c1">#forplot_predicate.append(result[k][&#39;predicate&#39;].split(&#39;:&#39;)[1])</span>
             <span class="n">cur_sources_list</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">sources</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span>
-            
+
             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
                 <span class="n">cur_source</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;resource_id&#39;</span><span class="p">]</span>
                 <span class="n">cur_sources_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_source</span><span class="p">)</span>
-                
+
             <span class="n">forplot_Infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_sources_list</span><span class="p">)</span>
 
             <span class="n">forplot_predicate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;::&quot;</span> <span class="o">+</span> <span class="n">cur_sources_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -2269,14 +2269,14 @@
             <span class="c1">#forplot_predicate.append(result2[k][&#39;predicate&#39;].split(&#39;:&#39;)[1])</span>
             <span class="n">cur_sources_list</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">sources</span> <span class="o">=</span> <span class="n">result2</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;sources&#39;</span><span class="p">]</span>
-            
+
             <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
                 <span class="n">cur_source</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s1">&#39;resource_id&#39;</span><span class="p">]</span>
                 <span class="n">cur_sources_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_source</span><span class="p">)</span>
-                
+
             <span class="n">forplot_Infores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_sources_list</span><span class="p">)</span>
             <span class="n">forplot_predicate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result2</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;::&quot;</span> <span class="o">+</span>  <span class="n">cur_sources_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            
+
     <span class="n">forplot</span> <span class="o">=</span>  <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Subject&quot;</span><span class="p">:</span><span class="n">forplot_subject</span><span class="p">,</span> <span class="s2">&quot;Object&quot;</span><span class="p">:</span><span class="n">forplot_object</span><span class="p">,</span> <span class="s2">&quot;Predicates&quot;</span><span class="p">:</span><span class="n">forplot_predicate</span><span class="p">})</span>
 
     <span class="c1"># get preferred name</span>
@@ -2288,14 +2288,14 @@
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_subject_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_subject_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>   
+            <span class="n">new_subject_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="n">new_object_name</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">object_name</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
             <span class="n">new_object_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_object_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>         
+            <span class="n">new_object_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
     <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Subject_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_subject_name</span>
     <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Object_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_object_name</span>
 
@@ -2305,7 +2305,7 @@
     <span class="c1"># if check1 is equal to check2, then drop one of them</span>
     <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;check1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Subject_name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;::&#39;</span> <span class="o">+</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Predicates&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;::&#39;</span> <span class="o">+</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Object_name&#39;</span><span class="p">]</span>
     <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;check2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Object_name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;::&#39;</span> <span class="o">+</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Predicates&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;::&#39;</span> <span class="o">+</span> <span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;Subject_name&#39;</span><span class="p">]</span>
-    
+
     <span class="c1"># check if check1 is equal to check2, if so, drop one of them</span>
     <span class="n">to_be_dropped</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">check1_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">forplot</span><span class="p">[</span><span class="s1">&#39;check1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
@@ -2325,7 +2325,7 @@
     <span class="n">forplot</span> <span class="o">=</span> <span class="n">forplot</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">forplot</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject_name&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object_name&#39;</span><span class="p">,</span> <span class="n">edge_attr</span><span class="o">=</span><span class="p">[</span> <span class="s1">&#39;Predicates&#39;</span><span class="p">],</span> <span class="n">create_using</span><span class="o">=</span><span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">)</span>
-    
+
     <span class="n">graph_style</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;selector&#39;</span><span class="p">:</span> <span class="s1">&#39;node[id]&#39;</span><span class="p">,</span>
                              <span class="s1">&#39;style&#39;</span><span class="p">:</span> <span class="p">{</span>
                                   <span class="s1">&#39;font-family&#39;</span><span class="p">:</span> <span class="s1">&#39;Arial&#39;</span><span class="p">,</span>
