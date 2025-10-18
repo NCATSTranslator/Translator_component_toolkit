@@ -35,6 +35,22 @@
   <section id="module-TCT.TCT">
 <span id="tct-utility-functions"></span><h1>TCT utility functions<a class="headerlink" href="#module-TCT.TCT" title="Link to this heading">¶</a></h1>
 <dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">ID_convert_to_preferred_name_nodeNormalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#ID_convert_to_preferred_name_nodeNormalizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a list of CURIEs to their preferred names using NodeNorm.
+Arg:</p>
+<blockquote>
+<div><p>id_list: list of CURIEs to be converted</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Returns:</dt><dd><p>dic_id_map: dictionary mapping CURIEs to their preferred names</p>
+</dd>
+<dt>Example:</dt><dd><p>dic_id_map = ID_convert_to_preferred_name_nodeNormalizer([“NCBIGene:1234”, “NCBIGene:5678”])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT.Neiborhood_finder">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Neiborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Neiborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Neiborhood_finder" title="Link to this definition">¶</a></dt>
 <dd><p>This function is used to find the neighborhood of a given input node with intermediate categories.</p>
@@ -59,7 +75,7 @@ API_predicates = API_predicates)</p>
 <dt class="sig sig-object py" id="TCT.TCT.Path_finder">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Path_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node1_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Path_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Path_finder" title="Link to this definition">¶</a></dt>
 <dd><p>This function is used to find paths between two input nodes with intermediate categories.</p>
-<p>input_node2 (str): The second input node, can be a gene name, protein name, or any other identifier.
+<p>input_node2 (str): The second input node - should be a CURIE id.
 intermediate_categories (list): A list of intermediate categories to be used in the path finding process.</p>
 <p>input_node1_id (str): The curie id of the first input node.
 input_node2_id (str): The curie id of the second input node.
@@ -71,7 +87,7 @@ result_ranked_by_primary_infores1 (DataFrame): The ranked results for the first 
 result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second
 ————–
 Example:
-&gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(‘WNT7B’, ‘NPM1’, [‘biolink:Gene’, ‘biolink:Protein’])
+&gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(‘NCBIGene:7477’, ‘NCBIGene:4869’, [‘biolink:Gene’, ‘biolink:Protein’]) # Input genes are WNT7B, NPM1
 ————–</p>
 </dd></dl>
 
@@ -207,6 +223,7 @@ obj_list = [“biolink:Gene”, “biolink:Disease”]</p>
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TCT utility functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer"><code class="docutils literal notranslate"><span class="pre">ID_convert_to_preferred_name_nodeNormalizer()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Neiborhood_finder"><code class="docutils literal notranslate"><span class="pre">Neiborhood_finder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Path_finder"><code class="docutils literal notranslate"><span class="pre">Path_finder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.format_query_json"><code class="docutils literal notranslate"><span class="pre">format_query_json()</span></code></a></li>

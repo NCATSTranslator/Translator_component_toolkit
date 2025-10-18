@@ -61,7 +61,7 @@
 <span class="sd">    return_synonyms : bool</span>
 <span class="sd">        If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Other arguments to `lookup`</span>
+<span class="sd">        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type=&quot;biolink:Disease` indicates that all returned results should be diseases. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>

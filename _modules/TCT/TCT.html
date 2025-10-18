@@ -611,7 +611,18 @@
 <span class="c1">#    return(Gene_id_map)</span>
 
 <span class="c1"># Used. Jan 5, 2024</span>
+<div class="viewcode-block" id="ID_convert_to_preferred_name_nodeNormalizer">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ID_convert_to_preferred_name_nodeNormalizer</span><span class="p">(</span><span class="n">id_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Convert a list of CURIEs to their preferred names using NodeNorm.</span>
+<span class="sd">    Arg:</span>
+<span class="sd">        id_list: list of CURIEs to be converted</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        dic_id_map: dictionary mapping CURIEs to their preferred names</span>
+<span class="sd">    Example:</span>
+<span class="sd">        dic_id_map = ID_convert_to_preferred_name_nodeNormalizer([&quot;NCBIGene:1234&quot;, &quot;NCBIGene:5678&quot;])</span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">dic_id_map</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">unrecoglized_ids</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">recoglized_ids</span> <span class="o">=</span> <span class="p">[]</span>
@@ -659,7 +670,8 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unrecoglized_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NodeNorm does not know about these identifiers: &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unrecoglized_ids</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">dic_id_map</span>
+    <span class="k">return</span> <span class="n">dic_id_map</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">visulization_one_hop_ranking_input_as_list</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span><span class="n">result_parsed</span> <span class="p">,</span>
@@ -1060,6 +1072,80 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">Neighborhood_finder_mcp</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function is used to find the neighborhood connections of a given input node with the specified categories. The categories defined must be a predefined  biolink category.</span>
+
+<span class="sd">    --------------</span>
+<span class="sd">    Parameters:</span>
+<span class="sd">    input_node (str): The input node, can be a gene name, protein name, or any other identifier.</span>
+<span class="sd">    node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.</span>
+<span class="sd">    </span>
+<span class="sd">    --------------</span>
+<span class="sd">    Returns:</span>
+<span class="sd">    result: the ranked results of the query for the input node.</span>
+
+<span class="sd">    --------------</span>
+<span class="sd">    Example:</span>
+<span class="sd">    &gt;&gt;&gt; result = Neighborhood_finder_mcp(&#39;Ovarian cancer&#39;,</span>
+<span class="sd">                                        node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;])</span>
+<span class="sd">    --------------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_metakg</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_kpinfo</span>
+
+    <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">Translator_KP_info</span><span class="o">=</span> <span class="n">translator_metakg</span><span class="o">.</span><span class="n">load_translator_resources</span><span class="p">()</span>
+    <span class="n">All_predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Predicate&#39;</span><span class="p">]))</span>
+    <span class="n">All_categories</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]))</span><span class="o">+</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">])))))</span>
+    <span class="n">API_withMetaKG</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;API&#39;</span><span class="p">]))</span>
+
+        <span class="c1"># generate a dictionary of API and its predicates</span>
+    <span class="n">API_predicates</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="n">API_withMetaKG</span><span class="p">:</span>
+        <span class="n">API_predicates</span><span class="p">[</span><span class="n">api</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;API&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">api</span><span class="p">][</span><span class="s1">&#39;Predicate&#39;</span><span class="p">]))</span>
+        
+
+    <span class="c1"># Step 1: Resolve the input node to get its curie id and categories</span>
+    <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node</span><span class="p">)</span>
+    <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">curie</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">input_node_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
+
+    <span class="c1"># Step 2: Select predicates and APIs based on the intermediate categories</span>
+    <span class="n">sele_predicates</span><span class="p">,</span> <span class="n">sele_APIs</span><span class="p">,</span> <span class="n">API_URLs</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">,</span>
+                                                                <span class="n">node2_categories</span><span class="p">,</span>
+                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
+
+    <span class="c1"># Step 3: Format the query JSON for the input node</span>
+    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">([</span><span class="n">input_node_id</span><span class="p">],</span> <span class="p">[],</span>
+                                   <span class="p">[</span><span class="n">input_node_category</span><span class="p">],</span>
+                                   <span class="n">node2_categories</span><span class="p">,</span>
+                                   <span class="n">sele_predicates</span><span class="p">)</span>
+
+    <span class="c1"># Step 4: Query the APIs in parallel</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span>
+                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span>
+                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
+                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
+                             <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">))</span>
+    <span class="n">result_parsed</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="c1"># Step 7: Ranking the results. This ranking method is based on the number of unique</span>
+        <span class="c1"># primary infores. It can only be used to rank the results with one defined node.</span>
+    <span class="n">result_ranked_by_primary_infores1</span> <span class="o">=</span> <span class="n">rank_by_primary_infores</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span> <span class="n">input_node_id</span><span class="p">)</span>   <span class="c1"># input_node1_id is the curie id of the</span>
+    <span class="n">ranked_result</span> <span class="o">=</span> <span class="n">visulization_one_hop_ranking</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> <span class="n">result_parsed</span><span class="p">,</span> 
+                                <span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="n">input_query</span> <span class="o">=</span> <span class="n">input_node_id</span><span class="p">,</span> 
+                                <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ranked_result</span>
+
 <div class="viewcode-block" id="Neiborhood_finder">
 <a class="viewcode-back" href="../../TCT.html#TCT.TCT.Neiborhood_finder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">Neiborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[]):</span>
@@ -1068,7 +1154,7 @@
 
 <span class="sd">    --------------</span>
 <span class="sd">    Parameters:</span>
-<span class="sd">    input_node (str): The input node, can be a gene name, protein name, or any other identifier.</span>
+<span class="sd">    input_node (str): The input node - should be a CURIE id.</span>
 <span class="sd">    node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.</span>
 <span class="sd">    APInames (dict): A dictionary containing the names of the APIs to be used.</span>
 <span class="sd">    metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.</span>
@@ -1084,7 +1170,7 @@
 
 <span class="sd">    --------------</span>
 <span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder(&#39;Ovarian cancer&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
 <span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
 <span class="sd">                                                                                            APInames = APInames,</span>
 <span class="sd">                                                                                            metaKG = metaKG,</span>
@@ -1092,11 +1178,12 @@
 <span class="sd">    --------------</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
 
+    <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node</span>
     <span class="c1"># Step 1: Resolve the input node to get its curie id and categories</span>
-    <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node</span><span class="p">)</span>
-    <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">curie</span>
+    <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1138,8 +1225,8 @@
 
 <span class="sd">    --------------</span>
 <span class="sd">    Parameters:</span>
-<span class="sd">    input_node1 (str): The first input node, can be a gene name, protein name, or any other identifier.</span>
-<span class="sd">    input_node2 (str): The second input node, can be a gene name, protein name, or any other identifier.</span>
+<span class="sd">    input_node1 (str): The first input node - should be a CURIE id.</span>
+<span class="sd">    input_node2 (str): The second input node - should be a CURIE id.</span>
 <span class="sd">    intermediate_categories (list): A list of intermediate categories to be used in the path finding process.</span>
 
 <span class="sd">    --------------</span>
@@ -1155,15 +1242,17 @@
 <span class="sd">    result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second</span>
 <span class="sd">    --------------</span>
 <span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(&#39;WNT7B&#39;, &#39;NPM1&#39;, [&#39;biolink:Gene&#39;, &#39;biolink:Protein&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(&#39;NCBIGene:7477&#39;, &#39;NCBIGene:4869&#39;, [&#39;biolink:Gene&#39;, &#39;biolink:Protein&#39;]) # Input genes are WNT7B, NPM1</span>
 <span class="sd">    --------------</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
-    <span class="n">input_node1_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node1</span><span class="p">)</span>
-    <span class="n">input_node1_id</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">curie</span>
+    <span class="n">input_node1_id</span> <span class="o">=</span> <span class="n">input_node1</span>
+    <span class="n">input_node2_id</span> <span class="o">=</span> <span class="n">input_node2</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">)</span>
+    <span class="n">normalized_node_dict</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">([</span><span class="n">input_node1_id</span><span class="p">,</span> <span class="n">input_node2_id</span><span class="p">])</span>
+    <span class="n">input_node1_info</span> <span class="o">=</span> <span class="n">normalized_node_dict</span><span class="p">[</span><span class="n">input_node1</span><span class="p">]</span>
     <span class="n">input_node1_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node1_id</span><span class="p">]</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span>
@@ -1172,8 +1261,7 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span>
 
-    <span class="n">input_node2_info</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">input_node2</span><span class="p">)</span>
-    <span class="n">input_node2_id</span> <span class="o">=</span> <span class="n">input_node2_info</span><span class="o">.</span><span class="n">curie</span>
+    <span class="n">input_node2_info</span> <span class="o">=</span> <span class="n">normalized_node_dict</span><span class="p">[</span><span class="n">input_node2_id</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">input_node2_id</span><span class="p">)</span>
     <span class="n">input_node2_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node2_id</span><span class="p">]</span>
 
