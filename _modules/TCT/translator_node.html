@@ -33,6 +33,34 @@
   <h1>Source code for TCT.translator_node</h1><div class="highlight"><pre>
 <span></span><span class="c1"># translator graph node</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+
+<div class="viewcode-block" id="TranslatorAttribute">
+<a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorAttribute">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TranslatorAttribute</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that represents Translator node or edge attributes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">attribute_type_id</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="n">value</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span>
+
+    <span class="n">value_type_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">original_attribute_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">value_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">attribute_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
 
 <div class="viewcode-block" id="TranslatorNode">
 <a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorNode">[docs]</a>
@@ -60,6 +88,12 @@
     <span class="n">curie_synonyms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="s2">&quot;list of synonymous CURIE ids (in the same order as synonyms)&quot;</span>
 
+    <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TranslatorAttribute</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;List of node attributes (which are key-value pairs.&quot;</span>
+
+    <span class="n">taxa</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="s2">&quot;List of taxa for the given node (i.e. &#39;NCBITaxon:9606&#39;)&quot;</span>
+
     <span class="c1"># identifier is just another way to access/set the CURIE.</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -69,7 +103,32 @@
     <span class="nd">@identifier</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;identifier is the CURIE id for the node.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">curie</span> <span class="o">=</span> <span class="n">i</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">curie</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">categories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">types</span>
+
+<div class="viewcode-block" id="TranslatorNode.from_dict">
+<a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorNode.from_dict">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a TranslatorNode object from a data dict.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;curie&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The input data dict must have a &quot;curie&quot; key.&#39;</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;taxa&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">taxa</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;taxa&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">return_synonyms</span> <span class="ow">and</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+</div>
+
+
 
 
 <div class="viewcode-block" id="TranslatorEdge">
@@ -84,10 +143,14 @@
     <span class="s2">&quot;The subject is a CURIE id for a node.&quot;</span>
 
     <span class="nb">object</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;The object is a CURIE id for a node.&quot;</span>
+    <span class="s2">&quot;The obj (object) is a CURIE id for a node.&quot;</span>
 
     <span class="n">predicate</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Predicates&quot;</span></div>
+    <span class="s2">&quot;Predicates&quot;</span>
+
+    <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TranslatorAttribute</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 </pre></div>
 

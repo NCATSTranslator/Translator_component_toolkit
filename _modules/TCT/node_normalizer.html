@@ -49,6 +49,7 @@
 <a class="viewcode-back" href="../../node_normalizer.html#TCT.node_normalizer.get_normalized_nodes">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_normalized_nodes</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">return_equivalent_identifiers</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper around the `get_normalized_nodes` api endpoint. Given a CURIE or a list of CURIEs, this returns either a single TranslatorNode or a dict of CURIE ids to TranslatorNodes.</span>
@@ -59,8 +60,10 @@
 <span class="sd">        Query CURIE</span>
 <span class="sd">    return_equivalent_identifiers : bool</span>
 <span class="sd">        Whether or not to return a list of equivalent identifiers along with the TranslatorNode. Default: False</span>
+<span class="sd">    mode: str</span>
+<span class="sd">        &#39;get&#39; or &#39;post&#39;. Default: &#39;get&#39;</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Other arguments to `get_normalized_nodes` (e.g. `conflate` for gene-protein conflation, `drug_chemical_conflate` for drug-chemical conflation)</span>
+<span class="sd">        Other arguments to `get_normalized_nodes` (e.g. `conflate` for gene-protein conflation, `drug_chemical_conflate` for drug-chemical conflation - see https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -75,7 +78,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">&#39;get_normalized_nodes&#39;</span><span class="p">)</span>
     <span class="c1"># default parameters: true for gene-protein conflation, false for drug-chemical conflation</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;curie&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;post&#39;</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;curies&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;curie&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -83,6 +89,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">normalized_dict</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">normalized_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">continue</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="s1">&#39;identifier&#39;</span><span class="p">])</span>
                 <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]:</span>
                     <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">][</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
@@ -105,6 +114,47 @@
             <span class="k">return</span> <span class="n">normalized_dict</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span><span class="s1">&#39;Response from server had error, code &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="get_preferred_names">
+<a class="viewcode-back" href="../../node_normalizer.html#TCT.node_normalizer.get_preferred_names">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_preferred_names</span><span class="p">(</span><span class="n">id_list</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">batch_limit</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Converts a list of CURIEs to their preferred names using NodeNorm. This calls get_normalized_nodes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    query : list</span>
+<span class="sd">        Query CURIE</span>
+<span class="sd">    batch_limit: int</span>
+<span class="sd">        Limit for how many IDs to use in one query. Default: 500</span>
+<span class="sd">    **kwargs</span>
+<span class="sd">        Other arguments to `get_normalized_nodes` (e.g. `conflate` for gene-protein conflation, `drug_chemical_conflate` for drug-chemical conflation - see https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Returns a dict mapping CURIE ids to preferred names.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name_map</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">unmapped_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_list</span><span class="p">),</span> <span class="n">batch_limit</span><span class="p">):</span>
+        <span class="n">id_sublist</span> <span class="o">=</span> <span class="n">id_list</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span> <span class="o">+</span> <span class="n">batch_limit</span><span class="p">]</span>
+        <span class="n">normalized_nodes</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">id_sublist</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">curie</span> <span class="ow">in</span> <span class="n">id_sublist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">curie</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">normalized_nodes</span> <span class="ow">or</span> <span class="n">normalized_nodes</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">unmapped_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curie</span><span class="p">)</span>
+                <span class="n">name_map</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="o">=</span> <span class="n">curie</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="n">normalized_nodes</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span><span class="o">.</span><span class="n">label</span>
+                <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">curie</span> <span class="o">+</span> <span class="s2">&quot;: no preferred name&quot;</span><span class="p">)</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="n">curie</span>
+                <span class="n">name_map</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unmapped_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NodeNorm does not know about these identifiers: &quot;</span> <span class="o">+</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unmapped_ids</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">name_map</span></div>
+
 
 
 <div class="viewcode-block" id="ID_convert_to_preferred_name_nodeNormalizer">

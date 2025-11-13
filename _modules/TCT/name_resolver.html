@@ -61,7 +61,7 @@
 <span class="sd">    return_synonyms : bool</span>
 <span class="sd">        If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type=&quot;biolink:Disease` indicates that all returned results should be diseases. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
+<span class="sd">        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type=&quot;biolink:Disease&quot;` indicates that all returned results should be diseases. `only_taxa=&#39;NCBITaxon:9606` indicates that only Homo sapiens results should be returned. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -71,7 +71,9 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; lookup(&#39;AML&#39;)</span>
 <span class="sd">    TranslatorNode(curie=&#39;MONDO:0018874&#39;, label=&#39;acute myeloid leukemia&#39;, types=[&#39;biolink:Disease&#39;, &#39;biolink:DiseaseOrPhenotypicFeature&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;], synonyms=None, curie_synonyms=None)</span>
-
+<span class="sd">    &gt;&gt;&gt; lookup(&#39;IFNG&#39;, only_taxa=&#39;NCBITaxon:9606&#39;)</span>
+<span class="sd">    TranslatorNode(curie=&#39;NCBIGene:3458&#39;, label=&#39;IFNG&#39;, types=[&#39;biolink:Gene&#39;, &#39;biolink:GeneOrGeneProduct&#39;, &#39;biolink:GenomicEntity&#39;, &#39;biolink:ChemicalEntityOrGeneOrGeneProduct&#39;, &#39;biolink:PhysicalEssence&#39;, &#39;biolink:OntologyClass&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;, &#39;biolink:PhysicalEssenceOrOccurrent&#39;, &#39;biolink:MacromolecularMachineMixin&#39;, &#39;biolink:Protein&#39;, &#39;biolink:GeneProductMixin&#39;, &#39;biolink:Polypeptide&#39;, &#39;biolink:ChemicalEntityOrProteinOrPolypeptide&#39;], synonyms=None, curie_synonyms=None, attributes=None, taxa=[&#39;NCBITaxon:9606&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; lookup(&#39;AML&#39;, return_top_response=False, biolink_type=&quot;biolink:Disease&quot;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">&#39;lookup&#39;</span><span class="p">)</span>
     <span class="c1"># set autocomplete to be false by default</span>
@@ -90,20 +92,15 @@
                     <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
                     <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;taxa&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="n">n</span><span class="o">.</span><span class="n">taxa</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;taxa&#39;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">return_synonyms</span> <span class="ow">and</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
                     <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
                 <span class="k">return</span> <span class="n">n</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">all_nodes</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-                    <span class="n">curie</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">]</span>
-                    <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="p">(</span><span class="n">curie</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                        <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                        <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="n">return_synonyms</span> <span class="ow">and</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                        <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
+                    <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">)</span>
                     <span class="n">all_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">all_nodes</span>
     <span class="k">else</span><span class="p">:</span>
@@ -138,14 +135,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">all_nodes</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">curie</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">]</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="p">(</span><span class="n">curie</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s1">&#39;preferred_name&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;preferred_name&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s1">&#39;names&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;names&#39;</span><span class="p">]</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">)</span>
                 <span class="n">all_nodes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span>
             <span class="k">return</span> <span class="n">all_nodes</span>
     <span class="k">else</span><span class="p">:</span>
@@ -178,7 +168,7 @@
 <span class="sd">    return_synonyms : bool</span>
 <span class="sd">        If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Other arguments to `bulk-lookup`</span>
+<span class="sd">        Other arguments to `bulk-lookup`.  Some possible arguments: `autocomplete=True` indicates that the query string can be incomplete. `biolink_types=[&quot;biolink:Disease&quot;, &quot;biolink:Gene&quot;]` indicates that all returned results should be diseases or genes. `only_taxa=&#39;NCBITaxon:9606` indicates that only Homo sapiens results should be returned.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -208,13 +198,7 @@
                     <span class="n">nodes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[])</span>
                     <span class="n">translator_nodes</span> <span class="o">=</span> <span class="p">[]</span>
                     <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span> 
-                        <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">])</span>
-                        <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                            <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                            <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
-                        <span class="k">if</span> <span class="n">return_synonyms</span> <span class="ow">and</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                            <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
+                        <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">)</span>
                         <span class="n">translator_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">return_top_response</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">translator_nodes</span><span class="p">:</span>

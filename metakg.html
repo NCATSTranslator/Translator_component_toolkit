@@ -56,7 +56,7 @@
 </dd>
 <dt><strong>return_synonyms</strong><span class="classifier">bool</span></dt><dd><p>If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</p>
 </dd>
-<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>bulk-lookup</cite></p>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>bulk-lookup</cite>.  Some possible arguments: <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_types=[“biolink:Disease”, “biolink:Gene”]</cite> indicates that all returned results should be diseases or genes. <cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned.</p>
 </dd>
 </dl>
 </dd>
@@ -87,7 +87,7 @@
 </dd>
 <dt><strong>return_synonyms</strong><span class="classifier">bool</span></dt><dd><p>If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</p>
 </dd>
-<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>lookup</cite>. Some possible arguments: <cite>limit=20</cite> would limit the results to 20. <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_type=”biolink:Disease</cite> indicates that all returned results should be diseases. For more examples, see [this](<a class="reference external" href="https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get">https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get</a>).</p>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>lookup</cite>. Some possible arguments: <cite>limit=20</cite> would limit the results to 20. <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_type=”biolink:Disease”</cite> indicates that all returned results should be diseases. <cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned. For more examples, see [this](<a class="reference external" href="https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get">https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get</a>).</p>
 </dd>
 </dl>
 </dd>
@@ -100,6 +100,9 @@
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;AML&#39;</span><span class="p">)</span>
 <span class="go">TranslatorNode(curie=&#39;MONDO:0018874&#39;, label=&#39;acute myeloid leukemia&#39;, types=[&#39;biolink:Disease&#39;, &#39;biolink:DiseaseOrPhenotypicFeature&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;], synonyms=None, curie_synonyms=None)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;IFNG&#39;</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">&#39;NCBITaxon:9606&#39;</span><span class="p">)</span>
+<span class="go">TranslatorNode(curie=&#39;NCBIGene:3458&#39;, label=&#39;IFNG&#39;, types=[&#39;biolink:Gene&#39;, &#39;biolink:GeneOrGeneProduct&#39;, &#39;biolink:GenomicEntity&#39;, &#39;biolink:ChemicalEntityOrGeneOrGeneProduct&#39;, &#39;biolink:PhysicalEssence&#39;, &#39;biolink:OntologyClass&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;, &#39;biolink:PhysicalEssenceOrOccurrent&#39;, &#39;biolink:MacromolecularMachineMixin&#39;, &#39;biolink:Protein&#39;, &#39;biolink:GeneProductMixin&#39;, &#39;biolink:Polypeptide&#39;, &#39;biolink:ChemicalEntityOrProteinOrPolypeptide&#39;], synonyms=None, curie_synonyms=None, attributes=None, taxa=[&#39;NCBITaxon:9606&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;AML&#39;</span><span class="p">,</span> <span class="n">return_top_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s2">&quot;biolink:Disease&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
