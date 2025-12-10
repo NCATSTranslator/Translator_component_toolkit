@@ -45,12 +45,23 @@
 <span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;https://name-lookup.ci.transltr.io/&#39;</span>
 <span class="sd">&quot;&quot;&quot;This is the root URL for the API.&quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="status">
+<a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.status">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the status of the Name Resolver API.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">URL</span> <span class="o">+</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
+
+
 
 <div class="viewcode-block" id="lookup">
 <a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.lookup">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">lookup</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">return_top_response</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lookup</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">return_top_response</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A wrapper around the `lookup` api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name. </span>
+<span class="sd">    A wrapper around the `lookup` api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -60,6 +71,8 @@
 <span class="sd">        If true, this returns only the top response. If false, this returns a list of all responses. Default: True</span>
 <span class="sd">    return_synonyms : bool</span>
 <span class="sd">        If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</span>
+<span class="sd">    limit : int</span>
+<span class="sd">        The number of results to return.</span>
 <span class="sd">    **kwargs</span>
 <span class="sd">        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type=&quot;biolink:Disease&quot;` indicates that all returned results should be diseases. `only_taxa=&#39;NCBITaxon:9606` indicates that only Homo sapiens results should be returned. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
 
@@ -79,24 +92,14 @@
     <span class="c1"># set autocomplete to be false by default</span>
     <span class="k">if</span> <span class="s1">&#39;autocomplete&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;autocomplete&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;string&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="s1">&#39;limit&#39;</span><span class="p">:</span> <span class="n">limit</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s1">&#39;No matching CURIE found for the given string &#39;</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">return_top_response</span><span class="p">:</span>
-                <span class="n">node</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="s1">&#39;taxa&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">taxa</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;taxa&#39;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="n">return_synonyms</span> <span class="ow">and</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">node</span><span class="p">:</span>
-                    <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">node</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
-                <span class="k">return</span> <span class="n">n</span>
+                <span class="k">return</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">return_synonyms</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">all_nodes</span> <span class="o">=</span> <span class="p">[]</span>
                 <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
@@ -112,7 +115,7 @@
 <a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.synonyms">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">synonyms</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A wrapper around the `synonyms` api endpoint. Given a query string, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query. </span>
+<span class="sd">    A wrapper around the `synonyms` api endpoint. Given a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -135,8 +138,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">all_nodes</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">)</span>
-                <span class="n">all_nodes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="p">:</span>
+                    <span class="c1"># If node is empty or None.</span>
+                    <span class="n">all_nodes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">all_nodes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">all_nodes</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span><span class="s1">&#39;Response from server had error, code &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">))</span></div>
@@ -155,7 +161,7 @@
 <a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.batch_lookup">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">batch_lookup</span><span class="p">(</span><span class="n">strings</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">return_top_response</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    A wrapper around the `bulk-lookup` api endpoint. Given a list of query strings, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name. </span>
+<span class="sd">    A wrapper around the `bulk-lookup` api endpoint. Given a list of query strings, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -197,7 +203,7 @@
                 <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
                     <span class="n">nodes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[])</span>
                     <span class="n">translator_nodes</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span> 
+                    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
                         <span class="n">n</span> <span class="o">=</span> <span class="n">TranslatorNode</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">)</span>
                         <span class="n">translator_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">return_top_response</span><span class="p">:</span>
