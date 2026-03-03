@@ -1,17 +1,27 @@
 import requests
 import json
+from dataclasses import dataclass as _dataclass
 import pandas as pd
 import  seaborn as sns
 import matplotlib.pyplot as plt
-import ipycytoscape
-import networkx as nx
 import numpy as np
 import openai
 from . import name_resolver
 
 # plt.switch_backend('module://ipykernel.pylab.backend_inline')
 
-from IPython.display import display
+from .visualization import (
+    HeatmapConfig as HeatmapConfig,
+    plot_heatmap as plot_heatmap,
+    plot_heatmap_ui as plot_heatmap_ui,
+    plot_path_bar as plot_path_bar,
+    visulization_one_hop_ranking as visulization_one_hop_ranking,
+    visulization_one_hop_ranking_input_as_list as visulization_one_hop_ranking_input_as_list,
+    plot_graph_by_predicates as plot_graph_by_predicates,
+    plot_graph_by_infores as plot_graph_by_infores,
+    plot_graph_by_API as plot_graph_by_API,
+    visulize_path as visulize_path,
+)
 
 __all__ = [
     'TCT_help',
@@ -49,7 +59,13 @@ __all__ = [
     'query_chatGPT4',
     'load_json_template',
     'extract_json',
-    'TRAPI_json_validation'
+    'TRAPI_json_validation',
+    'HeatmapConfig',
+    'ChatGPTConfig',
+    'format_id',
+    'get_Translator_API_URL',
+    'get_similar_category',
+    'get_similar_predicate',
 ]
 
 
@@ -94,135 +110,12 @@ def get_SmartAPI_Translator_KP_info():
     Get the SmartAPI Translator KP info from the smart-api.info API.
     Returns a DataFrame with the SmartAPI Translator KP info.
 
-
-
     Examples
     --------
-    >>> Translator_KP_info,APInames = get_SmartAPI_Translator_KP_info('AML')
-
+    >>> Translator_KP_info,APInames = get_SmartAPI_Translator_KP_info()
     """
-
-    import requests
-    import pandas as pd
-
-    # several APIs should be excluded:
-    #https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1
-
-    # Get x-bte smartapi specs
-    url = "https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&size=1000&sort=_seq_no&raw=1&fields=paths,servers,tags,components.x-bte*,info,_meta"
-    response = requests.get(url)
-    try:
-        response.raise_for_status()
-    except Exception:
-        print(f"error downloading smartapi specs: {response.status_code}")
-        exit()
-
-    content = json.loads(response.content)
-    smartapis = content["hits"]
-
-    id_list = []
-    title_list = []
-    prod_url_list = []
-    ci_url_list = []
-    test_url_list = []
-    for api in smartapis:
-
-
-        ci_found = False
-        test_found = False
-        prod_found = False
-        for i in range(len(api['servers'])):
-
-            server = api['servers'][i]
-            if 'x-maturity' not in server:
-                print(f"Skipping server without x-maturity: {server}")
-
-            else:
-                if server['x-maturity'] == 'production':
-                    # if prod_ur is not ars-prod.transltr.io
-                    if server['url'] == 'https://ars-prod.transltr.io':
-                        prod_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if prod_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            prod_url = server['url'] + 'query/'
-                        else:
-                            # if prod_url does not end with /, add '/query/' to the end
-                            prod_url = server['url'] + '/query/'
-
-                    prod_found = True
-
-                if server['x-maturity'] == 'staging' or server['x-maturity'] == 'development':
-                    # if ci_url is not ars.ci.transltr.io
-                    if server['url'] == 'https://ars.ci.transltr.io':
-                        ci_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if ci_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            ci_url = server['url'] + 'query/'
-                        else:
-                            # if ci_url does not end with /, add '/query/' to the end
-                            ci_url = server['url'] + '/query/'
-                    ci_found = True
-
-                if server['x-maturity'] == 'testing':
-                    # if test_url is not ars-test.transltr.io
-                    if server['url'] == 'https://ars.test.transltr.io':
-                        test_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if test_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            test_url = server['url'] + 'query/'
-                        else:
-                            # if test_url does not end with /, add '/query/' to the end
-                            test_url = server['url'] + '/query/'
-
-                    test_found = True
-
-        if not (prod_found or ci_found or test_found):
-            print(api['info']['title'])
-            print(f"Skipping server without production, staging or testing: {server}")
-        else:
-            id_list.append('https://smart-api.info/ui/'+api['_id'])
-            title_list.append(api['info']['title'])
-            if prod_found:
-                prod_url_list.append(prod_url)
-            else:
-                prod_url = prod_url_list.append(None)
-
-            if ci_found:
-                ci_url_list.append(ci_url)
-            else:
-                ci_url = ci_url_list.append(None)
-            if test_found:
-                test_url_list.append(test_url)
-            else:
-                test_url = test_url_list.append(None)
-
-    # write all the smartapis to a dataframe
-
-    smartapi_df = pd.DataFrame({
-        'id': id_list,
-        'title': title_list,
-        'prod_url': prod_url_list,
-        'ci_url': ci_url_list,
-        'test_url': test_url_list,
-    })
-    #smartapi_df = smartapi_df.set_index('id')
-
-    # remove the excluded APIs from the dataframe
-    #excluded_APIs = ['https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1',#RaMP]
-
-    #smartapi_df = smartapi_df[~smartapi_df['id'].isin(excluded_APIs)]
-
-    API_names = {}
-    for i in range(len(smartapi_df)):
-        if prod_url_list[i] is not None:
-            #API_names[smartapi_df['title'][i]] = smartapi_df['prod_url'][i] + 'query/'
-            API_names[smartapi_df['title'].values[i]] = prod_url_list[i]
-        else:
-            API_names[smartapi_df['title'].values[i]] = ci_url_list[i]
-    return smartapi_df, API_names
+    from . import translator_kpinfo
+    return translator_kpinfo.get_translator_kp_info()
 
 # used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def list_Translator_APIs():
@@ -573,347 +466,16 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list):
     Example:
         dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(["NCBIGene:1234", "NCBIGene:5678"])
     '''
-    dic_id_map = {}
-    unrecoglized_ids = []
-    recoglized_ids = []
-    # To convert a CURIE to a preferred name, you don't need NameLookup at all -- NodeNorm can
-    # do this by itself!
-    NODENORM_BASE_URL = "https://nodenorm.transltr.io"  # Adjust this if you need NodeNorm TEST, CI or DEV.
-    NODENORM_BATCH_LIMIT = 900                          # Adjust this if you start getting errors from NodeNorm.
-    NODENORM_GENE_PROTEIN_CONFLATION = True             # Change to False if you don't want gene/protein conflation.
-    NODENORM_DRUG_CHEMICAL_CONFLATION = False           # Change to True if you want drug/chemical conflation.
+    from . import node_normalizer
+    return node_normalizer.ID_convert_to_preferred_name_nodeNormalizer(id_list)
 
-    # split id_list into batches of at most NODENORM_BATCH_LIMIT entries
-    for index in range(0, len(id_list), NODENORM_BATCH_LIMIT):
-        id_sublist = id_list[index:index + NODENORM_BATCH_LIMIT]
 
-        # print(f"id_sublist: {id_sublist}")
+def _convert_ids_to_names(id_list):
+    """Return preferred names for CURIEs as a list, falling back to original IDs."""
+    name_map = ID_convert_to_preferred_name_nodeNormalizer(id_list)
+    return [name_map.get(curie, curie) for curie in id_list]
 
-        # Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get
-        response = requests.post(NODENORM_BASE_URL + '/get_normalized_nodes', json={
-            "curies": id_sublist,
-            "description": False,   # Change to True if you want descriptions from any identifiers we know about.
-            "conflate": NODENORM_GENE_PROTEIN_CONFLATION,
-            "drug_chemical_conflate": NODENORM_DRUG_CHEMICAL_CONFLATION,
-        })
-        if not response.ok:
-            raise RuntimeError("Error: NodeNorm request failed with status code " + str(response.status_code))
 
-        results = response.json()
-        for curie in id_sublist:
-            if curie in results and results[curie]:
-                identifier = results[curie].get('id', {})
-                if 'identifier' in identifier and identifier['identifier'] != curie:
-                    recoglized_ids.append(curie)
-                    #print(f"NodeNorm normalized {curie} to {identifier['identifier']} " +
-                    #      f"with gene-protein conflation {NODENORM_GENE_PROTEIN_CONFLATION} and " +
-                    #      f"with drug-chemical conflation {NODENORM_DRUG_CHEMICAL_CONFLATION}.")
-                label = identifier.get('label')
-                dic_id_map[curie] = label
-                if not label:
-                    print(curie + ": no preferred name")
-                    dic_id_map[curie] = curie
-            else:
-                unrecoglized_ids.append(curie)
-
-                dic_id_map[curie] = curie
-    if len(unrecoglized_ids) > 0:
-        print("NodeNorm does not know about these identifiers: " + ",".join(unrecoglized_ids))
-
-    return dic_id_map
-
-
-def visulization_one_hop_ranking_input_as_list(result_ranked_by_primary_infores,result_parsed ,
-                                 num_of_nodes = 20,
-                                 input_query = "NCBIGene:3845",
-                                 fontsize = 6,
-                                 title_fontsize = 12,
-                                 output_png1="NE_heatmap1.png",
-                                 output_png2="NE_heatmap2.png"
-                                 ):
-    # edited Dec 5, 2023
-    predicates_list = []
-    primary_infore_list = []
-    aggregator_infore_list = []
-
-    for i in range(0, result_ranked_by_primary_infores.shape[0]):
-        oupput_node = result_ranked_by_primary_infores['output_node'][i]
-        type_of_node = result_ranked_by_primary_infores['type_of_nodes'][i]
-        if type_of_node == 'object':
-            subject = input_query
-            object = oupput_node
-        else:
-            subject = oupput_node
-            object = input_query
-
-        predicates_list = predicates_list + result_parsed[subject + "_" + object]['predicate']
-        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + object]['primary_knowledge_source']
-
-        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + object]:
-            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + object]['aggregator_knowledge_source']
-            aggregator_infore_list = list(set(aggregator_infore_list))
-
-        predicates_list = list(set(predicates_list))
-        primary_infore_list = list(set(primary_infore_list))
-
-
-    predicates_by_nodes = {}
-    for predict in predicates_list:
-        predicates_by_nodes[predict] = []
-
-    primary_infore_by_nodes = {}
-    for predict in primary_infore_list:
-        primary_infore_by_nodes[predict] = []
-
-    aggregator_infore_by_nodes = {}
-    for predict in aggregator_infore_list:
-        aggregator_infore_by_nodes[predict] = []
-
-    names = []
-    for i in range(0, result_ranked_by_primary_infores.shape[0]):
-    #for i in range(0, 10):
-        # input_nodes = result_ranked_by_primary_infores['input_node'].values[i]  # Unused variable
-
-        oupput_node = result_ranked_by_primary_infores['output_node'].values[i]
-        names.append(oupput_node)
-        type_of_node = result_ranked_by_primary_infores['type_of_nodes'].values[i]
-        if type_of_node == 'object':
-            subject = input_query
-            object = oupput_node
-        else:
-            subject = oupput_node
-            object = input_query
-        new_id = subject + "_" + object
-
-        cur_primary_infore = result_parsed[new_id]['primary_knowledge_source']
-        for predict in primary_infore_list:
-            if predict in cur_primary_infore:
-                primary_infore_by_nodes[predict].append(1)
-            else:
-                primary_infore_by_nodes[predict].append(0)
-
-
-
-        cur_predicates = result_parsed[new_id]['predicate']
-        for predict in predicates_list:
-            if predict in cur_predicates:
-                predicates_by_nodes[predict].append(1)
-            else:
-                predicates_by_nodes[predict].append(0)
-
-    #convert = False
-
-    #for item in colnames:
-    #    if 'NCBIGene' in item:
-    #        convert = True
-    #if convert:
-        #Gene_id_map = Gene_id_converter(colnames, "http://127.0.0.1:8000/query_name_by_id") # option 1
-        #Gene_id_map = Generate_Gene_id_map() # option 2
-
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
-
-    #else:
-    #    new_colnames = colnames
-
-    primary_infore_by_nodes_df = pd.DataFrame(primary_infore_by_nodes)
-    primary_infore_by_nodes_df.index = new_colnames
-    primary_infore_by_nodes_df = primary_infore_by_nodes_df.T
-
-
-    predicates_by_nodes_df = pd.DataFrame(predicates_by_nodes)
-    predicates_by_nodes_df.index = new_colnames
-    predicates_by_nodes_df = predicates_by_nodes_df.T
-
-    plot_heatmap(primary_infore_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png1)
-    plot_heatmap(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png2)
-
-    return(predicates_by_nodes_df)
-
-# Used. Jan 5, 2024
-def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed ,
-                                 num_of_nodes = 20,
-                                 input_query = "NCBIGene:3845",
-                                 fontsize = 6,
-                                 title_fontsize = 12,
-                                 output_png1="NE_heatmap1.png",
-                                 output_png2="NE_heatmap2.png"
-                                 ):
-    # edited Dec 5, 2023
-    predicates_list = []
-    primary_infore_list = []
-    aggregator_infore_list = []
-
-    for i in range(0, result_ranked_by_primary_infores.shape[0]):
-        oupput_node = result_ranked_by_primary_infores['output_node'][i]
-        type_of_node = result_ranked_by_primary_infores['type_of_nodes'][i]
-        if type_of_node == 'object':
-            subject = input_query
-            object = oupput_node
-        else:
-            subject = oupput_node
-            object = input_query
-
-        predicates_list = predicates_list + result_parsed[subject + "_" + object]['predicate']
-        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + object]['primary_knowledge_source']
-
-        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + object]:
-            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + object]['aggregator_knowledge_source']
-            aggregator_infore_list = list(set(aggregator_infore_list))
-
-        predicates_list = list(set(predicates_list))
-        primary_infore_list = list(set(primary_infore_list))
-
-
-    predicates_by_nodes = {}
-    for predict in predicates_list:
-        predicates_by_nodes[predict] = []
-
-    primary_infore_by_nodes = {}
-    for predict in primary_infore_list:
-        primary_infore_by_nodes[predict] = []
-
-    aggregator_infore_by_nodes = {}
-    for predict in aggregator_infore_list:
-        aggregator_infore_by_nodes[predict] = []
-
-    names = []
-    for i in range(0, result_ranked_by_primary_infores.shape[0]):
-    #for i in range(0, 10):
-        oupput_node = result_ranked_by_primary_infores['output_node'].values[i]
-        names.append(oupput_node)
-        type_of_node = result_ranked_by_primary_infores['type_of_nodes'].values[i]
-        if type_of_node == 'object':
-            subject = input_query
-            object = oupput_node
-        else:
-            subject = oupput_node
-            object = input_query
-        new_id = subject + "_" + object
-
-        cur_primary_infore = result_parsed[new_id]['primary_knowledge_source']
-        for predict in primary_infore_list:
-            if predict in cur_primary_infore:
-                primary_infore_by_nodes[predict].append(1)
-            else:
-                primary_infore_by_nodes[predict].append(0)
-
-
-
-        cur_predicates = result_parsed[new_id]['predicate']
-        for predict in predicates_list:
-            if predict in cur_predicates:
-                predicates_by_nodes[predict].append(1)
-            else:
-                predicates_by_nodes[predict].append(0)
-
-    #convert = False
-
-    #for item in colnames:
-    #    if 'NCBIGene' in item:
-    #        convert = True
-    #if convert:
-        #Gene_id_map = Gene_id_converter(colnames, "http://127.0.0.1:8000/query_name_by_id") # option 1
-        #Gene_id_map = Generate_Gene_id_map() # option 2
-
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
-
-    #else:
-    #    new_colnames = colnames
-
-    primary_infore_by_nodes_df = pd.DataFrame(primary_infore_by_nodes)
-    primary_infore_by_nodes_df.index = new_colnames
-    primary_infore_by_nodes_df = primary_infore_by_nodes_df.T
-
-
-    predicates_by_nodes_df = pd.DataFrame(predicates_by_nodes)
-    predicates_by_nodes_df.index = new_colnames
-    predicates_by_nodes_df = predicates_by_nodes_df.T
-
-    plot_heatmap(primary_infore_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png1)
-    plot_heatmap(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png2)
-
-    return(predicates_by_nodes_df)
-
-def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
-                                 fontsize = 6,
-                                 title_fontsize = 10,
-                                 output_png="NE_heatmap.png"):
-    #matplotlib.use('Agg')
-
-    #title = "Ranking of one-hop nodes by primary infores"
-    #ylab = "infores"
-    df = predicates_by_nodes_df.iloc[:,0:num_of_nodes]
-    # colnames = list(df.columns)  # Unused variable
-    # create the figure and subplot
-    fig = plt.figure( figsize=(0.8+df.shape[1]*0.11,3.5),dpi = 300)
-    ax = fig.add_subplot(111)
-
-    # create the heatmap
-    # heatmap with border
-    p1 = sns.heatmap(df, cmap="Blues", cbar=False, ax=ax, linecolor='grey', linewidth=0.2)
-    # Adjust font size for x and y tick labels
-    p1.set_xticklabels(p1.get_xticklabels(), rotation=90, fontsize=fontsize)
-    p1.set_yticklabels(p1.get_yticklabels(), fontsize=fontsize)
-
-    #p1.set_title(title)
-    #p1.set_ylabel(ylab)
-    print(p1.get_xticklabels())
-    # set xticklabels with colnames
-
-    #p1.set_xticklabels(colnames, rotation=90, fontsize = fontsize)
-    plt.xticks(ticks=range(len(df.columns)), labels=df.columns)
-
-        # set title font size
-    p1.title.set_size(title_fontsize)
-    plt.show()
-    # save the figure
-    #plt.savefig(output_png, bbox_inches='tight', dpi=300)
-
-
-
-def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
-                                 fontsize = 6,
-                                 title_fontsize = 10,
-                                 output_png="NE_heatmap.png"):
-
-
-    title = "Ranking of one-hop nodes by primary infores"
-    ylab = "infores"
-    df = predicates_by_nodes_df.iloc[:,0:num_of_nodes]
-    # colnames = list(df.columns)  # Unused variable
-    # create the figure and subplot
-    fig = plt.figure( figsize=(0.8+df.shape[1]*0.1,3.5),dpi = 100)
-    ax = fig.add_subplot(111)
-
-    # create the heatmap
-    # heatmap with border
-    p1 = sns.heatmap(df, cmap="Blues", cbar=False, ax=ax, linecolor='grey', linewidth=0.2)
-
-    p1.set_title(title)
-    p1.set_ylabel(ylab)
-    print(p1.get_xticklabels())
-    # set xticklabels with colnames
-
-    #p1.set_xticklabels(colnames, rotation=90, fontsize = fontsize)
-    plt.xticks(ticks=range(len(df.columns)), labels=df.columns)
-
-        # set title font size
-    p1.title.set_size(title_fontsize)
-   # plt.show()
-    # save the figure
-    plt.savefig(output_png, bbox_inches='tight', dpi=300)
 
 
 # used. Dec 5, 2023  (Example_query_one_hop_with_category.ipynb)
@@ -1039,25 +601,16 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     """
     from . import translator_query
-    from . import translator_metakg
-    from . import translator_kpinfo
+    from .translator_resources import TranslatorResources
 
-    APInames, metaKG, Translator_KP_info= translator_metakg.load_translator_resources()
-    All_predicates = list(set(metaKG['Predicate']))
-    All_categories = list((set(list(set(metaKG['Subject']))+list(set(metaKG['Object'])))))
-    API_withMetaKG = list(set(metaKG['API']))
-
-        # generate a dictionary of API and its predicates
-    API_predicates = {}
-    for api in API_withMetaKG:
-        API_predicates[api] = list(set(metaKG[metaKG['API'] == api]['Predicate']))
-        
+    resources = TranslatorResources.load()
 
     # Step 1: Resolve the input node to get its curie id and categories
     input_node_info = name_resolver.lookup(input_node)
     input_node_id = input_node_info.curie
     print(input_node_id)
 
+    # BUG: `input_node_category` is undefined; should be a parameter of this function.
     if len(input_node_category) == 0:
         input_node_category = input_node_info.types
     else:
@@ -1068,7 +621,7 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
     # Step 2: Select predicates and APIs based on the intermediate categories
     sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node_category,
                                                                 node2_categories,
-                                                                metaKG, APInames)
+                                                                resources.meta_kg, resources.api_names)
 
     # Step 3: Format the query JSON for the input node
     query_json = format_query_json([input_node_id], [],
@@ -1078,21 +631,20 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     # Step 4: Query the APIs in parallel
     result = translator_query.parallel_api_query(query_json=query_json,
-                             select_APIs= sele_APIs,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
+                             select_APIs=sele_APIs,
+                             resources=resources,
                              max_workers=len(sele_APIs))
     result_parsed = parse_KG(result)
         # Step 7: Ranking the results. This ranking method is based on the number of unique
         # primary infores. It can only be used to rank the results with one defined node.
     result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed, input_node_id)   # input_node1_id is the curie id of the
-    ranked_result = visulization_one_hop_ranking(result_ranked_by_primary_infores1, result_parsed, 
-                                num_of_nodes = 50, input_query = input_node_id, 
+    ranked_result = visulization_one_hop_ranking(result_ranked_by_primary_infores1, result_parsed,
+                                num_of_nodes = 50, input_query = input_node_id,
                                 fontsize = 5)
 
     return ranked_result
 
-def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = []):
+def Neiborhood_finder(input_node, node2_categories, resources, input_node_category = []):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
 
@@ -1100,25 +652,18 @@ def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predic
     Parameters:
     input_node (str): The input node - should be a CURIE id.
     node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.
-    APInames (dict): A dictionary containing the names of the APIs to be used.
-    metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates (dict): A dictionary containing the predicates for each API.
+    resources (TranslatorResources): Container with ``api_names``, ``meta_kg``, and ``api_predicates``.
     input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
 
     --------------
     Returns:
-    input_node_id (str): The curie id of the input node.
-    result (dict): The result of the query for the input node.
-    result_parsed (DataFrame): The parsed results for the input node.
-    result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.
+    NeighborhoodResult with input_node_id, knowledge_graph, parsed, and ranked fields.
 
     --------------
     Example:
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder('MONDO:0008170', #Ovarian Cancer
-                                                                                            node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)
+    >>> nb_result = Neiborhood_finder('MONDO:0008170',
+                                      node2_categories=['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
+                                      resources=resources)
     --------------
 
     """
@@ -1140,7 +685,7 @@ def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predic
     # Step 2: Select predicates and APIs based on the intermediate categories
     sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node_category,
                                                                 node2_categories,
-                                                                metaKG, APInames)
+                                                                resources.meta_kg, resources.api_names)
 
     # Step 3: Format the query JSON for the input node
     query_json = format_query_json([input_node_id], [],
@@ -1150,17 +695,22 @@ def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predic
 
     # Step 4: Query the APIs in parallel
     result = translator_query.parallel_api_query(query_json=query_json,
-                             select_APIs= sele_APIs,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
+                             select_APIs=sele_APIs,
+                             resources=resources,
                              max_workers=len(sele_APIs))
-    result_parsed = parse_KG(result)
+    result_parsed = result.parse()
         # Step 7: Ranking the results. This ranking method is based on the number of unique
         # primary infores. It can only be used to rank the results with one defined node.
-    result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed, input_node_id)   # input_node1_id is the curie id of the
-    return input_node_id, result, result_parsed, result_ranked_by_primary_infores1
+    result_ranked_by_primary_infores1 = result_parsed.rank(input_node_id)
+    from .results import NeighborhoodResult
+    return NeighborhoodResult(
+        input_node_id=input_node_id,
+        knowledge_graph=result,
+        parsed=result_parsed,
+        ranked=result_ranked_by_primary_infores1,
+    )
 
-def Path_finder(input_node1, input_node2, intermediate_categories, APInames, metaKG, API_predicates, input_node1_category = [], input_node2_category = []):
+def Path_finder(input_node1, input_node2, intermediate_categories, resources, input_node1_category = [], input_node2_category = []):
     """
     This function is used to find paths between two input nodes with intermediate categories.
 
@@ -1169,21 +719,17 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
     input_node1 (str): The first input node - should be a CURIE id.
     input_node2 (str): The second input node - should be a CURIE id.
     intermediate_categories (list): A list of intermediate categories to be used in the path finding process.
+    resources (TranslatorResources): Container with ``api_names``, ``meta_kg``, and ``api_predicates``.
+    input_node1_category (list): Optional. A list of categories for the first input node.
+    input_node2_category (list): Optional. A list of categories for the second input node.
 
     --------------
     Returns:
-    paths (DataFrame): A DataFrame containing the paths found between the two input nodes.
-    input_node1_id (str): The curie id of the first input node.
-    input_node2_id (str): The curie id of the second input node.
-    result1 (dict): The result of the query for the first input node.
-    result2 (dict): The result of the query for the second input node.
-    result_parsed1 (DataFrame): The parsed results for the first input node.
-    result_parsed2 (DataFrame): The parsed results for the second input node.
-    result_ranked_by_primary_infores1 (DataFrame): The ranked results for the first input node based on primary infores.
-    result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second
+    PathResult with paths, node1_id, node2_id, knowledge_graph1/2, parsed1/2, ranked1/2 fields.
+
     --------------
     Example:
-    >>> paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder('NCBIGene:7477', 'NCBIGene:4869', ['biolink:Gene', 'biolink:Protein']) # Input genes are WNT7B, NPM1
+    >>> path_result = Path_finder('NCBIGene:7477', 'NCBIGene:4869', ['biolink:Gene', 'biolink:Protein'], resources=resources)
     --------------
 
     """
@@ -1217,10 +763,10 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
     # Step 5: Select predicates and APIs based on the intermediate categories
     sele_predicates1, sele_APIs1, API_URLs1 = sele_predicates_API(input_node1_category,
                                                                 intermediate_categories,
-                                                                metaKG, APInames)
+                                                                resources.meta_kg, resources.api_names)
     sele_predicates2, sele_APIs2, API_URLs2 = sele_predicates_API(input_node2_category,
                                                                 intermediate_categories,
-                                                                metaKG, APInames)
+                                                                resources.meta_kg, resources.api_names)
 
     query_json1 = format_query_json(input_node1_list,  # a list of identifiers for input node1
                                     [],  # id list for the intermediate node, it can be empty list if only want to query node1
@@ -1235,23 +781,19 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
                                     sele_predicates2) # a list of predicates
 
     result1 = translator_query.parallel_api_query(query_json=query_json1,
-                             select_APIs = sele_APIs1,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
+                             select_APIs=sele_APIs1,
+                             resources=resources,
                              max_workers=len(sele_APIs1))
     result2 = translator_query.parallel_api_query(query_json=query_json2,
-                                select_APIs = sele_APIs2,
-                                APInames=APInames,
-                                API_predicates=API_predicates,
+                                select_APIs=sele_APIs2,
+                                resources=resources,
                                 max_workers=len(sele_APIs2))
 
-    result_parsed1 = parse_KG(result1)
-        # Step 7: Ranking the results. This ranking method is based on the number of unique
-        # primary infores. It can only be used to rank the results with one defined node.
-    result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed1, input_node1_id)   # input_node1_id is the curie id of the
+    result_parsed1 = result1.parse()
+    result_ranked_by_primary_infores1 = result_parsed1.rank(input_node1_id)
 
-    result_parsed2 = parse_KG(result2)
-    result_ranked_by_primary_infores2 = rank_by_primary_infores(result_parsed2, input_node2_id)   # input_node2_id is the curie id of the
+    result_parsed2 = result2.parse()
+    result_ranked_by_primary_infores2 = result_parsed2.rank(input_node2_id)
 
     possible_paths = len(set(result_ranked_by_primary_infores1['output_node']).intersection(set(result_ranked_by_primary_infores2['output_node'])))
     print("Number of possible paths: ", possible_paths)
@@ -1261,7 +803,18 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
                                             fontsize=10,
                                             title_fontsize=12,)
 
-    return paths,  input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2
+    from .results import PathResult
+    return PathResult(
+        paths=paths,
+        node1_id=input_node1_id,
+        node2_id=input_node2_id,
+        knowledge_graph1=result1,
+        knowledge_graph2=result2,
+        parsed1=result_parsed1,
+        parsed2=result_parsed2,
+        ranked1=result_ranked_by_primary_infores1,
+        ranked2=result_ranked_by_primary_infores2,
+    )
 
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 
@@ -1269,59 +822,14 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
 # used. Dec 5, 2023    (Example_query_one_hop_with_category.ipynb)
 def parse_KG(result):
     '''
-    subject_object
-    subject
-    object
-    predicate
-    primary_knowledge_sources
-    aggregator_knowledge_sources
-    subject_predicate_object_primary_knowledge_sources_aggregator_knowledge_sources
+    Parse a knowledge graph result into consolidated entries grouped by subject-object pair.
 
+    Accepts both raw edge dicts and KnowledgeGraph instances.
     '''
-    # edited Dec 5, 2023
-
-    result_parsed = {}
-    for i in result:
-
-        subject_object = result[i]['subject'] + "_" + result[i]['object']
-        # object_subject = result[i]['object'] + "_" + result[i]['subject']  # Unused variable
-        #result_parsed["predicate"].append(result[i]['predicate'])
-        #result_parsed["sources"].append(result[i]['sources'])
-        #result_parsed["subject"].append(result[i]['subject'])
-        #result_parsed["object"].append(result[i]['object'])
-        if subject_object not in result_parsed:
-            result_parsed[subject_object] = {}
-            result_parsed[subject_object]['predicate'] = [result[i]['predicate']]
-            result_parsed[subject_object]['subject'] = result[i]['subject']
-            result_parsed[subject_object]['object'] = result[i]['object']
-
-
-            for j in result[i]['sources']:
-                if j['resource_role'] == 'primary_knowledge_source':
-                    result_parsed[subject_object]['primary_knowledge_source'] = [j['resource_id']]
-
-                evidence =  result[i]['subject'] + "_" + result[i]['predicate'] + "_" + result[i]['object'] + "_" + j['resource_id']
-
-                if j['resource_role'] == 'aggregator_knowledge_source':
-                    result_parsed[subject_object]['aggregator_knowledge_source'] = [j['resource_id']]
-                    evidence = evidence + "_" + j['resource_id']
-            result_parsed[subject_object]['evidence'] = [evidence]
-
-        else: # subject_object in result_parsed:
-            result_parsed[subject_object]['predicate'].append(result[i]['predicate'])
-            for j in result[i]['sources']:
-                if j['resource_role'] == 'primary_knowledge_source':
-                    result_parsed[subject_object]['primary_knowledge_source'].append(j['resource_id'])
-                    evidence =  result[i]['subject'] + "_" + result[i]['predicate'] + "_" + result[i]['object'] + "_" + j['resource_id']
-                if j['resource_role'] == 'aggregator_knowledge_source':
-                    if 'aggregator_knowledge_source' not in result_parsed[subject_object]:
-                        result_parsed[subject_object]['aggregator_knowledge_source'] = [j['resource_id']]
-                    else:
-                        result_parsed[subject_object]['aggregator_knowledge_source'].append(j['resource_id'])
-                    evidence = evidence + "_" + j['resource_id']
-            result_parsed[subject_object]['evidence'].append(evidence)
-
-    return(result_parsed)
+    from .results import KnowledgeGraph as _KnowledgeGraph
+    if isinstance(result, _KnowledgeGraph):
+        return result.parse()
+    return _KnowledgeGraph(edges=result).parse()
 
 
 # parse network results. Dec 10, 2023
@@ -1425,15 +933,7 @@ def rank_by_primary_infores_input_as_list(result_parsed, input_nodes):
 
             Num_of_primary_infores.append(len(set(result_parsed[i]['primary_knowledge_source'])))
 
-    colnames = output_nodes
-    names = colnames
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
+    new_colnames = _convert_ids_to_names(output_nodes)
 
     rank_df['output_node'] = output_nodes
     rank_df['Name'] = new_colnames
@@ -1451,51 +951,14 @@ def rank_by_primary_infores_input_as_list(result_parsed, input_nodes):
 # parse results to a dictionary. Dec 5, 2023
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def rank_by_primary_infores(result_parsed, input_node):
-    ''' Editd Dec 5, 2023'''
-    rank_df = pd.DataFrame()
-    output_nodes = []
-    Num_of_primary_infores = []
-    type_of_nodes   = []
-    unique_predicates = []
-    for i in result_parsed:
-        curr_predict = result_parsed[i]['predicate']
-        subject = result_parsed[i]['subject']
-        object = result_parsed[i]['object']
+    '''Rank parsed knowledge graph entries by number of unique primary infores.
 
-        if subject == input_node:
-            output_nodes.append(object)
-            type_of_nodes.append('object')
-            Num_of_primary_infores.append(len(set(result_parsed[i]['primary_knowledge_source'])))
-            unique_predicates.append(curr_predict)
-
-
-        elif object == input_node:
-            output_nodes.append(subject)
-            type_of_nodes.append('subject')
-            unique_predicates.append(curr_predict)
-
-            Num_of_primary_infores.append(len(set(result_parsed[i]['primary_knowledge_source'])))
-
-    colnames = output_nodes
-    names = colnames
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
-
-    rank_df['output_node'] = output_nodes
-    rank_df['Name'] = new_colnames
-    rank_df['Num_of_primary_infores'] = Num_of_primary_infores
-    rank_df['type_of_nodes'] = type_of_nodes
-    rank_df['unique_predicates'] = unique_predicates
-
-
-
-    rank_df_ranked = rank_df.sort_values(by=['Num_of_primary_infores'], ascending=False)
-    return(rank_df_ranked)
+    Accepts both raw parsed dicts and ParsedKnowledgeGraph instances.
+    '''
+    from .results import ParsedKnowledgeGraph as _ParsedKnowledgeGraph
+    if isinstance(result_parsed, _ParsedKnowledgeGraph):
+        return result_parsed.rank(input_node)
+    return _ParsedKnowledgeGraph(entries=result_parsed).rank(input_node)
 
 
 
@@ -1529,16 +992,7 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
     result_xy_sorted = result_ranked
     result_xy_sorted.index = result_ranked['output_node']
 
-    #convert = False
-    colnames = result_xy_sorted.index.to_list()
-    names = colnames
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
+    new_colnames = _convert_ids_to_names(result_xy_sorted.index.to_list())
 
     result_xy_sorted.index = new_colnames
     result_xy_sorted = result_xy_sorted.sort_values(by=['score'], ascending=False)
@@ -1595,18 +1049,7 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
 
     result_xy_sorted = result_xy.sort_values(by=['score'], ascending=False)
 
-    # convert = False  # Unused variable
-    colnames = result_xy_sorted.index.to_list()
-
-    names = colnames
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(names)
-    new_colnames = []
-    for item in names:
-        if item in dic_id_map:
-            new_colnames.append(dic_id_map[item])
-        else:
-            new_colnames.append(item)
-
+    new_colnames = _convert_ids_to_names(result_xy_sorted.index.to_list())
 
     result_xy_sorted.index = new_colnames
     result_xy_sorted['output_node_name'] = new_colnames
@@ -1616,24 +1059,6 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
     plot_path_bar(x,y,fontsize, title_fontsize, output_png=output_png)
 
     return result_xy_sorted
-
-def plot_path_bar(x,
-                  y,
-                    fontsize = 8,
-                    title_fontsize = 10,
-                    output_png="NE_heatmap.png"):
-    #matplotlib.use('Agg')
-
-    # title = "Bridging nodes"  # Unused variable
-    fig = plt.figure(figsize=(5,5), dpi = 300)
-    ax = fig.add_subplot(111)
-    ax = sns.barplot(x=x, y=y, color='grey')
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90, ha="center", fontsize=fontsize)
-    ax.set_ylabel("Ranking score")
-    ax.title.set_size(title_fontsize)
-    # save the figure
-    plt.savefig(output_png, bbox_inches='tight', dpi=300)
-
 
 # Sri-name-resolver  Used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def get_curie(name):
@@ -1662,10 +1087,7 @@ def get_pair_annotation(result, input_node_list):
 
 def parse_pair_annotation(pairs_found, input_node_list):
     edge_list = []
-    names = ID_convert_to_preferred_name_nodeNormalizer(input_node_list)
-    dic_names = {}
-    for i in input_node_list:
-        dic_names[i] = names[i]
+    dic_names = ID_convert_to_preferred_name_nodeNormalizer(input_node_list)
 
     for i in pairs_found.keys():
         primary_source = ''
@@ -1952,149 +1374,6 @@ def select_result_to_analysis(sele_genes,Temp_result_df1, Temp_result_df2 ):
 
 
 
-def plot_graph_by_predicates(for_plot):
-    graph = nx.from_pandas_edgelist(for_plot,
-                                source='Subject',
-                                target='Object',
-                                edge_attr=["Predicate"],
-                                create_using=nx.MultiDiGraph)
-
-
-    graph_style = [{'selector': 'node[id]',
-                             'style': {
-                                  'font-family': 'helvetica',
-                                  'font-size': '14px',
-                                 'text-valign': 'center',
-                                 'label': 'data(id)',
-                        }},
-                        {'selector': 'node',
-                         'style': {
-                             'background-color': 'lightblue',
-                             'shape': 'round-rectangle',
-                             'width': '5em',
-                         }},
-                        {'selector': 'edge[Predicate]',
-                         'style': {
-                             'label': 'data(Predicate)',
-                             'font-size': '12px',
-                         }},
-                        {"selector": "edge.directed",
-                         "style": {
-                            "curve-style": "bezier",
-                            "target-arrow-shape": "triangle",
-                        }},
-                       {"selector": "edge",
-                         "style": {
-                            "curve-style": "bezier",
-                        }},
-
-                    ]
-
-    undirected = ipycytoscape.CytoscapeWidget()
-    undirected.graph.add_graph_from_networkx(graph)
-    undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
-    undirected.set_style(graph_style)
-
-    display(undirected)
-    return()
-
-
-def plot_graph_by_infores(for_plot):
-
-    graph = nx.from_pandas_edgelist(for_plot,
-                                    source='Subject',
-                                    target='Object',
-                                    edge_attr=["Infores"],
-                                    create_using=nx.MultiDiGraph)
-
-
-    graph_style = [{'selector': 'node[id]',
-                                'style': {
-                                    'font-family': 'helvetica',
-                                    'font-size': '14px',
-                                    'text-valign': 'center',
-                                    'label': 'data(id)',
-                            }},
-                            {'selector': 'node',
-                            'style': {
-                                'background-color': 'lightblue',
-                                'shape': 'round-rectangle',
-                                'width': '5em',
-                            }},
-                            {'selector': 'edge[Infores]',
-                            'style': {
-                                'label': 'data(Infores)',
-                                'font-size': '12px',
-                            }},
-                            {"selector": "edge.directed",
-                            "style": {
-                                "curve-style": "bezier",
-                                "target-arrow-shape": "triangle",
-                            }},
-                        {"selector": "edge",
-                            "style": {
-                                "curve-style": "bezier",
-                            }},
-
-                        ]
-
-    undirected = ipycytoscape.CytoscapeWidget()
-    undirected.graph.add_graph_from_networkx(graph)
-    undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
-    undirected.set_style(graph_style)
-
-    display(undirected)
-    return(0)
-
-
-def plot_graph_by_API(for_plot):
-
-    graph = nx.from_pandas_edgelist(for_plot,
-                                    source='Subject',
-                                    target='Object',
-                                    edge_attr=["API"],
-                                    create_using=nx.MultiDiGraph)
-
-
-    graph_style = [{'selector': 'node[id]',
-                                'style': {
-                                    'font-family': 'helvetica',
-                                    'font-size': '14px',
-                                    'text-valign': 'center',
-                                    'label': 'data(id)',
-                            }},
-                            {'selector': 'node',
-                            'style': {
-                                'background-color': 'lightblue',
-                                'shape': 'round-rectangle',
-                                'width': '5em',
-                            }},
-                            {'selector': 'edge[API]',
-                            'style': {
-                                'label': 'data(API)',
-                                'font-size': '12px',
-                            }},
-                            {"selector": "edge.directed",
-                            "style": {
-                                "curve-style": "bezier",
-                                "target-arrow-shape": "triangle",
-                            }},
-                        {"selector": "edge",
-                            "style": {
-                                "curve-style": "bezier",
-                            }},
-
-                        ]
-
-    undirected = ipycytoscape.CytoscapeWidget()
-    undirected.graph.add_graph_from_networkx(graph)
-    undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
-    undirected.set_style(graph_style)
-
-    display(undirected)
-    return(0)
-
-
 def load_json_template():
     query_json_temp = {
         "message": {
@@ -2206,17 +1485,25 @@ def format_id(query_json_cur_clean):
         query_json_cur_clean['message']['query_graph']['nodes']['n1']['ids'] = input_node2_id
     return(query_json_cur_clean)
 
-def query_chatGPT(customized_input, model="gpt-3.5-turbo"):
+@_dataclass
+class ChatGPTConfig:
+    """Configuration for OpenAI ChatGPT API calls."""
+    max_tokens: int = 1000
+    temperature: float = 0.3
+
+
+def query_chatGPT(customized_input, model="gpt-3.5-turbo", config=None):
+    if config is None:
+        config = ChatGPTConfig()
     message = [{"role": "user", "content": customized_input}]
 
     response = openai.chat.completions.create(
         model=model,
-        max_tokens=1000,
-        temperature=0.3,
+        max_tokens=config.max_tokens,
+        temperature=config.temperature,
         messages=message,
     )
 
-    # print(len(response.choices[0].message.content.split(" ")))
     return response.choices[0].message.content
 
 def query_chatGPT4(customized_input):
@@ -2246,138 +1533,16 @@ def find_similar_category(query_json_cur_clean, ALL_categories):
 def load_translator_resources():
     """
     Load the necessary resources for the Translator.
+
+    Returns
+    -------
+    TranslatorResources
+        Container with ``api_names``, ``meta_kg``, and ``api_predicates``.
     """
-    from . import translator_kpinfo
-    from . import translator_metakg
-
-    Translator_KP_info,APInames= translator_kpinfo.get_translator_kp_info()
-    metaKG = translator_metakg.get_KP_metadata(APInames)
-    APInames,metaKG = translator_metakg.add_plover_API(APInames, metaKG)
-    return  APInames, metaKG, Translator_KP_info
+    from .translator_resources import TranslatorResources
+    return TranslatorResources.load()
 
 
-def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, result2):
-    forplot_subject = []
-    forplot_object = []
-    forplot_predicate = []
-    forplot_Infores = []
-
-    for k in result.keys():
-        if (result[k]['object'] == intermediate_node and result[k]['subject'] == input_node1_id) or (result[k]['subject'] == intermediate_node and result[k]['object'] == input_node1_id)  :
-            forplot_subject.append(result[k]['subject'])
-            forplot_object.append(result[k]['object'])
-            #forplot_predicate.append(result[k]['predicate'].split(':')[1])
-            cur_sources_list = []
-            sources = result[k]['sources']
-
-            for s in sources:
-                cur_source = s['resource_id']
-                cur_sources_list.append(cur_source)
-
-            forplot_Infores.append(cur_sources_list)
-
-            forplot_predicate.append(result[k]['predicate'].split(':')[1] + "::" + cur_sources_list[0])
-
-    for k in result2.keys():
-        if (result2[k]['object'] == intermediate_node and result2[k]['subject'] ==input_node3_id ) or (result2[k]['subject'] == intermediate_node and result2[k]['object'] ==input_node3_id)  :
-            forplot_subject.append(result2[k]['subject'])
-            forplot_object.append(result2[k]['object'])
-            #forplot_predicate.append(result2[k]['predicate'].split(':')[1])
-            cur_sources_list = []
-            sources = result2[k]['sources']
-
-            for s in sources:
-                cur_source = s['resource_id']
-                cur_sources_list.append(cur_source)
-
-            forplot_Infores.append(cur_sources_list)
-            forplot_predicate.append(result2[k]['predicate'].split(':')[1] + "::" +  cur_sources_list[0])
-
-    forplot =  pd.DataFrame({"Subject":forplot_subject, "Object":forplot_object, "Predicates":forplot_predicate})
-
-    # get preferred name
-    subject_name = list(forplot["Subject"] )
-    object_name = list(forplot["Object"])
-    dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(subject_name+ object_name)
-    new_subject_name = []
-    for item in subject_name:
-        if item in dic_id_map:
-            new_subject_name.append(dic_id_map[item])
-        else:
-            new_subject_name.append(item)
-
-    new_object_name = []
-    for item in object_name:
-        if item in dic_id_map:
-            new_object_name.append(dic_id_map[item])
-        else:
-            new_object_name.append(item)
-    forplot['Subject_name'] = new_subject_name
-    forplot['Object_name'] = new_object_name
-
-    forplot = forplot.drop_duplicates()
-
-    # add two columns for forplot named check1 = Subject_name + '::' + Predicates + '::' + Object_name, and check2 = Object_name + '::' + Predicates + '::' + Subject_name
-    # if check1 is equal to check2, then drop one of them
-    forplot['check1'] = forplot['Subject_name'] + '::' + forplot['Predicates'] + '::' + forplot['Object_name']
-    forplot['check2'] = forplot['Object_name'] + '::' + forplot['Predicates'] + '::' + forplot['Subject_name']
-
-    # check if check1 is equal to check2, if so, drop one of them
-    to_be_dropped = []
-    check1_list = list(forplot['check1'].values)
-    check2_list = list(forplot['check2'].values)
-
-    for i in range(0,len(check1_list)-1):
-        for j in range(i, len(check1_list)):
-            if check1_list[i] == check2_list[j] and check2_list[i] == check1_list[j]:
-                to_be_dropped.append(i)
-                break
-                #break
-    to_be_dropped
-    forplot = forplot.drop(to_be_dropped, axis=0)
-    # remove the check1 and check2 columns
-    forplot = forplot.drop(['check1', 'check2'], axis=1)
-
-    forplot = forplot.reset_index(drop=True)
-
-    graph = nx.from_pandas_edgelist(forplot, source='Subject_name', target='Object_name', edge_attr=[ 'Predicates'], create_using=nx.MultiGraph)
-
-    graph_style = [{'selector': 'node[id]',
-                             'style': {
-                                  'font-family': 'Arial',
-                                  'font-size': '12px',
-                                 'text-valign': 'center',
-                                 'label': 'data(id)',
-                        }},
-                        {'selector': 'node',
-                         'style': {
-                             'background-color': 'lightblue',
-                             'shape': 'round-rectangle',
-                             'width': '3em',
-                         }},
-                        {'selector': 'edge[Predicates]',
-                         'style': {
-                             'label': 'data(Predicates)',
-                             'font-size': '8px',
-                         }},
-                        {"selector": "edge.directed",
-                         "style": {
-                            "curve-style": "bezier",
-                            "target-arrow-shape": "triangle",
-                        }},
-                       {"selector": "edge",
-                         "style": {
-                            "curve-style": "bezier",
-                        }},
-
-                    ]
-    pathgraph = ipycytoscape.CytoscapeWidget()
-    pathgraph.graph.add_graph_from_networkx(graph)
-    pathgraph.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
-    pathgraph.set_style(graph_style)
-
-    display(pathgraph)
-    return(forplot)
 
 
 def get_similar_category(query_json_cur_clean, KG_category):
@@ -2422,397 +1587,3 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 
     similar_predicate
     return similar_predicate
-
-
-# I've added this code so I could test ID_convert_to_preferred_name_nodeNormalizer()
-# without changing any of the rest of the code. Please delete it once you understand
-# the other changes I've made!
-if __name__ == "__main__":
-    # Check function on some identifier lists.
-    result1 = ID_convert_to_preferred_name_nodeNormalizer([])
-    if result1 != {}:
-        raise RuntimeError("ID_convert_to_preferred_name_nodeNormalizer([]) should equal []")
-
-    result2 = ID_convert_to_preferred_name_nodeNormalizer(['UBERON:0000201'])
-    if result2 != {'UBERON:0000201': 'endothelial blood brain barrier'}:
-        raise RuntimeError(f"Incorrect result: {result2}")
-
-    result3 = ID_convert_to_preferred_name_nodeNormalizer(['MESH:D005183', 'UBERON:0000201'])
-    if result3 != {
-        'UBERON:0000201': 'endothelial blood brain barrier',
-        'MESH:D005183': 'Failure to Thrive'
-    }:
-        raise RuntimeError(f"Incorrect result: {result3}")
-
-    result4 = ID_convert_to_preferred_name_nodeNormalizer(['CHEBI:45863', 'PUBCHEM.COMPOUND:31703'])
-    if result4 != {
-        'CHEBI:45863': 'Paclitaxel',
-        'PUBCHEM.COMPOUND:31703': 'Doxorubicin'
-    }:
-        raise RuntimeError(f"Incorrect result: {result4}")
-
-    result5 = ID_convert_to_preferred_name_nodeNormalizer([
-        'RXCUI:258355',
-        'PUBCHEM.COMPOUND:4261',
-        'PUBCHEM.COMPOUND:49850262',
-        'PUBCHEM.COMPOUND:50992434',
-        'PUBCHEM.COMPOUND:135539077',
-        'RXCUI:1430268',
-        'CHEBI:90942',
-        'CHEBI:110200',
-        'CHEBI:63996',
-        'CHEBI:6716',
-        'CHEBI:14222',
-        'PUBCHEM.COMPOUND:25141092',
-        'PUBCHEM.COMPOUND:36314',
-        'PUBCHEM.COMPOUND:31703',
-        'PUBCHEM.COMPOUND:3385',
-        'PUBCHEM.COMPOUND:126941',
-        'PUBCHEM.COMPOUND:135410875',
-        'PUBCHEM.COMPOUND:148124',
-        'PUBCHEM.COMPOUND:5311497',
-        'PUBCHEM.COMPOUND:107935',
-        'PUBCHEM.COMPOUND:387447',
-        'PUBCHEM.COMPOUND:518605',
-        'PUBCHEM.COMPOUND:5282165',
-        'PUBCHEM.COMPOUND:5591',
-        'PUBCHEM.COMPOUND:1322',
-        'PUBCHEM.COMPOUND:95170',
-        'PUBCHEM.COMPOUND:2286',
-        'PUBCHEM.COMPOUND:1242',
-        'PUBCHEM.COMPOUND:8461',
-        'PUBCHEM.COMPOUND:11813',
-        'PUBCHEM.COMPOUND:1530',
-        'PUBCHEM.COMPOUND:11831',
-        'PUBCHEM.COMPOUND:7577',
-        'PUBCHEM.COMPOUND:73864',
-        'PUBCHEM.COMPOUND:4521392',
-        'PUBCHEM.COMPOUND:47289',
-        'PUBCHEM.COMPOUND:1983',
-        'PUBCHEM.COMPOUND:12035',
-        'PUBCHEM.COMPOUND:449459',
-        'PUBCHEM.COMPOUND:186907',
-        'PUBCHEM.COMPOUND:449171',
-        'PUBCHEM.COMPOUND:7290',
-        'PUBCHEM.COMPOUND:2236',
-        'PUBCHEM.COMPOUND:5359596',
-        'PUBCHEM.COMPOUND:6918483',
-        'PUBCHEM.COMPOUND:23667548',
-        'PUBCHEM.COMPOUND:2256',
-        'PUBCHEM.COMPOUND:62306',
-        'PUBCHEM.COMPOUND:2336',
-        'PUBCHEM.COMPOUND:6623',
-        'PUBCHEM.COMPOUND:66166',
-        'PUBCHEM.COMPOUND:12111',
-        'PUBCHEM.COMPOUND:6626',
-        'PUBCHEM.COMPOUND:16682746',
-        'PUBCHEM.COMPOUND:5360373',
-        'PUBCHEM.COMPOUND:7961',
-        'PUBCHEM.COMPOUND:2478',
-        'PUBCHEM.COMPOUND:264',
-        'PUBCHEM.COMPOUND:23973',
-        'PUBCHEM.COMPOUND:2519',
-        'PUBCHEM.COMPOUND:5280453',
-        'PUBCHEM.COMPOUND:5943',
-        'PUBCHEM.COMPOUND:1203',
-        'PUBCHEM.COMPOUND:135411',
-        'PUBCHEM.COMPOUND:154413',
-        'PUBCHEM.COMPOUND:40470',
-        'PUBCHEM.COMPOUND:2730',
-        'PUBCHEM.COMPOUND:29131',
-        'PUBCHEM.COMPOUND:9171',
-        'PUBCHEM.COMPOUND:5702198',
-        'PUBCHEM.COMPOUND:2797',
-        'PUBCHEM.COMPOUND:24463',
-        'PUBCHEM.COMPOUND:323',
-        'PUBCHEM.COMPOUND:40585',
-        'PUBCHEM.COMPOUND:451668',
-        'PUBCHEM.COMPOUND:40024',
-        'PUBCHEM.COMPOUND:3017',
-        'PUBCHEM.COMPOUND:3026',
-        'PUBCHEM.COMPOUND:5371560',
-        'PUBCHEM.COMPOUND:969491',
-        'PUBCHEM.COMPOUND:8343',
-        'PUBCHEM.COMPOUND:5921',
-        'PUBCHEM.COMPOUND:448537',
-        'PUBCHEM.COMPOUND:6124',
-        'PUBCHEM.COMPOUND:8346',
-        'PUBCHEM.COMPOUND:5757',
-        'PUBCHEM.COMPOUND:702',
-        'PUBCHEM.COMPOUND:5991',
-        'PUBCHEM.COMPOUND:11',
-        'PUBCHEM.COMPOUND:3346',
-        'PUBCHEM.COMPOUND:3397',
-        'PUBCHEM.COMPOUND:135398658',
-        'PUBCHEM.COMPOUND:14101198',
-        'PUBCHEM.COMPOUND:104741',
-        'PUBCHEM.COMPOUND:8029',
-        'PUBCHEM.COMPOUND:60750',
-        'PUBCHEM.COMPOUND:5280961',
-        'PUBCHEM.COMPOUND:9898639',
-        'PUBCHEM.COMPOUND:637566',
-        'PUBCHEM.COMPOUND:3474',
-        'PUBCHEM.COMPOUND:23985',
-        'PUBCHEM.COMPOUND:3616',
-        'PUBCHEM.COMPOUND:42890',
-        'PUBCHEM.COMPOUND:3715',
-        'PUBCHEM.COMPOUND:6912226',
-        'PUBCHEM.COMPOUND:3779',
-        'PUBCHEM.COMPOUND:9812710',
-        'PUBCHEM.COMPOUND:46907787',
-        'PUBCHEM.COMPOUND:25195294',
-        'PUBCHEM.COMPOUND:896',
-        'PUBCHEM.COMPOUND:10836',
-        'PUBCHEM.COMPOUND:4098',
-        'PUBCHEM.COMPOUND:13709',
-        'PUBCHEM.COMPOUND:1349907',
-        'PUBCHEM.COMPOUND:1674',
-        'PUBCHEM.COMPOUND:4156',
-        'PUBCHEM.COMPOUND:7456',
-        'PUBCHEM.COMPOUND:6010',
-        'PUBCHEM.COMPOUND:8575',
-        'PUBCHEM.COMPOUND:4449',
-        'PUBCHEM.COMPOUND:4122',
-        'PUBCHEM.COMPOUND:442530',
-        'PUBCHEM.COMPOUND:9887053',
-        'PUBCHEM.COMPOUND:991',
-        'PUBCHEM.COMPOUND:854',
-        'PUBCHEM.COMPOUND:74483',
-        'PUBCHEM.COMPOUND:9554',
-        'PUBCHEM.COMPOUND:5794',
-        'PUBCHEM.COMPOUND:5694',
-        'PUBCHEM.COMPOUND:15032',
-        'PUBCHEM.COMPOUND:657298',
-        'PUBCHEM.COMPOUND:14942',
-        'PUBCHEM.COMPOUND:5280343',
-        'PUBCHEM.COMPOUND:5035',
-        'PUBCHEM.COMPOUND:6758',
-        'PUBCHEM.COMPOUND:5186',
-        'PUBCHEM.COMPOUND:1091',
-        'PUBCHEM.COMPOUND:133538',
-        'PUBCHEM.COMPOUND:7305',
-        'PUBCHEM.COMPOUND:5323',
-        'PUBCHEM.COMPOUND:5329102',
-        'PUBCHEM.COMPOUND:5284461',
-        'PUBCHEM.COMPOUND:24857286',
-        'PUBCHEM.COMPOUND:6410',
-        'PUBCHEM.COMPOUND:5995',
-        'PUBCHEM.COMPOUND:6618',
-        'PUBCHEM.COMPOUND:15625',
-        'PUBCHEM.COMPOUND:27924',
-        'PUBCHEM.COMPOUND:2723949',
-        'PUBCHEM.COMPOUND:26042',
-        'PUBCHEM.COMPOUND:60700',
-        'PUBCHEM.COMPOUND:444795',
-        'PUBCHEM.COMPOUND:6575',
-        'PUBCHEM.COMPOUND:5564',
-        'PUBCHEM.COMPOUND:11089',
-        'PUBCHEM.COMPOUND:65411',
-        'PUBCHEM.COMPOUND:23964',
-        'PUBCHEM.COMPOUND:3121',
-        'PUBCHEM.COMPOUND:14969',
-        'PUBCHEM.COMPOUND:39676',
-        'PUBCHEM.COMPOUND:2116',
-        'MESH:D014874',
-        'PUBCHEM.COMPOUND:23994',
-        'PUBCHEM.COMPOUND:11626560',
-        'PUBCHEM.COMPOUND:57379345',
-        'PUBCHEM.COMPOUND:5328940',
-        'PUBCHEM.COMPOUND:49846579',
-        'PUBCHEM.COMPOUND:25134326',
-        'PUBCHEM.COMPOUND:9829523',
-        'PUBCHEM.COMPOUND:25183872',
-        'PUBCHEM.COMPOUND:49806720',
-        'PUBCHEM.COMPOUND:71731823',
-        'PUBCHEM.COMPOUND:5311',
-        'PUBCHEM.COMPOUND:5281855',
-        'PUBCHEM.COMPOUND:5291',
-        'PUBCHEM.COMPOUND:135430309',
-        'PUBCHEM.COMPOUND:447077',
-        'PUBCHEM.COMPOUND:5284616',
-        'PUBCHEM.COMPOUND:11707110',
-        'PUBCHEM.COMPOUND:10184653',
-        'TTD.DRUG:D0Z1OR',
-        'UNII:334895S862',
-        'PUBCHEM.COMPOUND:176870',
-        'PUBCHEM.COMPOUND:6049',
-        'PUBCHEM.COMPOUND:440473',
-        'PUBCHEM.COMPOUND:175',
-        'PUBCHEM.COMPOUND:457193',
-        'PUBCHEM.COMPOUND:1548943',
-        'PUBCHEM.COMPOUND:36462',
-        'PUBCHEM.COMPOUND:5281672',
-        'PUBCHEM.COMPOUND:6057',
-        'PUBCHEM.COMPOUND:78165',
-        'PUBCHEM.COMPOUND:6518',
-        'PUBCHEM.COMPOUND:5360696',
-        'PUBCHEM.COMPOUND:6253',
-        'PUBCHEM.COMPOUND:30323',
-        'PUBCHEM.COMPOUND:2733526',
-        'PUBCHEM.COMPOUND:3108',
-        'PUBCHEM.COMPOUND:10366136',
-        'PUBCHEM.COMPOUND:3220',
-        'PUBCHEM.COMPOUND:7405',
-        'PUBCHEM.COMPOUND:656894',
-        'PUBCHEM.COMPOUND:10607',
-        'PUBCHEM.COMPOUND:135398748',
-        'PUBCHEM.COMPOUND:8771',
-        'PUBCHEM.COMPOUND:679',
-        'PUBCHEM.COMPOUND:6918638',
-        'PUBCHEM.COMPOUND:44259',
-        'PUBCHEM.COMPOUND:444732',
-        'PUBCHEM.COMPOUND:6029',
-        'PUBCHEM.COMPOUND:34755',
-        'PUBCHEM.COMPOUND:5284627',
-        'PUBCHEM.COMPOUND:5957',
-        'PUBCHEM.COMPOUND:2353',
-        'PUBCHEM.COMPOUND:72277',
-        'PUBCHEM.COMPOUND:46191454',
-        'PUBCHEM.COMPOUND:8988',
-        'PUBCHEM.COMPOUND:977',
-        'DRUGBANK:DB12182',
-        'PUBCHEM.COMPOUND:23725625',
-        'PUBCHEM.COMPOUND:4212',
-        'PUBCHEM.COMPOUND:91766',
-        'PUBCHEM.COMPOUND:65359',
-        'PUBCHEM.COMPOUND:441923',
-        'PUBCHEM.COMPOUND:445154',
-        'PUBCHEM.COMPOUND:65064',
-        'PUBCHEM.COMPOUND:11338033',
-        'PUBCHEM.COMPOUND:9444',
-        'PUBCHEM.COMPOUND:30751'
-    ])
-    if result5 != {
-        'RXCUI:258355': 'Rapamune', 'PUBCHEM.COMPOUND:4261': 'Entinostat', 'PUBCHEM.COMPOUND:49850262': 'Tubastatin A',
-        'PUBCHEM.COMPOUND:50992434': 'Trametinib dimethyl sulfoxide', 'PUBCHEM.COMPOUND:135539077': 'Luminespib',
-        'RXCUI:1430268': 'Gilotrif', 'CHEBI:90942': 'Ixazomib', 'CHEBI:110200': 'CHEBI:110200',
-        'CHEBI:63996': 'SKF 83959 hydrobromide', 'CHEBI:6716': 'Medroxyprogesterone acetate',
-        'CHEBI:14222': 'CHEBI:14222', 'PUBCHEM.COMPOUND:25141092': 'Entrectinib',
-        'PUBCHEM.COMPOUND:36314': 'Paclitaxel', 'PUBCHEM.COMPOUND:31703': 'Doxorubicin',
-        'PUBCHEM.COMPOUND:3385': 'Fluorouracil', 'PUBCHEM.COMPOUND:126941': 'Methotrexate',
-        'PUBCHEM.COMPOUND:135410875': 'Pemetrexed', 'PUBCHEM.COMPOUND:148124': 'Docetaxel',
-        'PUBCHEM.COMPOUND:5311497': 'Vinorelbine', 'PUBCHEM.COMPOUND:107935': 'Deguelin',
-        'PUBCHEM.COMPOUND:387447': 'Bortezomib',
-        'PUBCHEM.COMPOUND:518605': '2,4,6,8,9,10-Hexaoxa-1,3,5,7-tetraarsatricyclo[3.3.1.13,7]decane',
-        'PUBCHEM.COMPOUND:5282165': 'Josamycin', 'PUBCHEM.COMPOUND:5591': 'Troglitazone',
-        'PUBCHEM.COMPOUND:1322': '1,2-Dimethylhydrazine',
-        'PUBCHEM.COMPOUND:95170': "2,2',4,4'-Tetrabromodiphenyl ether",
-        'PUBCHEM.COMPOUND:2286': 'Bisphenol A diglycidyl ether',
-        'PUBCHEM.COMPOUND:1242': '2,3,4,5-Tetrahydro-7,8-dihydroxy-1-phenyl-1H-3-benzazepine',
-        'PUBCHEM.COMPOUND:8461': '2,4-Dinitrotoluene', 'PUBCHEM.COMPOUND:11813': '2,6-Dinitrotoluene',
-        'PUBCHEM.COMPOUND:1530': '2-Amino-1-methyl-6-phenylimidazo(4,5-b)pyridine',
-        'PUBCHEM.COMPOUND:11831': '2-Nitrofluorene', 'PUBCHEM.COMPOUND:7577': "4,4'-Methylenedianiline",
-        'PUBCHEM.COMPOUND:73864': 'Bisphenol AF',
-        'PUBCHEM.COMPOUND:4521392': '4-(4-(benzo[d][1,3]dioxol-5-yl)-5-(pyridin-2-yl)-1H-imidazol-2-yl)benzamide',
-        'PUBCHEM.COMPOUND:47289': '4-(N-Nitrosomethylamino)-1-(3-pyridyl)-1-butanone',
-        'PUBCHEM.COMPOUND:1983': 'Acetaminophen', 'PUBCHEM.COMPOUND:12035': 'Acetylcysteine',
-        'PUBCHEM.COMPOUND:449459': 'Afimoxifene', 'PUBCHEM.COMPOUND:186907': 'Aflatoxin B1',
-        'PUBCHEM.COMPOUND:449171': 'Alitretinoin', 'PUBCHEM.COMPOUND:7290': '3-Chloro-1,2-propanediol',
-        'PUBCHEM.COMPOUND:2236': 'Aristolochic acid', 'PUBCHEM.COMPOUND:5359596': 'Arsenic',
-        'PUBCHEM.COMPOUND:6918483': 'Artenimol', 'PUBCHEM.COMPOUND:23667548': 'Sodium Ascorbate',
-        'PUBCHEM.COMPOUND:2256': 'Atrazine', 'PUBCHEM.COMPOUND:62306': 'Benoxacor',
-        'PUBCHEM.COMPOUND:2336': 'Benzo[a]pyrene', 'PUBCHEM.COMPOUND:6623': 'Bisphenol A',
-        'PUBCHEM.COMPOUND:66166': 'Bisphenol B', 'PUBCHEM.COMPOUND:12111': "4,4'-Methylenediphenol",
-        'PUBCHEM.COMPOUND:6626': "4,4'-Sulfonyldiphenol", 'PUBCHEM.COMPOUND:16682746': 'Tributyltin oxide',
-        'PUBCHEM.COMPOUND:5360373': 'Bleomycin', 'PUBCHEM.COMPOUND:7961': 'Bromobenzene',
-        'PUBCHEM.COMPOUND:2478': 'Busulfan', 'PUBCHEM.COMPOUND:264': 'Butyric Acid',
-        'PUBCHEM.COMPOUND:23973': 'Cadmium', 'PUBCHEM.COMPOUND:2519': 'Caffeine',
-        'PUBCHEM.COMPOUND:5280453': 'Calcitriol', 'PUBCHEM.COMPOUND:5943': 'Carbon Tetrachloride',
-        'PUBCHEM.COMPOUND:1203': '2-(3,4-Dihydroxyphenyl)chroman-3,5,7-triol',
-        'PUBCHEM.COMPOUND:135411': '6-[3-(1-Adamantyl)-4-hydroxyphenyl]-2-naphthalenecarboxylic Acid',
-        'PUBCHEM.COMPOUND:154413': 'Centchroman', 'PUBCHEM.COMPOUND:40470': "2,2',3,3',4-Pentachlorobiphenyl",
-        'PUBCHEM.COMPOUND:2730': 'Chlorpyrifos', 'PUBCHEM.COMPOUND:29131': 'Chromium(6+)',
-        'PUBCHEM.COMPOUND:9171': 'Chrysene', 'PUBCHEM.COMPOUND:5702198': 'azane;dichloroplatinum',
-        'PUBCHEM.COMPOUND:2797': 'Clofibric acid', 'PUBCHEM.COMPOUND:24463': 'Copper sulfate pentahydrate',
-        'PUBCHEM.COMPOUND:323': 'Coumarin', 'PUBCHEM.COMPOUND:40585': 'Deltamethrin',
-        'PUBCHEM.COMPOUND:451668': 'Decitabine', 'PUBCHEM.COMPOUND:40024': 'Deoxynivalenol',
-        'PUBCHEM.COMPOUND:3017': 'Diazinon', 'PUBCHEM.COMPOUND:3026': 'Dibutyl Phthalate',
-        'PUBCHEM.COMPOUND:5371560': 'Dicrotophos', 'PUBCHEM.COMPOUND:969491': 'Dieldrin',
-        'PUBCHEM.COMPOUND:8343': 'Bis(2-ethylhexyl) phthalate', 'PUBCHEM.COMPOUND:5921': 'N-Nitrosodiethylamine',
-        'PUBCHEM.COMPOUND:448537': 'Diethylstilbestrol', 'PUBCHEM.COMPOUND:6124': 'N-Nitrosodimethylamine',
-        'PUBCHEM.COMPOUND:8346': 'Dioctyl phthalate', 'PUBCHEM.COMPOUND:5757': 'Estradiol',
-        'PUBCHEM.COMPOUND:702': 'Ethanol', 'PUBCHEM.COMPOUND:5991': 'Ethinyl estradiol',
-        'PUBCHEM.COMPOUND:11': '1,2-Dichloroethane', 'PUBCHEM.COMPOUND:3346': 'Fenthion',
-        'PUBCHEM.COMPOUND:3397': 'Flutamide', 'PUBCHEM.COMPOUND:135398658': 'Folic Acid',
-        'PUBCHEM.COMPOUND:14101198': '[(1R)-1-[(3S,6S,9S,12S,18R,21S,22R)-21-acetamido-18-benzyl-3-[(1R)-1-methoxyethyl]-4,9,10,12,16-pentamethyl-15-methylidene-2,5,8,11,14,17,20-heptaoxo-22-propan-2-yl-1,19-dioxa-4,7,10,13,16-pentazacyclodocos-6-yl]-2-methylpropyl] (2S,3R)-3-hydroxy-4-methyl-2-(propanoylamino)pentanoate',
-        'PUBCHEM.COMPOUND:104741': 'Fulvestrant', 'PUBCHEM.COMPOUND:8029': 'Furan',
-        'PUBCHEM.COMPOUND:60750': 'Gemcitabine', 'PUBCHEM.COMPOUND:5280961': 'Genistein',
-        'PUBCHEM.COMPOUND:9898639': 'Gentamicinsulfate salt', 'PUBCHEM.COMPOUND:637566': 'Geraniol',
-        'PUBCHEM.COMPOUND:3474': 'Glafenine', 'PUBCHEM.COMPOUND:23985': 'Gold',
-        'PUBCHEM.COMPOUND:3616': 'Hexamethylene bisacetamide', 'PUBCHEM.COMPOUND:42890': 'Idarubicin',
-        'PUBCHEM.COMPOUND:3715': 'Indomethacin', 'PUBCHEM.COMPOUND:6912226': 'Ionomycin',
-        'PUBCHEM.COMPOUND:3779': 'Isoproterenol',
-        'PUBCHEM.COMPOUND:9812710': 'Ivermectine 100 microg/mL in Acetonitrile',
-        'PUBCHEM.COMPOUND:46907787': '(S)-(+)-tert-Butyl 2-(4-(4-chlorophenyl)-2,3,9-trimethyl-6H-thieno(3,2-f)(1,2,4)triazolo(4,3-a)(1,4)diazepin-6-yl)acetate',
-        'PUBCHEM.COMPOUND:25195294': '4-(6-(4-(Piperazin-1-yl)phenyl)pyrazolo[1,5-a]pyrimidin-3-yl)quinoline',
-        'PUBCHEM.COMPOUND:896': 'Melatonin', 'PUBCHEM.COMPOUND:10836': 'Methamphetamine',
-        'PUBCHEM.COMPOUND:4098': 'Methapyrilene', 'PUBCHEM.COMPOUND:13709': 'Methidathion',
-        'PUBCHEM.COMPOUND:1349907': 'Methimazole', 'PUBCHEM.COMPOUND:1674': '3-Methylcholanthrene',
-        'PUBCHEM.COMPOUND:4156': 'Methyl methanesulfonate', 'PUBCHEM.COMPOUND:7456': 'Methylparaben',
-        'PUBCHEM.COMPOUND:6010': 'Methyltestosterone', 'PUBCHEM.COMPOUND:8575': 'Monobutyl phthalate',
-        'PUBCHEM.COMPOUND:4449': 'Nefazodone', 'PUBCHEM.COMPOUND:4122': 'Nocodazole',
-        'PUBCHEM.COMPOUND:442530': 'Ochratoxin A', 'PUBCHEM.COMPOUND:9887053': 'Oxaliplatin',
-        'PUBCHEM.COMPOUND:991': 'Parathion', 'PUBCHEM.COMPOUND:854': 'DL-Arabinose',
-        'PUBCHEM.COMPOUND:74483': 'Perfluorooctanesulfonic acid', 'PUBCHEM.COMPOUND:9554': 'Perfluorooctanoic acid',
-        'PUBCHEM.COMPOUND:5794': 'Piperonyl butoxide', 'PUBCHEM.COMPOUND:5694': 'Pirinixic acid',
-        'PUBCHEM.COMPOUND:15032': 'Pregnenolone carbonitrile', 'PUBCHEM.COMPOUND:657298': 'Propylthiouracil',
-        'PUBCHEM.COMPOUND:14942': 'Orthosilicic acid', 'PUBCHEM.COMPOUND:5280343': 'Quercetin',
-        'PUBCHEM.COMPOUND:5035': 'Raloxifene', 'PUBCHEM.COMPOUND:6758': 'Rotenone',
-        'PUBCHEM.COMPOUND:5186': 'Scriptaid', 'PUBCHEM.COMPOUND:1091': 'Selenious acid',
-        'PUBCHEM.COMPOUND:133538': '3-Methyl-6-chloro-2,3,4,5-tetrahydro-7,8-dihydroxy-1-(3-methylphenyl)-1H-3-benzazepine',
-        'PUBCHEM.COMPOUND:7305': 'Soman', 'PUBCHEM.COMPOUND:5323': 'Sulfadimethoxine',
-        'PUBCHEM.COMPOUND:5329102': 'Sunitinib', 'PUBCHEM.COMPOUND:5284461': 'T-2 Toxin',
-        'PUBCHEM.COMPOUND:24857286': 'Fasiglifam', 'PUBCHEM.COMPOUND:6410': 'tert-Butyl Hydroperoxide',
-        'PUBCHEM.COMPOUND:5995': 'Testosterone propionate', 'PUBCHEM.COMPOUND:6618': 'Tetrabromobisphenol A',
-        'PUBCHEM.COMPOUND:15625': '2,3,7,8-Tetrachlorodibenzo-P-dioxin',
-        'PUBCHEM.COMPOUND:27924': 'Phorbol 12-myristate 13-acetate', 'PUBCHEM.COMPOUND:2723949': 'Thioacetamide',
-        'PUBCHEM.COMPOUND:26042': 'Titanium Dioxide', 'PUBCHEM.COMPOUND:60700': 'Topotecan',
-        'PUBCHEM.COMPOUND:444795': 'Tretinoin', 'PUBCHEM.COMPOUND:6575': 'Trichloroethylene',
-        'PUBCHEM.COMPOUND:5564': 'Triclosan', 'PUBCHEM.COMPOUND:11089': 'Trimellitic anhydride',
-        'PUBCHEM.COMPOUND:65411': 'Triptonide', 'PUBCHEM.COMPOUND:23964': 'Tungsten',
-        'PUBCHEM.COMPOUND:3121': 'Valproic Acid', 'PUBCHEM.COMPOUND:14969': 'Vancomycin',
-        'PUBCHEM.COMPOUND:39676': 'Vinclozolin', 'PUBCHEM.COMPOUND:2116': 'DL-alpha-Tocopherol',
-        'MESH:D014874': 'MESH:D014874', 'PUBCHEM.COMPOUND:23994': 'Zinc', 'PUBCHEM.COMPOUND:11626560': 'Crizotinib',
-        'PUBCHEM.COMPOUND:57379345': 'Ceritinib', 'PUBCHEM.COMPOUND:5328940': 'Bosutinib',
-        'PUBCHEM.COMPOUND:49846579': 'Venetoclax',
-        'PUBCHEM.COMPOUND:25134326': 'N2-[2-Methoxy-4-[4-(4-methyl-1-piperazinyl)-1-piperidinyl]phenyl]-N4-[2-[(1-methylethyl)sulfonyl]phenyl]-1,3,5-triazine-2,4-diamine',
-        'PUBCHEM.COMPOUND:9829523': 'Midostaurin', 'PUBCHEM.COMPOUND:25183872': 'Ixazomib',
-        'PUBCHEM.COMPOUND:49806720': 'Alectinib', 'PUBCHEM.COMPOUND:71731823': 'Lorlatinib',
-        'PUBCHEM.COMPOUND:5311': 'Vorinostat', 'PUBCHEM.COMPOUND:5281855': 'Ellagic Acid',
-        'PUBCHEM.COMPOUND:5291': 'Imatinib', 'PUBCHEM.COMPOUND:135430309': '2-(4-methoxyphenyl)-1H-quinazolin-4-one',
-        'PUBCHEM.COMPOUND:447077': '6-(2,6-dichlorophenyl)-8-methyl-2-((3-(methylthio)phenyl)amino)pyrido[2,3-d]pyrimidin-7(8H)-one',
-        'PUBCHEM.COMPOUND:5284616': 'Sirolimus', 'PUBCHEM.COMPOUND:11707110': 'Trametinib',
-        'PUBCHEM.COMPOUND:10184653': 'Afatinib', 'TTD.DRUG:D0Z1OR': 'TTD.DRUG:D0Z1OR',
-        'UNII:334895S862': 'DOXYCYCLINE ANHYDROUS', 'PUBCHEM.COMPOUND:176870': 'Erlotinib',
-        'PUBCHEM.COMPOUND:6049': 'Edetic Acid', 'PUBCHEM.COMPOUND:440473': 'L-mimosine',
-        'PUBCHEM.COMPOUND:175': 'Acetate', 'PUBCHEM.COMPOUND:457193': 'Dactinomycin',
-        'PUBCHEM.COMPOUND:1548943': 'Capsaicin', 'PUBCHEM.COMPOUND:36462': 'Etoposide',
-        'PUBCHEM.COMPOUND:5281672': 'Myricetin', 'PUBCHEM.COMPOUND:6057': 'Tyrosine',
-        'PUBCHEM.COMPOUND:78165': '2-(N-Morpholino)-ethanesulfonic acid',
-        'PUBCHEM.COMPOUND:6518': 'Pentaerythritol tetranitrate', 'PUBCHEM.COMPOUND:5360696': 'Dextromethorphan',
-        'PUBCHEM.COMPOUND:6253': 'Cytarabine', 'PUBCHEM.COMPOUND:30323': 'Daunorubicin',
-        'PUBCHEM.COMPOUND:2733526': 'Tamoxifen', 'PUBCHEM.COMPOUND:3108': 'Dipyridamole',
-        'PUBCHEM.COMPOUND:10366136': 'Crenolanib', 'PUBCHEM.COMPOUND:3220': 'Emodin',
-        'PUBCHEM.COMPOUND:7405': 'L-Pyroglutamic acid',
-        'PUBCHEM.COMPOUND:656894': 'Isopropyl-beta-D-thiogalactopyranoside', 'PUBCHEM.COMPOUND:10607': 'Podofilox',
-        'PUBCHEM.COMPOUND:135398748': 'Penciclovir', 'PUBCHEM.COMPOUND:8771': 'Tetradecyl hydrogen sulfate (ester)',
-        'PUBCHEM.COMPOUND:679': 'Dimethyl Sulfoxide', 'PUBCHEM.COMPOUND:6918638': 'Belinostat',
-        'PUBCHEM.COMPOUND:44259': 'Staurosporine', 'PUBCHEM.COMPOUND:444732': 'trichostatin A',
-        'PUBCHEM.COMPOUND:6029': 'Uridine', 'PUBCHEM.COMPOUND:34755': 'S-adenosylmethionine',
-        'PUBCHEM.COMPOUND:5284627': 'Topiramate', 'PUBCHEM.COMPOUND:5957': "Adenosine-5'-triphosphate",
-        'PUBCHEM.COMPOUND:2353': 'Berberine', 'PUBCHEM.COMPOUND:72277': 'Epigallocatechin',
-        'PUBCHEM.COMPOUND:46191454': 'N-(6,6-dimethyl-5-(1-methylpiperidine-4-carbonyl)-1,4,5,6-tetrahydropyrrolo[3,4-c]pyrazol-3-yl)-3-methylbutanamide',
-        'PUBCHEM.COMPOUND:8988': 'D-proline', 'PUBCHEM.COMPOUND:977': 'Oxygen', 'DRUGBANK:DB12182': 'DRUGBANK:DB12182',
-        'PUBCHEM.COMPOUND:23725625': 'Olaparib', 'PUBCHEM.COMPOUND:4212': 'Mitoxantrone',
-        'PUBCHEM.COMPOUND:91766': 'Flufenoxuron', 'PUBCHEM.COMPOUND:65359': 'Oxiglutatione',
-        'PUBCHEM.COMPOUND:441923': 'Ginsenoside Rg1', 'PUBCHEM.COMPOUND:445154': 'Resveratrol',
-        'PUBCHEM.COMPOUND:65064': 'Epigallocatechin Gallate',
-        'PUBCHEM.COMPOUND:11338033': '4-(2,6-dichlorobenzamido)-N-(piperidin-4-yl)-1H-pyrazole-3-carboxamide',
-        'PUBCHEM.COMPOUND:9444': 'Azacitidine', 'PUBCHEM.COMPOUND:30751': 'Fludarabine phosphate'
-    }:
-        raise RuntimeError(f"Incorrect result: {result5}")
-
-    # Test get_curie() too while we're at it.
-    result6 = get_curie('BRCA1')
-    if result6 != 'NCBIGene:672':
-        raise RuntimeError(f"Searching 'BRCA1' on NameLookup does not return NCBIGene:672 as expected but {result6}.")

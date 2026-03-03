@@ -54,7 +54,7 @@ def lookup_curies(curies: list[str], **kwargs):
 
     result = response.json()
     if len(result) == 0:
-        raise LookupError('No matching CURIE found for the given string ' + curies)
+        raise LookupError('No matching CURIE found for the given string ' + curies)  # BUG: str + list[str] TypeError
 
     results = response.json()
 

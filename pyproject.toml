@@ -27,7 +27,6 @@ dependencies = [
     "seaborn",
     "matplotlib",
     "ipycytoscape",
-    "networkx",
     "numpy",
     "openai",
     "ipykernel",
@@ -52,6 +51,9 @@ dev = [
     "ruff>=0.1.0",
     "codespell>=2.2.0",
     "mypy>=1.14.1",
+    "nbconvert>=7.0.0",
+    "ipykernel>=6.0.0",
+    "notebook>=7.5.4",
 ]
 
 [tool.uv.sources]
@@ -66,10 +68,18 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=0",
+    "--cov-fail-under=95",
     "--tb=short",
     "-v"
 ]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+]
+
+[tool.coverage.run]
+omit = []
 
 [tool.ruff]
 exclude = ["notebooks/"]

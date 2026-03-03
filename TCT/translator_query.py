@@ -3,30 +3,26 @@ from copy import deepcopy
 import pandas
 from TCT import translator_metakg
 from TCT import translator_kpinfo
+from TCT.results import KnowledgeGraph
+from TCT.translator_resources import TranslatorResources
 
-def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
+def get_translator_API_predicates() -> TranslatorResources:
     '''
     Get the predicates supported by each API.
 
     Returns
     --------
-    API_names : dict[str, str]
-          dict of API names to URLs
-
-    metaKG : pandas.DataFrame
-          This is a dataframe that represents the meta KG for the KPs in the APInames input -   columns include [TODO].
-
-    API_predicates : dict[str, list]
-        A dictionary of API names and a list of their predicates.
+    TranslatorResources
+        A container with ``api_names``, ``meta_kg``, and ``api_predicates``.
 
     Examples
     --------
-    >>> API_names, metaKG, API_predicates = get_translator_API_predicates()
+    >>> resources = get_translator_API_predicates()
     '''
     Translator_KP_info,APInames= translator_kpinfo.get_translator_kp_info()
     print(len(Translator_KP_info))
     # Step 2: Get metaKG and all predicates from Translator APIs through the SmartAPI system
-    metaKG = translator_metakg.get_KP_metadata(APInames) 
+    metaKG = translator_metakg.get_KP_metadata(APInames)
     print(metaKG.shape)
     # Add metaKG from Plover API based KG resources
     APInames,metaKG = translator_metakg.add_plover_API(APInames, metaKG)
@@ -41,7 +37,7 @@ def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
     for api in API_withMetaKG:
         API_predicates[api] = list(set(metaKG[metaKG['API'] == api]['Predicate']))
 
-    return APInames, metaKG, API_predicates
+    return TranslatorResources(api_names=APInames, meta_kg=metaKG, api_predicates=API_predicates)
 
 def optimize_query_json(query_json, API_name_cur, API_predicates):
     '''
@@ -78,16 +74,25 @@ def optimize_query_json(query_json, API_name_cur, API_predicates):
 
     return query_json_cur
 
-def query_KP(API_name_cur, query_json, APInames, API_predicates):
+def query_KP(API_name_cur, query_json, resources):
     """
     Query an individual API with a TRAPI 1.5.0 query JSON,
     without modifying the original query_json.
+
+    Parameters
+    ----------
+    API_name_cur : str
+        Name of the API to query.
+    query_json : dict
+        A query in TRAPI 1.5.0 format.
+    resources : TranslatorResources
+        Container with ``api_names`` and ``api_predicates``.
     """
-    API_url_cur = APInames[API_name_cur]
+    API_url_cur = resources.api_names[API_name_cur]
     # deep‐copy so we never touch the caller’s data
     query_copy = deepcopy(query_json)
     # optimize on our private copy
-    query_json_cur = optimize_query_json(query_copy, API_name_cur, API_predicates)
+    query_json_cur = optimize_query_json(query_copy, API_name_cur, resources.api_predicates)
     response = requests.post(API_url_cur, json=query_json_cur)
     if response.status_code == 200:
         result = response.json().get("message", {})
@@ -103,26 +108,29 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
         #print(f"{API_name_cur}: Warning Code: {response.status_code}")
         return None
 
-def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_workers=1):
+def parallel_api_query(query_json, select_APIs, resources, max_workers=1):
     '''
     Queries multiple APIs in parallel and merges the results into a single knowledge graph.
 
     Parameters
     ----------
-    URLS
-        list of API URLs to query
-    query_json
-        the query JSON to be sent to each API
-    max_workers
-        number of parallel workers to use for querying
+    query_json : dict
+        The query JSON to be sent to each API.
+    select_APIs : list[str]
+        List of API names to query.
+    resources : TranslatorResources
+        Container with ``api_names`` and ``api_predicates``.
+    max_workers : int
+        Number of parallel workers to use for querying.
 
     Returns
     -------
-    Returns a merged knowledge graph from all successful API responses.
+    KnowledgeGraph
+        A merged knowledge graph from all successful API responses.
 
     Examples
     --------
-    >>> result = TCT.parallel_api_query(API_URLs,query_json=query_json, max_workers=len(API_URLs1))
+    >>> result = parallel_api_query(query_json=query_json, select_APIs=sele_APIs, resources=resources, max_workers=len(sele_APIs))
 
     '''
     # Parallel query
@@ -133,7 +141,7 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # copy the query_json for each API to avoid modifying the original query_json
         query_json_cur = deepcopy(query_json)
-        future_to_url = {executor.submit(query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
+        future_to_url = {executor.submit(query_KP, API_name_cur, query_json_cur, resources): API_name_cur for API_name_cur in select_APIs}
 
         for future in as_completed(future_to_url):
             url = future_to_url[future]
@@ -157,6 +165,4 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
     for i in included_KP_ID:
         result_merged = {**result_merged, **result[i]['knowledge_graph']['edges']}
 
-    len(result_merged)
-
-    return(result_merged)
+    return KnowledgeGraph(edges=result_merged)

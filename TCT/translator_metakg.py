@@ -121,17 +121,72 @@ def add_new_API_for_query(APInames:dict[str, str], metaKG:pd.DataFrame, newAPIna
     return APInames, metaKG
 
 
+PLOVER_APIS = [
+    {
+        "name": "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/query",
+    },
+    {
+        "name": "CATRAX Pharmacogenomics KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/PharmacogenomicsKG/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/PharmacogenomicsKG/query",
+    },
+    {
+        "name": "Clinical Trials KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/ctkp/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/ctkp/query",
+    },
+    {
+        "name": "Drug Approvals KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/dakp/query",
+    },
+    {
+        "name": "Multiomics KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/multiomics/query",
+    },
+    {
+        "name": "Microbiome KP - TRAPI 1.5.0",
+        "meta_kg_url": "https://multiomics.rtx.ai:9990/mbkp/meta_knowledge_graph",
+        "query_url": "https://multiomics.rtx.ai:9990/mbkp/query",
+    },
+    {
+        "name": "RTX KG2 - TRAPI 1.5.0",
+        "meta_kg_url": "https://kg2cploverdb.ci.transltr.io/meta_knowledge_graph",
+        "query_url": "https://kg2cploverdb.ci.transltr.io/kg2c/query",
+    },
+]
+
+
+def _add_plover_api_entry(api_names, meta_kg, entry):
+    response = requests.get(entry["meta_kg_url"])
+    data = response.json()
+    for i in range(len(data["edges"])):
+        api_names, meta_kg = add_new_API_for_query(
+            api_names,
+            meta_kg,
+            entry["name"],
+            entry["query_url"],
+            data["edges"][i]["predicate"],
+            data["edges"][i]["subject"],
+            data["edges"][i]["object"],
+        )
+    return api_names, meta_kg
+
+
 def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
     '''
     This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.
 
     Current APIs include :
-    CATRAX BigGIM DrugResponse Performance Phase, 
-    CATRAX Pharmacogenomics, 
-    Clinical Trials, 
-    Drug Approvals, 
-    Multiomics, 
-    Microbiome, 
+    CATRAX BigGIM DrugResponse Performance Phase,
+    CATRAX Pharmacogenomics,
+    Clinical Trials,
+    Drug Approvals,
+    Multiomics,
+    Microbiome,
     and RTX KG2.
 
     Parameters
@@ -149,51 +204,8 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
     --------
     >>> APInames, metaKG = add_plover_API(APInames, metaKG)
     '''
-    import requests
-    url = 'https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    url = 'https://multiomics.rtx.ai:9990/PharmacogenomicsKG/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    url = 'https://multiomics.rtx.ai:9990/ctkp/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    url = 'https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    url = 'https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/multiomics/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    url = 'https://multiomics.rtx.ai:9990/mbkp/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", "https://multiomics.rtx.ai:9990/mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-
-    url = 'https://kg2cploverdb.ci.transltr.io/meta_knowledge_graph'
-    response = requests.get(url)
-    data = response.json()
-    for i in range(len(data["edges"])):
-        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "RTX KG2 - TRAPI 1.5.0", "https://kg2cploverdb.ci.transltr.io/kg2c/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
-
-    
+    for entry in PLOVER_APIS:
+        APInames, metaKG = _add_plover_api_entry(APInames, metaKG, entry)
     return APInames, metaKG
 
 def load_translator_resources():

@@ -79,7 +79,7 @@ def build_query(subject_ids:list[str],
         return query_dict
 
 
-def process_result(result:dict):
+def process_result(result:dict):  # pragma: no cover
     """
     Processes a TRAPI query result, returning a table of edges.
 
@@ -130,6 +130,6 @@ def query(url:str, query:str):
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
 
 
-def parallel_query(url_list:list[str]):
+def parallel_query(url_list:list[str]):  # pragma: no cover
     """
     """
