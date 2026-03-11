@@ -6,6 +6,32 @@ from TCT import translator_kpinfo
 from TCT.results import KnowledgeGraph
 from TCT.translator_resources import TranslatorResources
 
+
+def _resolve_query_resources(resources, *, APInames=None, API_predicates=None):
+    """Resolve legacy (APInames, API_predicates) kwargs into a TranslatorResources."""
+    if resources is not None and isinstance(resources, TranslatorResources):
+        return resources
+    if APInames is not None:
+        import warnings
+
+        warnings.warn(
+            "Passing APInames/API_predicates as separate arguments is deprecated. "
+            "Use resources=TranslatorResources(...) instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return TranslatorResources(
+            api_names=APInames,
+            meta_kg=pandas.DataFrame(),
+            api_predicates=API_predicates or {},
+        )
+    if resources is not None:
+        raise TypeError("Expected TranslatorResources for 'resources'.")
+    raise TypeError(
+        "Either 'resources' or 'APInames'+'API_predicates' must be provided."
+    )
+
+
 def get_translator_API_predicates() -> TranslatorResources:
     '''
     Get the predicates supported by each API.
@@ -74,7 +100,7 @@ def optimize_query_json(query_json, API_name_cur, API_predicates):
 
     return query_json_cur
 
-def query_KP(API_name_cur, query_json, resources):
+def query_KP(API_name_cur, query_json, resources=None, *, APInames=None, API_predicates=None):
     """
     Query an individual API with a TRAPI 1.5.0 query JSON,
     without modifying the original query_json.
@@ -88,6 +114,7 @@ def query_KP(API_name_cur, query_json, resources):
     resources : TranslatorResources
         Container with ``api_names`` and ``api_predicates``.
     """
+    resources = _resolve_query_resources(resources, APInames=APInames, API_predicates=API_predicates)
     API_url_cur = resources.api_names[API_name_cur]
     # deep‐copy so we never touch the caller’s data
     query_copy = deepcopy(query_json)
@@ -108,7 +135,8 @@ def query_KP(API_name_cur, query_json, resources):
         #print(f"{API_name_cur}: Warning Code: {response.status_code}")
         return None
 
-def parallel_api_query(query_json, select_APIs, resources, max_workers=1):
+def parallel_api_query(query_json, select_APIs, resources=None, max_workers=1,
+                       *, APInames=None, API_predicates=None):
     '''
     Queries multiple APIs in parallel and merges the results into a single knowledge graph.
 
@@ -133,6 +161,7 @@ def parallel_api_query(query_json, select_APIs, resources, max_workers=1):
     >>> result = parallel_api_query(query_json=query_json, select_APIs=sele_APIs, resources=resources, max_workers=len(sele_APIs))
 
     '''
+    resources = _resolve_query_resources(resources, APInames=APInames, API_predicates=API_predicates)
     # Parallel query
     result = []
     no_results_returned = []

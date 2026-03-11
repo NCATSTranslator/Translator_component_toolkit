@@ -55,3 +55,20 @@ class TranslatorResources:
             api: list(set(self.meta_kg[self.meta_kg["API"] == api]["Predicate"]))
             for api in apis
         }
+
+    def __iter__(self):
+        import warnings
+
+        warnings.warn(
+            "Unpacking TranslatorResources as a tuple is deprecated. "
+            "Use the object directly: resources.api_names, resources.meta_kg, "
+            "resources.api_predicates",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        yield self.api_names
+        yield self.meta_kg
+        yield self.api_predicates
+
+    def __len__(self):
+        return 3

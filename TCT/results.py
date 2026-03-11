@@ -42,6 +42,16 @@ class KnowledgeGraph:
     def __contains__(self, key):
         return key in self._edges
 
+    def __eq__(self, other):
+        if isinstance(other, dict):
+            return self._edges == other
+        if isinstance(other, KnowledgeGraph):
+            return self._edges == other._edges
+        return NotImplemented
+
+    def __bool__(self):
+        return bool(self._edges)
+
     def items(self):
         return self._edges.items()
 
@@ -202,6 +212,16 @@ class ParsedKnowledgeGraph:
     def __contains__(self, key):
         return key in self._entries
 
+    def __eq__(self, other):
+        if isinstance(other, dict):
+            return self._entries == other
+        if isinstance(other, ParsedKnowledgeGraph):
+            return self._entries == other._entries
+        return NotImplemented
+
+    def __bool__(self):
+        return bool(self._entries)
+
     def items(self):
         return self._entries.items()
 
@@ -290,6 +310,24 @@ class NeighborhoodResult:
         """Delegates to knowledge_graph.to_networkx()."""
         return self.knowledge_graph.to_networkx(resolve_names=resolve_names)
 
+    def __iter__(self):
+        import warnings
+
+        warnings.warn(
+            "Unpacking NeighborhoodResult as a tuple is deprecated. "
+            "Use named attributes: result.input_node_id, result.knowledge_graph, "
+            "result.parsed, result.ranked",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        yield self.input_node_id
+        yield self.knowledge_graph
+        yield self.parsed
+        yield self.ranked
+
+    def __len__(self):
+        return 4
+
 
 @dataclass
 class PathResult:
@@ -310,6 +348,28 @@ class PathResult:
         g1 = self.knowledge_graph1.to_networkx(resolve_names=resolve_names)
         g2 = self.knowledge_graph2.to_networkx(resolve_names=resolve_names)
         return nx.compose(g1, g2)
+
+    def __iter__(self):
+        import warnings
+
+        warnings.warn(
+            "Unpacking PathResult as a tuple is deprecated. "
+            "Use named attributes: result.paths, result.node1_id, etc.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        yield self.paths
+        yield self.node1_id
+        yield self.node2_id
+        yield self.knowledge_graph1
+        yield self.knowledge_graph2
+        yield self.parsed1
+        yield self.parsed2
+        yield self.ranked1
+        yield self.ranked2
+
+    def __len__(self):
+        return 9
 
 
 def dataframe_to_graph(

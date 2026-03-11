@@ -12,8 +12,15 @@ __pycache__
 *.png
 .pypirc
 
+notebooks/*.html
+notebooks/*.csv
+
 .idea/
 .coverage/
 htmlcov/
 coverage.xml
 .coverage
+
+# Claude code
+.claude/
+CLAUDE.md
