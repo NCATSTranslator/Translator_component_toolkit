@@ -64,7 +64,7 @@ class KnowledgeGraph:
     def get(self, key, default=None):
         return self._edges.get(key, default)
 
-    def to_networkx(self, resolve_names: bool = False) -> nx.MultiDiGraph:
+    def to_networkx(self, resolve_names: bool = False, include_attributes: bool = False) -> nx.MultiDiGraph:
         """Convert to a NetworkX MultiDiGraph with full edge metadata."""
         G = nx.MultiDiGraph()
 
@@ -83,14 +83,20 @@ class KnowledgeGraph:
                 elif role == "aggregator_knowledge_source":
                     aggregator_sources.append(resource_id)
 
-            G.add_edge(
-                subject,
-                obj,
+            edge_kwargs = dict(
                 key=edge_id,
                 predicate=predicate,
                 primary_sources=primary_sources,
                 aggregator_sources=aggregator_sources,
             )
+
+            if include_attributes:
+                from .attribute_extraction import extract_rich_edge_attributes
+
+                rich = extract_rich_edge_attributes(edge_data.get("attributes", []))
+                edge_kwargs.update(rich)
+
+            G.add_edge(subject, obj, **edge_kwargs)
 
         if resolve_names and len(G.nodes()) > 0:
             from . import node_normalizer

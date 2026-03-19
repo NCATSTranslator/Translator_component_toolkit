@@ -123,6 +123,99 @@ def sample_api_predicates():
 
 
 @pytest.fixture()
+def sample_kg_result_with_attributes():
+    """TRAPI edges covering all attribute patterns for rich extraction tests."""
+    return {
+        "edge_top_level_pubs": {
+            "subject": "NCBIGene:3845",
+            "object": "CHEBI:15377",
+            "predicate": "biolink:interacts_with",
+            "sources": [
+                {"resource_id": "infores:kp1", "resource_role": "primary_knowledge_source"},
+            ],
+            "attributes": [
+                {
+                    "attribute_type_id": "biolink:publications",
+                    "value": ["PMID:123", "PMID:456"],
+                },
+            ],
+        },
+        "edge_nested_study_result": {
+            "subject": "NCBIGene:3845",
+            "object": "MONDO:0005148",
+            "predicate": "biolink:gene_associated_with_condition",
+            "sources": [
+                {"resource_id": "infores:kp2", "resource_role": "primary_knowledge_source"},
+            ],
+            "attributes": [
+                {
+                    "attribute_type_id": "biolink:has_supporting_study_result",
+                    "value": "some_study",
+                    "attributes": [
+                        {
+                            "attribute_type_id": "biolink:publications",
+                            "value": "PMID:789",
+                        },
+                        {
+                            "attribute_type_id": "biolink:supporting_text",
+                            "value": "Gene X is associated with disease Y.",
+                        },
+                        {
+                            "attribute_type_id": "biolink:extraction_confidence_score",
+                            "value": 0.95,
+                        },
+                    ],
+                },
+            ],
+        },
+        "edge_legacy_sentences_tmkp": {
+            "subject": "CHEBI:15377",
+            "object": "NCBIGene:3845",
+            "predicate": "biolink:affects",
+            "sources": [
+                {"resource_id": "infores:kp3", "resource_role": "primary_knowledge_source"},
+            ],
+            "attributes": [
+                {
+                    "attribute_type_id": "biolink:has_evidence",
+                    "original_attribute_name": "sentences",
+                    "value": "Compound affects gene expression.",
+                },
+                {
+                    "attribute_type_id": "biolink:has_confidence_level",
+                    "original_attribute_name": "tmkp_confidence_score",
+                    "value": 0.87,
+                },
+            ],
+        },
+        "edge_string_combined_score": {
+            "subject": "NCBIGene:3845",
+            "object": "NCBIGene:7157",
+            "predicate": "biolink:interacts_with",
+            "sources": [
+                {"resource_id": "infores:string", "resource_role": "primary_knowledge_source"},
+            ],
+            "attributes": [
+                {
+                    "attribute_type_id": "biolink:has_confidence_level",
+                    "original_attribute_name": "Combined_score",
+                    "value": 900,
+                },
+            ],
+        },
+        "edge_empty_attributes": {
+            "subject": "NCBIGene:7157",
+            "object": "MONDO:0005148",
+            "predicate": "biolink:related_to",
+            "sources": [
+                {"resource_id": "infores:kp4", "resource_role": "primary_knowledge_source"},
+            ],
+            "attributes": [],
+        },
+    }
+
+
+@pytest.fixture()
 def sample_resources(sample_apinames, sample_metakg, sample_api_predicates):
     """A TranslatorResources instance built from the sample fixtures."""
     from TCT.translator_resources import TranslatorResources

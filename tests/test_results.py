@@ -107,6 +107,40 @@ class TestKnowledgeGraph:
         kg = KnowledgeGraph(edges=sample_kg_result)
         assert isinstance(kg, GraphConvertible)
 
+    def test_to_networkx_default_excludes_rich_attributes(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        G = kg.to_networkx()
+        for _u, _v, data in G.edges(data=True):
+            assert "publications" not in data
+            assert "supporting_text" not in data
+            assert "confidence_scores" not in data
+
+    def test_to_networkx_include_attributes_adds_publications(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        G = kg.to_networkx(include_attributes=True)
+        edge_data = G.edges["NCBIGene:3845", "CHEBI:15377", "edge_top_level_pubs"]
+        assert edge_data["publications"] == ["PMID:123", "PMID:456"]
+
+    def test_to_networkx_include_attributes_adds_supporting_text(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        G = kg.to_networkx(include_attributes=True)
+        edge_data = G.edges["NCBIGene:3845", "MONDO:0005148", "edge_nested_study_result"]
+        assert "Gene X is associated with disease Y." in edge_data["supporting_text"]
+
+    def test_to_networkx_include_attributes_adds_confidence_scores(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        G = kg.to_networkx(include_attributes=True)
+        edge_data = G.edges["CHEBI:15377", "NCBIGene:3845", "edge_legacy_sentences_tmkp"]
+        assert edge_data["confidence_scores"]["tmkp_confidence_score"] == 0.87
+
+    def test_to_networkx_include_attributes_empty_edge(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        G = kg.to_networkx(include_attributes=True)
+        edge_data = G.edges["NCBIGene:7157", "MONDO:0005148", "edge_empty_attributes"]
+        assert edge_data["publications"] == []
+        assert edge_data["supporting_text"] == []
+        assert edge_data["confidence_scores"] == {}
+
 
 # ---------------------------------------------------------------------------
 # ParsedKnowledgeGraph tests
