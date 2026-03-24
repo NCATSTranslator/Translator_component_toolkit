@@ -53,7 +53,7 @@
     <span class="s1">&#39;get_SmartAPI_Translator_KP_info&#39;</span><span class="p">,</span>
     <span class="s1">&#39;list_Translator_APIs&#39;</span><span class="p">,</span>
     <span class="s1">&#39;load_translator_resources&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Neiborhood_finder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Neighborhood_finder&#39;</span><span class="p">,</span>
     <span class="s1">&#39;Path_finder&#39;</span><span class="p">,</span>
     <span class="s1">&#39;format_query_json&#39;</span><span class="p">,</span>
     <span class="s1">&#39;select_API&#39;</span><span class="p">,</span>
@@ -1146,9 +1146,9 @@
 
     <span class="k">return</span> <span class="n">ranked_result</span>
 
-<div class="viewcode-block" id="Neiborhood_finder">
-<a class="viewcode-back" href="../../TCT.html#TCT.TCT.Neiborhood_finder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">Neiborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[]):</span>
+<div class="viewcode-block" id="Neighborhood_finder">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.Neighborhood_finder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">Neighborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function is used to find the neighborhood of a given input node with intermediate categories.</span>
 
@@ -1170,7 +1170,7 @@
 
 <span class="sd">    --------------</span>
 <span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
+<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neighborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
 <span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
 <span class="sd">                                                                                            APInames = APInames,</span>
 <span class="sd">                                                                                            metaKG = metaKG,</span>

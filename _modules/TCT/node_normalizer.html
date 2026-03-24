@@ -61,7 +61,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_normalized_nodes</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">return_equivalent_identifiers</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">mode</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;get&#39;</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TranslatorNode</span><span class="p">]</span><span class="o">|</span><span class="n">TranslatorNode</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A wrapper around the `get_normalized_nodes` api endpoint. Given a CURIE or a list of CURIEs, this returns either a single TranslatorNode or a dict of CURIE ids to TranslatorNodes.</span>
 
@@ -87,8 +87,9 @@
 <span class="sd">    &gt;&gt;&gt; get_normalized_nodes(&#39;MESH:D014867&#39;, return_equivalent_identifiers=False)</span>
 <span class="sd">    TranslatorNode(curie=&#39;CHEBI:15377&#39;, label=&#39;Water&#39;, types=[&#39;biolink:SmallMolecule&#39;, &#39;biolink:MolecularEntity&#39;, &#39;biolink:ChemicalEntity&#39;, &#39;biolink:PhysicalEssence&#39;, &#39;biolink:ChemicalOrDrugOrTreatment&#39;, &#39;biolink:ChemicalEntityOrGeneOrGeneProduct&#39;, &#39;biolink:ChemicalEntityOrProteinOrPolypeptide&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:PhysicalEssenceOrOccurrent&#39;], synonyms=None, curie_synonyms=None)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">&#39;get_normalized_nodes&#39;</span><span class="p">)</span>
     <span class="c1"># default parameters: true for gene-protein conflation, false for drug-chemical conflation</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">&#39;get_normalized_nodes&#39;</span><span class="p">)</span>
+    <span class="c1"># TODO: batch the query?</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;post&#39;</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># CURIEs sent to POST must be a list. If a single CURIE is given, we wrap it.</span>
@@ -156,6 +157,8 @@
     <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">id_list</span><span class="p">),</span> <span class="n">batch_limit</span><span class="p">):</span>
         <span class="n">id_sublist</span> <span class="o">=</span> <span class="n">id_list</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span> <span class="o">+</span> <span class="n">batch_limit</span><span class="p">]</span>
         <span class="n">normalized_nodes</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">id_sublist</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalized_nodes</span><span class="p">,</span> <span class="n">TranslatorNode</span><span class="p">):</span>
+            <span class="n">normalized_nodes</span> <span class="o">=</span> <span class="p">{</span><span class="n">normalized_nodes</span><span class="o">.</span><span class="n">curie</span><span class="p">:</span> <span class="n">normalized_nodes</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">curie</span> <span class="ow">in</span> <span class="n">id_sublist</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">curie</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">normalized_nodes</span> <span class="ow">or</span> <span class="n">normalized_nodes</span><span class="p">[</span><span class="n">curie</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">unmapped_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">curie</span><span class="p">)</span>
