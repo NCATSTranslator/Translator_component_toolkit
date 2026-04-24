@@ -47,7 +47,7 @@
 <a class="viewcode-back" href="../../trapi.html#TCT.trapi.build_query">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_query</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
         <span class="n">object_categories</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">predicates</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
-        <span class="n">return_json</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">return_json</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">object_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">subject_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This constructs a query json for use with TRAPI. Queries are of the form [subject_ids]-[predicates]-[object_categories].</span>
@@ -68,7 +68,7 @@
 <span class="sd">        A list of predicates that we are interested in. Example: [&quot;biolink:positively_correlated_with&quot;, &quot;biolink:physically_interacts_with&quot;].</span>
 
 <span class="sd">    return_json</span>
-<span class="sd">        If true, returns a json string; if false, returns a dict.</span>
+<span class="sd">        If true, returns a json string; if false, returns a dict (default).</span>
 
 <span class="sd">    object_ids</span>
 <span class="sd">        None by default</span>
@@ -77,7 +77,7 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    A json string</span>
+<span class="sd">    A dict (default) or json string if return_json=True</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -135,7 +135,7 @@
 
 <div class="viewcode-block" id="query">
 <a class="viewcode-back" href="../../trapi.html#TCT.trapi.query">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="n">url</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span><span class="nb">dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Queries a single TRAPI endpoint.</span>
 
@@ -143,8 +143,8 @@
 <span class="sd">    ------</span>
 <span class="sd">    url : str</span>
 <span class="sd">        The URL for the API endpoint.</span>
-<span class="sd">    query : str</span>
-<span class="sd">        A JSON string representing the query, as produced by build_query</span>
+<span class="sd">    query : dict</span>
+<span class="sd">        A dict representing the query, as produced by build_query</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -152,11 +152,16 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; query = build_query([&#39;NCBIGene:3845&#39;], [&#39;biolink:Gene&#39;], [&#39;biolink:physically_interacts_with&#39;])</span>
-<span class="sd">    &gt;&gt;&gt; response = query(url, query)</span>
+<span class="sd">    &gt;&gt;&gt; query_dict = build_query([&#39;NCBIGene:3845&#39;], [&#39;biolink:Gene&#39;], [&#39;biolink:physically_interacts_with&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; response = query(url, query_dict)</span>
 <span class="sd">    &gt;&gt;&gt; print(response)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># example: 1. get APIs, 2. get APIs that have the target object and subject types, and the target predicates. 3. build the query and run the query.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;query must be a dict, not a JSON string. &quot;</span>
+            <span class="s2">&quot;Use build_query(...) without return_json=True, &quot;</span>
+            <span class="s2">&quot;or pass json.loads(query) instead.&quot;</span>
+        <span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
         <span class="c1"># TODO</span>
