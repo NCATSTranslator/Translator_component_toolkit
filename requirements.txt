@@ -9,3 +9,5 @@ openai
 ipykernel
 PyYAML
 ipywidgets
+zstandard
+igraph

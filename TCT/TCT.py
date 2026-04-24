@@ -20,7 +20,7 @@ __all__ = [
     'get_SmartAPI_Translator_KP_info',
     'list_Translator_APIs',
     'load_translator_resources',
-    'Neiborhood_finder',
+    'Neighborhood_finder',
     'Path_finder',
     'format_query_json',
     'select_API',
@@ -1100,7 +1100,7 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     return ranked_result
 
-def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = []):
+def Neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = []):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
 
@@ -1122,7 +1122,7 @@ def Neiborhood_finder(input_node, node2_categories, APInames, metaKG, API_predic
 
     --------------
     Example:
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neiborhood_finder('MONDO:0008170', #Ovarian Cancer
+    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neighborhood_finder('MONDO:0008170', #Ovarian Cancer
                                                                                             node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
                                                                                             APInames = APInames,
                                                                                             metaKG = metaKG,
@@ -1566,6 +1566,7 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
 
 def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
                                        result_ranked_by_primary_infores1,
+                                       plot=True,
                                        top_n = 30,
                                        fontsize = 12,
                                        title_fontsize = 12,
@@ -1598,8 +1599,8 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
 
 
     #result_xy["output_node_name"] = new_colnames
-    result_xy['predictes1'] = predicts_list1
-    result_xy['predictes2'] = predicts_list2
+    result_xy['predicates1'] = predicts_list1
+    result_xy['predicates2'] = predicts_list2
 
     result_xy_sorted = result_xy.sort_values(by=['score'], ascending=False)
 
@@ -1621,7 +1622,8 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
     x = result_xy_sorted.iloc[0:top_n].index
     y = result_xy_sorted.iloc[0:top_n]['score']
 
-    plot_path_bar(x,y,fontsize, title_fontsize, output_png=output_png)
+    if plot:
+        plot_path_bar(x,y,fontsize, title_fontsize, output_png=output_png)
 
     return result_xy_sorted
 

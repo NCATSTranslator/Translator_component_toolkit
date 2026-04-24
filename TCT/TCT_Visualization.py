@@ -4,17 +4,18 @@ from .node_normalizer import ID_convert_to_preferred_name_nodeNormalizer
 import networkx as nx
 from pyvis.network import Network
 
-def visualize_neighborhood_graph(result, show_label=True, height="1000px", width="100%"):
+def visualize_neighborhood_graph(result, show_label=True, height="1000px", width="100%", output_filename_prefix=None):
     '''Visualize the neighborhood graph using pyvis
     Args:
         result: the output from the KP query, a dictionary or json format
         show_label: whether to convert the node id to preferred name
         height: the height of the figure
         width: the width of the figure
+        output_filename_prefix: if present, this is appended to the end of every output graph file.
     Returns:
         dic_graph: a dictionary of networkx graph for each predicate
     Example:
-        dic_graph = visualize_neiborhood_graph(result, show_label=True, height="500", width="100%")
+        dic_graph = visualize_neighborhood_graph(result, show_label=True, height="500", width="100%")
     '''
     
     # Your JSON (as Python dict)
@@ -91,5 +92,8 @@ def visualize_neighborhood_graph(result, show_label=True, height="1000px", width
         # add title in the figure
         title_html = f"<h3>Predicate: {predicate}</h3>"
         net.title = title_html + f"<p>Nodes: {net.num_nodes()} Edges: {net.num_edges()}</p>"
-        net.show(f"{predicate}.html")
-        return dic_graph
+        if output_filename_prefix is None:
+            net.show(f"{predicate}.html")
+        else:
+            net.show(f"{output_filename_prefix}{predicate}.html")
+    return dic_graph

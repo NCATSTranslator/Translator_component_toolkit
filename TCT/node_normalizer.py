@@ -23,7 +23,7 @@ def status():
 def get_normalized_nodes(query: str | list[str],
         return_equivalent_identifiers:bool=False,
         mode:str='get',
-        **kwargs):
+        **kwargs) -> dict[str, TranslatorNode]|TranslatorNode:
     """
     A wrapper around the `get_normalized_nodes` api endpoint. Given a CURIE or a list of CURIEs, this returns either a single TranslatorNode or a dict of CURIE ids to TranslatorNodes.
 
@@ -49,8 +49,9 @@ def get_normalized_nodes(query: str | list[str],
     >>> get_normalized_nodes('MESH:D014867', return_equivalent_identifiers=False)
     TranslatorNode(curie='CHEBI:15377', label='Water', types=['biolink:SmallMolecule', 'biolink:MolecularEntity', 'biolink:ChemicalEntity', 'biolink:PhysicalEssence', 'biolink:ChemicalOrDrugOrTreatment', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:ChemicalEntityOrProteinOrPolypeptide', 'biolink:NamedThing', 'biolink:PhysicalEssenceOrOccurrent'], synonyms=None, curie_synonyms=None)
     """
-    path = urllib.parse.urljoin(URL, 'get_normalized_nodes')
     # default parameters: true for gene-protein conflation, false for drug-chemical conflation
+    path = urllib.parse.urljoin(URL, 'get_normalized_nodes')
+    # TODO: batch the query?
     if mode == 'post':
         if isinstance(query, str):
             # CURIEs sent to POST must be a list. If a single CURIE is given, we wrap it.
@@ -115,6 +116,8 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     for index in range(0, len(id_list), batch_limit):
         id_sublist = id_list[index:index + batch_limit]
         normalized_nodes = get_normalized_nodes(id_sublist, mode='post', **kwargs)
+        if isinstance(normalized_nodes, TranslatorNode):
+            normalized_nodes = {normalized_nodes.curie: normalized_nodes}
         for curie in id_sublist:
             if curie not in normalized_nodes or normalized_nodes[curie] is None:
                 unmapped_ids.append(curie)

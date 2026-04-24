@@ -121,7 +121,7 @@ def add_new_API_for_query(APInames:dict[str, str], metaKG:pd.DataFrame, newAPIna
     return APInames, metaKG
 
 
-def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
+def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[str, str], pd.DataFrame]:
     '''
     This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.
 
@@ -134,6 +134,8 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
     Microbiome, 
     and RTX KG2.
 
+    If an API endpoint is not available (i.e. returns a non-200 return code), then the API will not be included.
+
     Parameters
     ----------
     APInames : dict
@@ -141,9 +143,6 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
 
     metaKG : pandas.DataFrame
         This is the output of `get_kp_metadata`.
-
-
-
 
     Examples
     --------
@@ -162,7 +161,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
 
 
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase")
 
 
     
@@ -176,7 +175,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/PharmacogenomicsKG. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/PharmacogenomicsKG. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/PharmacogenomicsKG")
 
     
 
@@ -190,7 +189,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/ctkp. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/ctkp. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/ctkp")
 
     
 
@@ -204,7 +203,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/dakp. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/dakp. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/dakp")
     
     
     url = 'https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph'
@@ -217,7 +216,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mokp. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mokp. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mokp")
     
     url = 'https://multiomics.rtx.ai:9990/mbkp/meta_knowledge_graph'
     try:
@@ -229,7 +228,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mbkp. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mbkp. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://multiomics.rtx.ai:9990/mbkp")
     
 
     url = 'https://kg2cploverdb.ci.transltr.io/meta_knowledge_graph'
@@ -242,9 +241,8 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame):
         else:
             print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io. Status code:", response.status_code)
+        print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io")
 
-   
     return APInames, metaKG
 
 def load_translator_resources():
