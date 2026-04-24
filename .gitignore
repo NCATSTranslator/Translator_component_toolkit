@@ -17,3 +17,6 @@ __pycache__
 htmlcov/
 coverage.xml
 .coverage
+
+/notebooks/*.html
+temp
