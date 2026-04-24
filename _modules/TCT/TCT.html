@@ -1627,6 +1627,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span>
                                        <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span>
+                                       <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                                        <span class="n">top_n</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
                                        <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                                        <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
@@ -1659,8 +1660,8 @@
 
 
     <span class="c1">#result_xy[&quot;output_node_name&quot;] = new_colnames</span>
-    <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predictes1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list1</span>
-    <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predictes2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list2</span>
+    <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predicates1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list1</span>
+    <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;predicates2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicts_list2</span>
 
     <span class="n">result_xy_sorted</span> <span class="o">=</span> <span class="n">result_xy</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
@@ -1682,7 +1683,8 @@
     <span class="n">x</span> <span class="o">=</span> <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">top_n</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">result_xy_sorted</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">top_n</span><span class="p">][</span><span class="s1">&#39;score&#39;</span><span class="p">]</span>
 
-    <span class="n">plot_path_bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span> <span class="n">output_png</span><span class="o">=</span><span class="n">output_png</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">plot_path_bar</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span> <span class="n">output_png</span><span class="o">=</span><span class="n">output_png</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">result_xy_sorted</span>
 
