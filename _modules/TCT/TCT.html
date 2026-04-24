@@ -682,7 +682,8 @@
                                  <span class="n">output_png1</span><span class="o">=</span><span class="s2">&quot;NE_heatmap1.png&quot;</span><span class="p">,</span>
                                  <span class="n">output_png2</span><span class="o">=</span><span class="s2">&quot;NE_heatmap2.png&quot;</span>
                                  <span class="p">):</span>
-    <span class="c1"># edited Dec 5, 2023</span>
+    
+    <span class="c1"># if result_parsed is empty, print a message and return an empty dataframe</span>
     <span class="n">predicates_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -796,106 +797,109 @@
                                  <span class="n">output_png2</span><span class="o">=</span><span class="s2">&quot;NE_heatmap2.png&quot;</span>
                                  <span class="p">):</span>
     <span class="c1"># edited Dec 5, 2023</span>
-    <span class="n">predicates_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-        <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">type_of_node</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span>
-            <span class="n">subject</span> <span class="o">=</span> <span class="n">input_query</span>
-            <span class="nb">object</span> <span class="o">=</span> <span class="n">oupput_node</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
-            <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
+    <span class="k">if</span> <span class="n">result_parsed</span> <span class="o">==</span> <span class="p">{}:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No results found in result_parsed. Please check your input data.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>  <span class="c1"># Return an empty DataFrame if there are no results</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">predicates_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="n">predicates_list</span> <span class="o">=</span> <span class="n">predicates_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
-        <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="n">primary_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
-
-        <span class="k">if</span> <span class="s1">&#39;aggregator_knowledge_source&#39;</span> <span class="ow">in</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">]:</span>
-            <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="n">aggregator_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;aggregator_knowledge_source&#39;</span><span class="p">]</span>
-            <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">aggregator_infore_list</span><span class="p">))</span>
-
-        <span class="n">predicates_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates_list</span><span class="p">))</span>
-        <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">primary_infore_list</span><span class="p">))</span>
-
-
-    <span class="n">predicates_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
-        <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="n">primary_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">primary_infore_list</span><span class="p">:</span>
-        <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="n">aggregator_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">aggregator_infore_list</span><span class="p">:</span>
-        <span class="n">aggregator_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
-    <span class="c1">#for i in range(0, 10):</span>
-        <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oupput_node</span><span class="p">)</span>
-        <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">type_of_node</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span>
-            <span class="n">subject</span> <span class="o">=</span> <span class="n">input_query</span>
-            <span class="nb">object</span> <span class="o">=</span> <span class="n">oupput_node</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
-            <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
-        <span class="n">new_id</span> <span class="o">=</span> <span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span>
-
-        <span class="n">cur_primary_infore</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">primary_infore_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_primary_infore</span><span class="p">:</span>
-                <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">type_of_node</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">input_query</span>
+                <span class="nb">object</span> <span class="o">=</span> <span class="n">oupput_node</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
+                <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
+
+            <span class="n">predicates_list</span> <span class="o">=</span> <span class="n">predicates_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
+            <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="n">primary_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="s1">&#39;aggregator_knowledge_source&#39;</span> <span class="ow">in</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">]:</span>
+                <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="n">aggregator_infore_list</span> <span class="o">+</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span><span class="p">][</span><span class="s1">&#39;aggregator_knowledge_source&#39;</span><span class="p">]</span>
+                <span class="n">aggregator_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">aggregator_infore_list</span><span class="p">))</span>
+
+            <span class="n">predicates_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates_list</span><span class="p">))</span>
+            <span class="n">primary_infore_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">primary_infore_list</span><span class="p">))</span>
 
 
-
-        <span class="n">cur_predicates</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
+        <span class="n">predicates_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_predicates</span><span class="p">:</span>
-                <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">primary_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">primary_infore_list</span><span class="p">:</span>
+            <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">aggregator_infore_by_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">aggregator_infore_list</span><span class="p">:</span>
+            <span class="n">aggregator_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="c1">#for i in range(0, 10):</span>
+            <span class="n">oupput_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oupput_node</span><span class="p">)</span>
+            <span class="n">type_of_node</span> <span class="o">=</span> <span class="n">result_ranked_by_primary_infores</span><span class="p">[</span><span class="s1">&#39;type_of_nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">type_of_node</span> <span class="o">==</span> <span class="s1">&#39;object&#39;</span><span class="p">:</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">input_query</span>
+                <span class="nb">object</span> <span class="o">=</span> <span class="n">oupput_node</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">subject</span> <span class="o">=</span> <span class="n">oupput_node</span>
+                <span class="nb">object</span> <span class="o">=</span> <span class="n">input_query</span>
+            <span class="n">new_id</span> <span class="o">=</span> <span class="n">subject</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="nb">object</span>
 
-    <span class="c1">#convert = False</span>
+            <span class="n">cur_primary_infore</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;primary_knowledge_source&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">primary_infore_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_primary_infore</span><span class="p">:</span>
+                    <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-    <span class="c1">#for item in colnames:</span>
-    <span class="c1">#    if &#39;NCBIGene&#39; in item:</span>
-    <span class="c1">#        convert = True</span>
-    <span class="c1">#if convert:</span>
-        <span class="c1">#Gene_id_map = Gene_id_converter(colnames, &quot;http://127.0.0.1:8000/query_name_by_id&quot;) # option 1</span>
-        <span class="c1">#Gene_id_map = Generate_Gene_id_map() # option 2</span>
 
-    <span class="n">dic_id_map</span> <span class="o">=</span> <span class="n">ID_convert_to_preferred_name_nodeNormalizer</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-    <span class="n">new_colnames</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
+
+            <span class="n">cur_predicates</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_predicates</span><span class="p">:</span>
+                    <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">predicates_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">dic_id_map</span> <span class="o">=</span> <span class="n">ID_convert_to_preferred_name_nodeNormalizer</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="n">new_colnames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dic_id_map</span><span class="p">:</span>
+                <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dic_id_map</span><span class="p">[</span><span class="n">item</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+
+        <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">primary_infore_by_nodes</span><span class="p">)</span>
+        <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
+        <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
+
+
+        <span class="n">predicates_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">predicates_by_nodes</span><span class="p">)</span>
+        <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
+        <span class="n">predicates_by_nodes_df</span> <span class="o">=</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">plot_heatmap</span><span class="p">(</span><span class="n">primary_infore_by_nodes_df</span><span class="p">,</span> <span class="n">num_of_nodes</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span> <span class="n">output_png1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_colnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No primary infores found in primary_infore_by_nodes_df.&quot;</span><span class="p">)</span>
 
-    <span class="c1">#else:</span>
-    <span class="c1">#    new_colnames = colnames</span>
-
-    <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">primary_infore_by_nodes</span><span class="p">)</span>
-    <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
-    <span class="n">primary_infore_by_nodes_df</span> <span class="o">=</span> <span class="n">primary_infore_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
-
-
-    <span class="n">predicates_by_nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">predicates_by_nodes</span><span class="p">)</span>
-    <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">new_colnames</span>
-    <span class="n">predicates_by_nodes_df</span> <span class="o">=</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">T</span>
-
-    <span class="n">plot_heatmap</span><span class="p">(</span><span class="n">primary_infore_by_nodes_df</span><span class="p">,</span> <span class="n">num_of_nodes</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span><span class="n">output_png1</span><span class="p">)</span>
-    <span class="n">plot_heatmap</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span> <span class="n">num_of_nodes</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span><span class="n">output_png2</span><span class="p">)</span>
-
-    <span class="k">return</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">predicates_by_nodes_df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">plot_heatmap</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span> <span class="n">num_of_nodes</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">title_fontsize</span><span class="p">,</span> <span class="n">output_png2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No predicates found in predicates_by_nodes_df.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>  <span class="c1"># Return empty if there&#39;s no predicate data to plot</span>
+        
+        <span class="k">return</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">)</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
@@ -913,22 +917,26 @@
 
     <span class="c1"># create the heatmap</span>
     <span class="c1"># heatmap with border</span>
-    <span class="n">p1</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues&quot;</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
-    <span class="c1"># Adjust font size for x and y tick labels</span>
-    <span class="n">p1</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
-    <span class="n">p1</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No data to plot in the heatmap. Please check your input data.&quot;</span><span class="p">)</span>
+        <span class="k">return</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">p1</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;Blues&quot;</span><span class="p">,</span> <span class="n">cbar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">linecolor</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="c1"># Adjust font size for x and y tick labels</span>
+        <span class="n">p1</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">(),</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">p1</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_yticklabels</span><span class="p">(),</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
 
-    <span class="c1">#p1.set_title(title)</span>
-    <span class="c1">#p1.set_ylabel(ylab)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">())</span>
-    <span class="c1"># set xticklabels with colnames</span>
+        <span class="c1">#p1.set_title(title)</span>
+        <span class="c1">#p1.set_ylabel(ylab)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">get_xticklabels</span><span class="p">())</span>
+        <span class="c1"># set xticklabels with colnames</span>
 
-    <span class="c1">#p1.set_xticklabels(colnames, rotation=90, fontsize = fontsize)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">ticks</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="c1">#p1.set_xticklabels(colnames, rotation=90, fontsize = fontsize)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">ticks</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)),</span> <span class="n">labels</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 
-        <span class="c1"># set title font size</span>
-    <span class="n">p1</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">title_fontsize</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="c1"># set title font size</span>
+        <span class="n">p1</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">title_fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="c1"># save the figure</span>
     <span class="c1">#plt.savefig(output_png, bbox_inches=&#39;tight&#39;, dpi=300)</span>
 
