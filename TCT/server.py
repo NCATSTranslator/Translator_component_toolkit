@@ -23,7 +23,8 @@ from .translator_kpinfo import get_translator_kp_info
 from .translator_metakg import get_KP_metadata, add_new_API_for_query, add_plover_API
 from .translator_query import get_translator_API_predicates, optimize_query_json, query_KP, parallel_api_query
 from .translator_resources import TranslatorResources
-from .trapi import query as trapi_query
+from .trapi import query as trapi_query, build_multi_hop_query, HopSpec
+from .attribute_extraction import extract_rich_edge_attributes
 
 
 def mcp_error_handler(error_prefix: str):
@@ -34,7 +35,7 @@ def mcp_error_handler(error_prefix: str):
             try:
                 return fn(*args, **kwargs)
             except Exception as e:
-                raise McpError(ErrorData(INTERNAL_ERROR, f"{error_prefix}: {str(e)}")) from e
+                raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"{error_prefix}: {str(e)}")) from e
         return wrapper
     return decorator
 
@@ -242,38 +243,92 @@ def parallel_query_apis(query_json: dict, selected_apis: list[str], api_names: d
 # TRAPI Tools
 @mcp.tool()
 @mcp_error_handler("TRAPI query error")
-def trapi_query_endpoint(url: str):
+def trapi_query_endpoint(url: str, query: str):
     """
-    Query a TRAPI endpoint (currently unimplemented - placeholder).
+    Query a TRAPI endpoint with a TRAPI query JSON.
 
     Args:
         url: The URL for the TRAPI API endpoint
+        query: A JSON string representing the TRAPI query
 
     Returns:
-        TODO: Implementation needed
+        Query result from the TRAPI endpoint
     """
-    return trapi_query(url)
+    return trapi_query(url, query)
 
 
 @mcp.tool()
 @mcp_error_handler("Graph conversion error")
-def convert_result_to_graph(result: dict, resolve_names: bool = False):
+def convert_result_to_graph(result: dict, resolve_names: bool = False, include_attributes: bool = False):
     """Convert TRAPI query result to a NetworkX graph summary.
 
     Args:
         result: Raw TRAPI edges dict from a query
         resolve_names: Whether to resolve CURIEs to preferred names
+        include_attributes: Whether to extract rich edge attributes (publications, text, scores)
 
     Returns:
         Dictionary with node/edge counts, node list, and predicates
     """
     from .results import KnowledgeGraph
     kg = KnowledgeGraph(edges=result)
-    G = kg.to_networkx(resolve_names=resolve_names)
+    G = kg.to_networkx(resolve_names=resolve_names, include_attributes=include_attributes)
     return {
         "nodes": G.number_of_nodes(),
         "edges": G.number_of_edges(),
         "node_list": list(G.nodes()),
         "predicates": list({d.get("predicate", "") for _, _, d in G.edges(data=True)}),
     }
+
+
+@mcp.tool()
+@mcp_error_handler("Multi-hop query build error")
+def build_multi_hop_trapi_query(
+    subject_ids: list[str] | None = None,
+    subject_categories: list[str] | None = None,
+    hops: list[dict] | None = None,
+    return_json: bool = True,
+):
+    """Build a multi-hop TRAPI query graph from a chain of hop specifications.
+
+    Args:
+        subject_ids: CURIE IDs for the starting node (e.g. ["NCBIGene:3845"])
+        subject_categories: Categories for the starting node (e.g. ["biolink:Gene"])
+        hops: List of hop spec dicts, each with optional keys: predicates, object_categories, object_ids
+        return_json: If True, return a JSON string; otherwise return a dict
+
+    Returns:
+        A TRAPI query message as JSON string or dict
+    """
+    hop_specs = [
+        HopSpec(
+            predicates=h.get("predicates"),
+            object_categories=h.get("object_categories"),
+            object_ids=h.get("object_ids"),
+        )
+        for h in (hops or [])
+    ]
+    return build_multi_hop_query(
+        subject_ids=subject_ids,
+        subject_categories=subject_categories,
+        hops=hop_specs,
+        return_json=return_json,
+    )
+
+
+@mcp.tool()
+@mcp_error_handler("Edge attribute extraction error")
+def extract_edge_attributes(edges: dict):
+    """Extract publications, supporting text, and confidence scores from TRAPI edges.
+
+    Args:
+        edges: Dict of TRAPI edge objects keyed by edge ID
+
+    Returns:
+        Dict mapping edge IDs to extracted attributes (publications, supporting_text, confidence_scores)
+    """
+    results = {}
+    for edge_id, edge_data in edges.items():
+        results[edge_id] = extract_rich_edge_attributes(edge_data.get("attributes", []))
+    return results
 

@@ -1,5 +1,6 @@
 """Tests for the TranslatorResources container class."""
 
+import pytest
 import pandas as pd
 
 from TCT.translator_resources import TranslatorResources
@@ -73,6 +74,7 @@ class TestTranslatorResources:
         assert hasattr(TCT, "TranslatorResources")
         assert TCT.TranslatorResources is TranslatorResources
 
+    @pytest.mark.network
     def test_load_from_live_apis(self):
         """load() fetches resources from live Translator APIs."""
         res = TranslatorResources.load()

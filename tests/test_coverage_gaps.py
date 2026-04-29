@@ -14,6 +14,8 @@ import requests
 import pandas as pd
 from unittest.mock import patch, MagicMock
 
+from mcp.shared.exceptions import McpError
+
 from TCT.server import (
     add_custom_api_to_metakg,
     add_plover_apis_to_metakg,
@@ -38,37 +40,37 @@ from TCT.TCT import (
 
 def test_add_custom_api_to_metakg_error():
     with patch("TCT.server.add_new_API_for_query", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             add_custom_api_to_metakg.fn({}, pd.DataFrame(), "n", "u", "p", "s", "o")
 
 
 def test_add_plover_apis_to_metakg_error():
     with patch("TCT.server.add_plover_API", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             add_plover_apis_to_metakg.fn({}, pd.DataFrame())
 
 
 def test_get_api_predicates_error():
     with patch("TCT.server.get_translator_API_predicates", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             get_api_predicates.fn()
 
 
 def test_optimize_query_for_api_error():
     with patch("TCT.server.optimize_query_json", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             optimize_query_for_api.fn({}, "api", {})
 
 
 def test_query_knowledge_provider_error():
     with patch("TCT.server.query_KP", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             query_knowledge_provider.fn("api", {}, {}, {})
 
 
 def test_parallel_query_apis_error():
     with patch("TCT.server.parallel_api_query", side_effect=Exception("fail")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError):
             parallel_query_apis.fn({}, [], {}, {})
 
 

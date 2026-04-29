@@ -75,11 +75,20 @@ def extract_confidence_scores(attributes: list[dict]) -> dict[str, float]:
         value = attr.get("value")
 
         if orig_name == "tmkp_confidence_score" and value is not None:
-            scores["tmkp_confidence_score"] = float(value)
+            try:
+                scores["tmkp_confidence_score"] = float(value)
+            except (ValueError, TypeError):
+                pass
         elif type_id == "biolink:extraction_confidence_score" and value is not None:
-            scores["extraction_confidence_score"] = float(value)
+            try:
+                scores["extraction_confidence_score"] = float(value)
+            except (ValueError, TypeError):
+                pass
         elif orig_name == "Combined_score" and value is not None:
-            scores["Combined_score"] = float(value)
+            try:
+                scores["Combined_score"] = float(value)
+            except (ValueError, TypeError):
+                pass
     return scores
 
 

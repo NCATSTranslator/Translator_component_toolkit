@@ -1,35 +1,19 @@
+import logging
 import requests
 from copy import deepcopy
-import pandas
 from TCT import translator_metakg
 from TCT import translator_kpinfo
 from TCT.results import KnowledgeGraph
 from TCT.translator_resources import TranslatorResources
 
+logger = logging.getLogger(__name__)
+
 
 def _resolve_query_resources(resources, *, APInames=None, API_predicates=None):
     """Resolve legacy (APInames, API_predicates) kwargs into a TranslatorResources."""
-    if resources is not None and isinstance(resources, TranslatorResources):
-        return resources
-    if APInames is not None:
-        import warnings
+    from TCT.translator_resources import resolve_resources
 
-        warnings.warn(
-            "Passing APInames/API_predicates as separate arguments is deprecated. "
-            "Use resources=TranslatorResources(...) instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return TranslatorResources(
-            api_names=APInames,
-            meta_kg=pandas.DataFrame(),
-            api_predicates=API_predicates or {},
-        )
-    if resources is not None:
-        raise TypeError("Expected TranslatorResources for 'resources'.")
-    raise TypeError(
-        "Either 'resources' or 'APInames'+'API_predicates' must be provided."
-    )
+    return resolve_resources(resources, APInames=APInames, API_predicates=API_predicates)
 
 
 def get_translator_API_predicates() -> TranslatorResources:
@@ -86,17 +70,14 @@ def optimize_query_json(query_json, API_name_cur, API_predicates):
     --------
     >>> 
     '''
-    query_json_cur = query_json.copy()  # copy the query_json to avoid modifying the original query_json
+    query_json_cur = deepcopy(query_json)  # deep copy to avoid modifying the original query_json
     # Get the list of APIs that support the predicates in the query
-    shared_predicates = list(set(API_predicates[API_name_cur]).intersection(query_json_cur['message']['query_graph']['edges']['e00']['predicates'] ))
-    
-    if len(shared_predicates) > 0:
-        query_json_cur['message']['query_graph']['edges']['e00']['predicates'] = shared_predicates
-        #print(API_name_cur + ": Predicates optimized to: " + str(shared_predicates))
-    else:
-        #print(API_name_cur + ": No shared predicates found. Using all predicates in the query.")
-        # If no shared predicates, keep the original predicates
-        query_json_cur['message']['query_graph']['edges']['e00']['predicates'] = query_json_cur['message']['query_graph']['edges']['e00']['predicates']
+    edges = query_json_cur['message']['query_graph']['edges']
+    for edge_key, edge_val in edges.items():
+        if 'predicates' in edge_val:
+            shared_predicates = list(set(API_predicates[API_name_cur]).intersection(edge_val['predicates']))
+            if len(shared_predicates) > 0:
+                edge_val['predicates'] = shared_predicates
 
     return query_json_cur
 
@@ -120,7 +101,7 @@ def query_KP(API_name_cur, query_json, resources=None, *, APInames=None, API_pre
     query_copy = deepcopy(query_json)
     # optimize on our private copy
     query_json_cur = optimize_query_json(query_copy, API_name_cur, resources.api_predicates)
-    response = requests.post(API_url_cur, json=query_json_cur)
+    response = requests.post(API_url_cur, json=query_json_cur, timeout=60)
     if response.status_code == 200:
         result = response.json().get("message", {})
         kg = result.get("knowledge_graph", {})
@@ -176,11 +157,11 @@ def parallel_api_query(query_json, select_APIs, resources=None, max_workers=1,
             url = future_to_url[future]
             try:
                 data = future.result()
-                if 'knowledge_graph' in data:
+                if data is not None and 'knowledge_graph' in data:
                     result.append(data)
             except Exception as exc:
                 no_results_returned.append(url)
-                #print('%r generated an exception: %s' % (url, exc))
+                logger.debug("%r generated an exception: %s", url, exc)
     
     included_KP_ID = []
     for i in range(0,len(result)):

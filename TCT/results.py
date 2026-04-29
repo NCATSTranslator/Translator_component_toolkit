@@ -147,6 +147,7 @@ class KnowledgeGraph:
 
             else:
                 result_parsed[subject_object]["predicate"].append(edge["predicate"])
+                evidence = ""
                 for j in edge.get("sources", []):
                     if j["resource_role"] == "primary_knowledge_source":
                         result_parsed[subject_object][
@@ -280,14 +281,14 @@ class ParsedKnowledgeGraph:
                 output_nodes.append(obj)
                 type_of_nodes.append("object")
                 num_of_primary_infores.append(
-                    len(set(entry["primary_knowledge_source"]))
+                    len(set(entry.get("primary_knowledge_source", [])))
                 )
                 unique_predicates.append(curr_predict)
             elif obj == input_node:
                 output_nodes.append(subject)
                 type_of_nodes.append("subject")
                 num_of_primary_infores.append(
-                    len(set(entry["primary_knowledge_source"]))
+                    len(set(entry.get("primary_knowledge_source", [])))
                 )
                 unique_predicates.append(curr_predict)
 

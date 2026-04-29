@@ -71,32 +71,9 @@ __all__ = [
 
 def _resolve_resources(resources, *, APInames=None, metaKG=None, API_predicates=None):
     """Resolve legacy (APInames, metaKG, API_predicates) kwargs into a TranslatorResources."""
-    from .translator_resources import TranslatorResources
+    from .translator_resources import resolve_resources
 
-    if resources is not None and isinstance(resources, TranslatorResources):
-        return resources
-    if APInames is not None:
-        import warnings
-
-        warnings.warn(
-            "Passing APInames/metaKG/API_predicates as separate arguments is deprecated. "
-            "Use resources=TranslatorResources(...) instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return TranslatorResources(
-            api_names=APInames,
-            meta_kg=metaKG,
-            api_predicates=API_predicates or {},
-        )
-    if resources is not None:
-        raise TypeError(
-            "Expected TranslatorResources for 'resources' parameter. "
-            "Use keyword arguments: APInames=..., metaKG=..., API_predicates=..."
-        )
-    raise TypeError(
-        "Either 'resources' or 'APInames'+'metaKG'+'API_predicates' must be provided."
-    )
+    return resolve_resources(resources, APInames=APInames, metaKG=metaKG, API_predicates=API_predicates)
 
 
 def TCT_help(func):
@@ -672,7 +649,7 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     return ranked_result
 
-def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_category=[],
+def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_category=None,
                       *, APInames=None, metaKG=None, API_predicates=None):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
@@ -697,6 +674,8 @@ def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_c
 
     """
     resources = _resolve_resources(resources, APInames=APInames, metaKG=metaKG, API_predicates=API_predicates)
+    if input_node_category is None:
+        input_node_category = []
     from . import node_normalizer
     from . import translator_query
 
@@ -741,7 +720,7 @@ def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_c
     )
 
 def Path_finder(input_node1, input_node2, intermediate_categories, resources=None,
-                input_node1_category=[], input_node2_category=[],
+                input_node1_category=None, input_node2_category=None,
                 *, APInames=None, metaKG=None, API_predicates=None):
     """
     This function is used to find paths between two input nodes with intermediate categories.
@@ -766,6 +745,10 @@ def Path_finder(input_node1, input_node2, intermediate_categories, resources=Non
 
     """
     resources = _resolve_resources(resources, APInames=APInames, metaKG=metaKG, API_predicates=API_predicates)
+    if input_node1_category is None:
+        input_node1_category = []
+    if input_node2_category is None:
+        input_node2_category = []
     from . import node_normalizer
     from . import translator_query
     input_node1_id = input_node1

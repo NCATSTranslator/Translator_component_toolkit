@@ -242,7 +242,7 @@ class TestLegacyQueryKwargsResolveResources:
     def test_resolve_query_resources_with_legacy_kwargs(self):
         from TCT.translator_query import _resolve_query_resources
 
-        with pytest.warns(DeprecationWarning, match="APInames/API_predicates"):
+        with pytest.warns(DeprecationWarning, match="APInames/metaKG/API_predicates"):
             result = _resolve_query_resources(
                 None, APInames={"A": "url"}, API_predicates={"A": ["p"]}
             )

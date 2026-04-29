@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "TCT"
-version = "0.1.6"
+version = "0.2.0"
 description = "Translator Component Toolkit"
 readme = "README.md"
 license = {text = "MIT"}
@@ -32,8 +32,8 @@ dependencies = [
     "ipykernel",
     "fastmcp>=2.12.2",
     "click>=8.2.1",
-    'networkx',
-    'pyvis'
+    "networkx",
+    "pyvis"
 ]
 
 [project.scripts]
@@ -63,6 +63,9 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "network: marks tests as requiring network access (live API calls)",
+]
 addopts = [
     "--cov=TCT",
     "--cov-report=term-missing",

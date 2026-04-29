@@ -192,7 +192,7 @@ def query(url:str, query:str):
     >>> print(response)
     """
     # example: 1. get APIs, 2. get APIs that have the target object and subject types, and the target predicates. 3. build the query and run the query.
-    response = requests.post(url, json=query)
+    response = requests.post(url, json=query, timeout=60)
     if response.status_code == 200:
         # TODO
         result = response.json().get("message", {})

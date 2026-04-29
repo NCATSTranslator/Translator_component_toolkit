@@ -289,7 +289,7 @@ class TestPlotGraphByInfores:
             "Object": ["B"],
             "Infores": ["infores:src"],
         })
-        assert viz.plot_graph_by_infores(df) == 0
+        assert viz.plot_graph_by_infores(df) is None
 
 
 # ---------------------------------------------------------------------------
@@ -322,7 +322,7 @@ class TestPlotGraphByAPI:
             "Object": ["B"],
             "API": ["SomeAPI"],
         })
-        assert viz.plot_graph_by_API(df) == 0
+        assert viz.plot_graph_by_API(df) is None
 
 
 # ---------------------------------------------------------------------------

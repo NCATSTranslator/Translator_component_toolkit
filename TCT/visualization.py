@@ -83,7 +83,7 @@ class HeatmapConfig:
     ylabel: str | None = None
     show: bool = True
     save: bool = False
-    tick_fontsize: bool = True
+    auto_tick_fontsize: bool = True
 
 
 def _plot_heatmap_impl(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png, config):
@@ -93,21 +93,20 @@ def _plot_heatmap_impl(predicates_by_nodes_df, num_of_nodes, fontsize, title_fon
     ax = fig.add_subplot(111)
 
     p1 = sns.heatmap(df, cmap="Blues", cbar=False, ax=ax, linecolor='grey', linewidth=0.2)
-    if config.tick_fontsize:
+    if config.auto_tick_fontsize:
         p1.set_xticklabels(p1.get_xticklabels(), rotation=90, fontsize=fontsize)
         p1.set_yticklabels(p1.get_yticklabels(), fontsize=fontsize)
     if config.title:
         p1.set_title(config.title)
     if config.ylabel:
         p1.set_ylabel(config.ylabel)
-    print(p1.get_xticklabels())
     plt.xticks(ticks=range(len(df.columns)), labels=df.columns)
     p1.title.set_size(title_fontsize)
 
-    if config.show:
-        plt.show()
     if config.save:
         plt.savefig(output_png, bbox_inches='tight', dpi=300)
+    if config.show:
+        plt.show()
 
 
 def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
@@ -115,7 +114,7 @@ def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
                                  title_fontsize = 10,
                                  output_png="NE_heatmap.png"):
     _plot_heatmap_impl(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png,
-                       HeatmapConfig(dpi=300, figsize_multiplier=0.11, show=True, save=False, tick_fontsize=True))
+                       HeatmapConfig(dpi=300, figsize_multiplier=0.11, show=True, save=False, auto_tick_fontsize=True))
 
 
 def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
@@ -125,7 +124,7 @@ def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
     _plot_heatmap_impl(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png,
                        HeatmapConfig(dpi=100, figsize_multiplier=0.1,
                                      title="Ranking of one-hop nodes by primary infores",
-                                     ylabel="infores", show=False, save=True, tick_fontsize=False))
+                                     ylabel="infores", show=False, save=True, auto_tick_fontsize=False))
 
 
 # ---------------------------------------------------------------------------
@@ -150,16 +149,16 @@ def visulization_one_hop_ranking_input_as_list(result_ranked_by_primary_infores,
         type_of_node = result_ranked_by_primary_infores['type_of_nodes'][i]
         if type_of_node == 'object':
             subject = input_query
-            object = oupput_node
+            obj = oupput_node
         else:
             subject = oupput_node
-            object = input_query
+            obj = input_query
 
-        predicates_list = predicates_list + result_parsed[subject + "_" + object]['predicate']
-        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + object]['primary_knowledge_source']
+        predicates_list = predicates_list + result_parsed[subject + "_" + obj]['predicate']
+        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + obj]['primary_knowledge_source']
 
-        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + object]:
-            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + object]['aggregator_knowledge_source']
+        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + obj]:
+            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + obj]['aggregator_knowledge_source']
             aggregator_infore_list = list(set(aggregator_infore_list))
 
         predicates_list = list(set(predicates_list))
@@ -188,11 +187,11 @@ def visulization_one_hop_ranking_input_as_list(result_ranked_by_primary_infores,
         type_of_node = result_ranked_by_primary_infores['type_of_nodes'].values[i]
         if type_of_node == 'object':
             subject = input_query
-            object = oupput_node
+            obj = oupput_node
         else:
             subject = oupput_node
-            object = input_query
-        new_id = subject + "_" + object
+            obj = input_query
+        new_id = subject + "_" + obj
 
         cur_primary_infore = result_parsed[new_id]['primary_knowledge_source']
         for predict in primary_infore_list:
@@ -254,16 +253,16 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
         type_of_node = result_ranked_by_primary_infores['type_of_nodes'][i]
         if type_of_node == 'object':
             subject = input_query
-            object = oupput_node
+            obj = oupput_node
         else:
             subject = oupput_node
-            object = input_query
+            obj = input_query
 
-        predicates_list = predicates_list + result_parsed[subject + "_" + object]['predicate']
-        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + object]['primary_knowledge_source']
+        predicates_list = predicates_list + result_parsed[subject + "_" + obj]['predicate']
+        primary_infore_list = primary_infore_list + result_parsed[subject + "_" + obj]['primary_knowledge_source']
 
-        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + object]:
-            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + object]['aggregator_knowledge_source']
+        if 'aggregator_knowledge_source' in result_parsed[subject + "_" + obj]:
+            aggregator_infore_list = aggregator_infore_list + result_parsed[subject + "_" + obj]['aggregator_knowledge_source']
             aggregator_infore_list = list(set(aggregator_infore_list))
 
         predicates_list = list(set(predicates_list))
@@ -290,11 +289,11 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
         type_of_node = result_ranked_by_primary_infores['type_of_nodes'].values[i]
         if type_of_node == 'object':
             subject = input_query
-            object = oupput_node
+            obj = oupput_node
         else:
             subject = oupput_node
-            object = input_query
-        new_id = subject + "_" + object
+            obj = input_query
+        new_id = subject + "_" + obj
 
         cur_primary_infore = result_parsed[new_id]['primary_knowledge_source']
         for predict in primary_infore_list:
@@ -379,17 +378,14 @@ def _plot_graph_by_attribute(for_plot, edge_attr_column):
 
 def plot_graph_by_predicates(for_plot):
     _plot_graph_by_attribute(for_plot, "Predicate")
-    return()
 
 
 def plot_graph_by_infores(for_plot):
     _plot_graph_by_attribute(for_plot, "Infores")
-    return(0)
 
 
 def plot_graph_by_API(for_plot):
     _plot_graph_by_attribute(for_plot, "API")
-    return(0)
 
 
 # ---------------------------------------------------------------------------
@@ -571,4 +567,4 @@ def visualize_neighborhood_graph(result, show_label=True, height="1000px", width
         title_html = f"<h3>Predicate: {predicate}</h3>"
         net.title = title_html + f"<p>Nodes: {net.num_nodes()} Edges: {net.num_edges()}</p>"
         net.show(f"{predicate}.html")
-        return dic_graph
+    return dic_graph

@@ -1,8 +1,10 @@
+import pytest
 import pandas as pd
 
 from TCT.translator_kpinfo import get_translator_kp_info
 
 
+@pytest.mark.network
 def test_get_translator_kp_info_returns_tuple():
     """Live API test: get_translator_kp_info returns a tuple of (DataFrame, dict)."""
     result = get_translator_kp_info()
@@ -15,6 +17,7 @@ def test_get_translator_kp_info_returns_tuple():
     assert isinstance(api_names, dict)
 
 
+@pytest.mark.network
 def test_get_translator_kp_info_dataframe_columns():
     """Live API test: DataFrame has the expected columns."""
     smartapi_df, _ = get_translator_kp_info()
@@ -24,6 +27,7 @@ def test_get_translator_kp_info_dataframe_columns():
         assert col in smartapi_df.columns, f"Missing column: {col}"
 
 
+@pytest.mark.network
 def test_get_translator_kp_info_non_empty():
     """Live API test: both DataFrame and dict are non-empty."""
     smartapi_df, api_names = get_translator_kp_info()

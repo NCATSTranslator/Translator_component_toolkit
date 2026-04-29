@@ -11,6 +11,8 @@ import pytest
 import pandas as pd
 from unittest.mock import patch
 
+from mcp.shared.exceptions import McpError
+
 from TCT.server import (
     name_lookup,
     get_name_synonyms,
@@ -32,6 +34,7 @@ from TCT.translator_node import TranslatorNode
 # ---------------------------------------------------------------------------
 # 1. test_name_lookup -- Live API
 # ---------------------------------------------------------------------------
+@pytest.mark.network
 def test_name_lookup():
     """Live API: name_lookup('asthma') returns a TranslatorNode with MONDO: curie."""
     result = name_lookup.fn("asthma")
@@ -42,6 +45,7 @@ def test_name_lookup():
 # ---------------------------------------------------------------------------
 # 2. test_get_name_synonyms -- Live API
 # ---------------------------------------------------------------------------
+@pytest.mark.network
 def test_get_name_synonyms():
     """Live API: synonyms for a known CURIE returns a non-empty dict."""
     result = get_name_synonyms.fn("MONDO:0004979")
@@ -52,6 +56,7 @@ def test_get_name_synonyms():
 # ---------------------------------------------------------------------------
 # 3. test_batch_name_lookup -- Live API
 # ---------------------------------------------------------------------------
+@pytest.mark.network
 def test_batch_name_lookup():
     """Live API: batch lookup of two terms returns a dict keyed by those terms."""
     result = batch_name_lookup.fn(["asthma", "diabetes"])
@@ -63,6 +68,7 @@ def test_batch_name_lookup():
 # ---------------------------------------------------------------------------
 # 4. test_normalize_nodes -- Live API
 # ---------------------------------------------------------------------------
+@pytest.mark.network
 def test_normalize_nodes():
     """Live API: normalizing MESH:D014867 returns a TranslatorNode."""
     result = normalize_nodes.fn("MESH:D014867")
@@ -72,6 +78,7 @@ def test_normalize_nodes():
 # ---------------------------------------------------------------------------
 # 5. test_get_kp_info -- Live API
 # ---------------------------------------------------------------------------
+@pytest.mark.network
 def test_get_kp_info():
     """Live API: get_kp_info() returns a tuple of (DataFrame, dict)."""
     result = get_kp_info.fn()
@@ -316,71 +323,57 @@ def test_parallel_query_apis():
 
 
 # ---------------------------------------------------------------------------
-# 13. test_trapi_query_endpoint_bug -- Known bug: missing `query` arg
+# 13. test_trapi_query_endpoint -- requires both url and query args
 # ---------------------------------------------------------------------------
-def test_trapi_query_endpoint_bug():
-    """trapi_query(url) is missing the required `query` argument, causing a
-    TypeError that the except block catches. The except block then tries to
-    construct McpError with ErrorData(INTERNAL_ERROR, message) using
-    positional args, but ErrorData is a Pydantic model that requires keyword
-    args, so a TypeError escapes. We verify the error path is triggered."""
-    with pytest.raises(TypeError):
-        trapi_query_endpoint.fn("https://example.com/query")
+def test_trapi_query_endpoint():
+    """trapi_query_endpoint passes url and query through to trapi_query."""
+    mock_result = {"knowledge_graph": {"edges": {"e1": {}}}}
+    with patch("TCT.server.trapi_query", return_value=mock_result) as mock_fn:
+        result = trapi_query_endpoint.fn("https://example.com/query", '{"message": {}}')
+        mock_fn.assert_called_once_with("https://example.com/query", '{"message": {}}')
+        assert result == mock_result
 
 
 # ---------------------------------------------------------------------------
-# 14. Error-path tests: underlying function raises -> error propagated
-#
-# Note: The server.py error handlers use ErrorData(INTERNAL_ERROR, message)
-# with positional arguments, but ErrorData is a Pydantic BaseModel that
-# requires keyword arguments (code=..., message=...). This means the
-# McpError constructor itself raises a TypeError before McpError can be
-# created. The tests verify that the error path IS triggered by asserting
-# that a TypeError is raised (from the buggy ErrorData constructor call).
+# 14. Error-path tests: underlying function raises -> McpError propagated
 # ---------------------------------------------------------------------------
 def test_name_lookup_error():
-    """When lookup() raises, name_lookup's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When lookup() raises, name_lookup propagates McpError."""
     with patch("TCT.server.lookup", side_effect=Exception("API down")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="Name lookup error: API down"):
             name_lookup.fn("test")
 
 
 def test_get_name_synonyms_error():
-    """When synonyms() raises, get_name_synonyms's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When synonyms() raises, get_name_synonyms propagates McpError."""
     with patch("TCT.server.synonyms", side_effect=Exception("Timeout")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="Synonyms lookup error: Timeout"):
             get_name_synonyms.fn("MONDO:0004979")
 
 
 def test_batch_name_lookup_error():
-    """When batch_lookup() raises, batch_name_lookup's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When batch_lookup() raises, batch_name_lookup propagates McpError."""
     with patch("TCT.server.batch_lookup", side_effect=Exception("Network error")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="Batch lookup error: Network error"):
             batch_name_lookup.fn(["asthma"])
 
 
 def test_normalize_nodes_error():
-    """When get_normalized_nodes() raises, normalize_nodes's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When get_normalized_nodes() raises, normalize_nodes propagates McpError."""
     with patch("TCT.server.get_normalized_nodes", side_effect=Exception("Bad CURIE")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="Node normalization error: Bad CURIE"):
             normalize_nodes.fn("INVALID:000")
 
 
 def test_get_kp_info_error():
-    """When get_translator_kp_info() raises, get_kp_info's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When get_translator_kp_info() raises, get_kp_info propagates McpError."""
     with patch("TCT.server.get_translator_kp_info", side_effect=Exception("Service unavailable")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="KP info error: Service unavailable"):
             get_kp_info.fn()
 
 
 def test_get_metakg_data_error():
-    """When get_KP_metadata() raises, get_metakg_data's except block is triggered.
-    The ErrorData positional-arg bug causes TypeError to escape."""
+    """When get_KP_metadata() raises, get_metakg_data propagates McpError."""
     with patch("TCT.server.get_KP_metadata", side_effect=Exception("Parse error")):
-        with pytest.raises(TypeError):
+        with pytest.raises(McpError, match="MetaKG data error: Parse error"):
             get_metakg_data.fn({"TestAPI": "https://example.com/query"})
