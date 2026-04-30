@@ -103,10 +103,50 @@ def build_query_graph(start_node_id, end_node_id, start_node_categories=None, en
     return q
 
 
+def generate_score_results(results, method='infores'):
+    """
+    Generates a score dict, and a list of "analyses".
+    method can be 'infores' or 'edges'
+    """
+    graph_scores = {}
+    max_score = 0
+    auxiliary_graphs = results['auxiliary_graphs']
+    for k, graph in auxiliary_graphs.items():
+        if method == 'infores':
+            sources = set()
+            for edge_index in graph:
+                edge = results['knowledge_graph']['edges'][edge_index]
+                for resource in edge['sources']:
+                    sources.add(resource['resource_id'])
+            score = len(sources)
+            if score > max_score:
+                max_score = score
+        else:
+            score = len(graph)
+            if score > max_score:
+                max_score = score
+        graph_scores[k] = score
+    graph_scores_formatted = []
+    for k in graph_scores.keys():
+        graph_scores[k] = graph_scores[k]/max_score
+        graph_scores_formatted.append({
+            'attributes': None,
+            'path_bindings': {
+                'p0': [{'id': k}]},
+            'resource_id': 'infores:tct',
+            'score': graph_scores[k],
+            'scoring_method': None,
+            'support_graphs': None
+            })
+    return graph_scores, graph_scores_formatted
+
+
 def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dict, result2:dict,
-        start_node_categories=None, end_node_categories=None):
+        start_node_categories=None, end_node_categories=None,
+        scoring_method='infores'):
     """
     Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.
+    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.
     """
     # TODO: parse results...
     # nodes
@@ -155,6 +195,7 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
         keys = [x[0] for x in e1s] + [x[0] for x in e2s]
         all_auxiliary_graphs[f'aux_{i}_{i1}'] = keys
         i += 1
+    # generate output json
     output = {
         'query_graph': build_query_graph(start_node_id, end_node_id, start_node_categories, end_node_categories),
         'knowledge_graph': {'nodes': {x: {} for x in connection_counts.keys()},
@@ -163,11 +204,17 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
         'results': [{'analyses': []}],
         'auxiliary_graphs': all_auxiliary_graphs
     }
+    graph_scores, graph_scores_formatted = generate_score_results(output, method=scoring_method)
+    output['results'][0]['analyses'] = graph_scores_formatted
     return output
 
 
 def pathfinder(input_node1_id:str, input_node2_id:str,
-        intermediate_categories:list, APInames, metaKG, API_predicates):
+        intermediate_categories:list, APInames, metaKG, API_predicates,
+        scoring_method='infores'):
+    """
+    Returns a Pathfinder output for the given pair of nodes. scoring_method could be 'infores' or 'edges'.
+    """
     # get categories for input nodes
     normalized_node_dict = node_normalizer.get_normalized_nodes([input_node1_id, input_node2_id])
     input_node1_info = normalized_node_dict[input_node1_id]
@@ -227,7 +274,8 @@ def pathfinder(input_node1_id:str, input_node2_id:str,
 
     output = parse_results_for_pathfinder(input_node1_id, input_node2_id, result1, result2,
             start_node_categories=input_node1_category,
-            end_node_categories=input_node2_category)
+            end_node_categories=input_node2_category,
+            scoring_method=scoring_method)
 
     return result1, result2, output, paths
 
