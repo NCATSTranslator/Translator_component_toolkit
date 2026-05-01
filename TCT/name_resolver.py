@@ -72,14 +72,14 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
 
 
-def synonyms(query: str, **kwargs):
+def synonyms(query: str|list, **kwargs):
     """
-    A wrapper around the `synonyms` api endpoint. Given a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.
+    A wrapper around the `synonyms` api endpoint. Given a CURIE or a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.
 
     Parameters
     ----------
-    query : str
-        Query CURIE
+    query : str|list
+        Query CURIE or list of CURIEs
     **kwargs
         Other arguments to `synonyms`
 
@@ -93,7 +93,7 @@ def synonyms(query: str, **kwargs):
     if response.status_code == 200:
         result = response.json()
         if len(result) == 0:
-            raise LookupError('No matching CURIE found for the given string ' + query)
+            raise LookupError('No matching CURIE found for the given string ' + str(query))
         else:
             all_nodes = {}
             for k, node in result.items():
@@ -172,3 +172,42 @@ def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True,
         else:
             raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
     return curies
+
+
+def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict:
+    """
+    A wrapper around the `synonyms` API endpoint, using POST. Given a list of CURIEs, this returns a dict of CURIE:TranslatorNode, where each TranslatorNode contains all synonyms for the given CURIE.
+
+    Parameters
+    ----------
+    strings : list[str]
+        List of CURIEs.
+    size : int
+        Desired chunking size, default is 50.
+
+    Returns
+    -------
+    Dict of CURIE : TranslatorNode
+    """
+    chunks = chunk_list(strings, size)
+    path = urllib.parse.urljoin(URL, 'synonyms')
+    curies = {}
+    for chunk in chunks:
+        # set autocomplete to be false by default
+        response = requests.post(path, json={'preferred_curies': chunk, **kwargs})
+        if response.status_code == 200:
+            result = response.json()
+            if len(result) == 0:
+                raise LookupError('No matching CURIE found for the given CURIEs ' + str(chunks))
+            else:
+                for k, node in result.items():
+                    if not node:
+                        # If node is empty or None.
+                        curies[k] = None
+                    else:
+                        curies[k] = TranslatorNode.from_dict(node, return_synonyms=True)
+        else:
+            raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
+    return curies
+
+
