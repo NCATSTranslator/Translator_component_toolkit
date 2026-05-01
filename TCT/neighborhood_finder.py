@@ -3,61 +3,6 @@ from collections import Counter
 from .TCT import sele_predicates_API, format_query_json, parse_KG, rank_by_primary_infores
 
 
-def format_query_json_for_neighborhood_finder(subject_ids, object_ids=None,
-        subject_categories=None,
-        object_categories=None,
-        predicates=None):
-    '''
-    Example input:
-    subject_ids = ["NCBIGene:3845"]
-    object_ids = []
-    subject_categories = ["biolink:Gene"]
-    object_categories = ["biolink:Gene"]
-    predicates = ["biolink:positively_correlated_with", "biolink:physically_interacts_with"]
-    '''
-    query_json_temp = {
-        "message": {
-            "query_graph": {
-
-                "edges": {
-                    "e00": {
-                        "subject": "n00",
-                        "object": "n01",
-                        "predicates": predicates
-                        }
-                    },
-                "nodes": {
-                    "n00": {
-                        "ids":subject_ids, # required
-                        #"categories":[] # optional, if not provided, it will be empty
-                        },
-                    "n01": {
-                        #"ids":[],
-                        "categories":[] # required
-                        }
-                    }
-                }
-            }
-        }
-
-    if len(subject_ids) > 0:
-        query_json_temp["message"]["query_graph"]["nodes"]["n00"]["ids"] = subject_ids
-
-    if object_ids is not None and len(object_ids) > 0:
-        query_json_temp["message"]["query_graph"]["nodes"]["n01"]["ids"] = object_ids
-
-    if subject_categories is not None and len(subject_categories) > 0:
-        query_json_temp["message"]["query_graph"]["nodes"]["n00"]["categories"] = subject_categories
-
-    if object_categories is not None and len(object_categories) > 0:
-        query_json_temp["message"]["query_graph"]["nodes"]["n01"]["categories"] = object_categories
-
-    if predicates is not None and len(predicates) > 0:
-        query_json_temp["message"]["query_graph"]["edges"]["e00"]["predicates"] = predicates
-
-    return query_json_temp
-
-
 def build_query_graph(start_node_id, end_node_id, start_node_categories=None, end_node_categories=None):
     """
     start_node_categories and end_node_categories are lists of categories.
