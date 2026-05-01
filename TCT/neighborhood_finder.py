@@ -1,6 +1,9 @@
+from collections import Counter
+
+from .TCT import sele_predicates_API, format_query_json, parse_KG, rank_by_primary_infores
 
 
-def format_query_json_for_pathfinder(subject_ids, object_ids=None,
+def format_query_json_for_neighborhood_finder(subject_ids, object_ids=None,
         subject_categories=None,
         object_categories=None,
         predicates=None):
@@ -134,7 +137,7 @@ def generate_score_results(results, method='infores'):
     return graph_scores, graph_scores_formatted
 
 
-def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dict, result2:dict,
+def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
         start_node_categories=None, end_node_categories=None,
         get_node_info=True,
         scoring_method='infores'):
@@ -143,11 +146,10 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
     scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.
     """
     # nodes
-    # TODO: get some node info? node attributes
     node_info = {}
     # edges is a dict of intermediate nodes
-    intermediate_node_edges = {}
-    for k, v in result1.items():
+    node_edges = {}
+    for k, v in results.items():
         i1 = v['subject']
         i2 = v['object']
         s_o = 'object'
@@ -159,43 +161,11 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
             s_o = 'subject'
         else:
             continue
-        if (i1 == start_node_id or i2 == start_node_id) and intermediate_node_id in intermediate_node_edges:
-            intermediate_node_edges[intermediate_node_id].append((k, v))
+        if (i1 == start_node_id or i2 == start_node_id) and intermediate_node_id in node_edges:
+            node_edges[intermediate_node_id].append((k, v))
         else:
-            intermediate_node_edges[intermediate_node_id] = [(k, v)]
+            node_edges[intermediate_node_id] = [(k, v)]
         # add node dict
-        if intermediate_node_id not in node_info:
-            node_dict = {
-            }
-            node_info[intermediate_node_id] = node_dict
-        else:
-            node_dict = node_info[intermediate_node_id]
-        for attribute in v['attributes']:
-            if attribute['attribute_type_id'] == f'{s_o}_category':
-                if 'categories' not in node_dict:
-                    node_dict['categories'] = set([attribute['value']])
-                else:
-                    node_dict['categories'].add(attribute['value'])
-            if attribute['attribute_type_id'] == f'{s_o}_name' and 'name' not in node_dict:
-                node_dict['name'] = attribute['value']
-        node_info[intermediate_node_id] = node_dict
-    connecting_intermediate_nodes = {}
-    for k, v in result2.items():
-        i1 = v['subject']
-        i2 = v['object']
-        if i1 == end_node_id:
-            intermediate_node_id = i2
-            s_o = 'object'
-        elif i2 == end_node_id:
-            intermediate_node_id = i1
-            s_o = 'subject'
-        else:
-            continue
-        if (i1 == end_node_id or i2 == end_node_id) and intermediate_node_id in intermediate_node_edges:
-            if intermediate_node_id in connecting_intermediate_nodes:
-                connecting_intermediate_nodes[intermediate_node_id]['e2'].append((k, v))
-            else:
-                connecting_intermediate_nodes[intermediate_node_id] = {'e1': intermediate_node_edges[intermediate_node_id], 'e2' : [(k, v)]}
         if intermediate_node_id not in node_info:
             node_dict = {
             }
@@ -218,21 +188,16 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
     all_auxiliary_graphs = {}
     i = 1
     # sort connecting_intermediate_nodes by total number of connections
-    connection_counts = Counter({k: len(v['e1'])*len(v['e2']) for k, v in connecting_intermediate_nodes.items()})
+    connection_counts = Counter({k: len(v) for k, v in node_edges.items()})
     for i1, count in connection_counts.most_common():
-        kv = connecting_intermediate_nodes[i1]
-        e1s = kv['e1']
-        e2s = kv['e2']
-        edges = {k: v for k, v in e1s}
-        edges.update({k: v for k, v in e2s})
-        all_edges.update(edges)
-        keys = [x[0] for x in e1s] + [x[0] for x in e2s]
+        edges = node_edges[i1]
+        all_edges.update({k: v for k, v in edges})
+        keys = [x[0] for x in edges]
         all_auxiliary_graphs[f'aux_{i}_{i1}'] = keys
         i += 1
     # generate output json
     output = {
-        'query_graph': build_query_graph(start_node_id, end_node_id, start_node_categories, end_node_categories),
-        # TODO: don't drop the nodes
+        'query_graph': build_query_graph(start_node_id, '', start_node_categories, end_node_categories),
         'knowledge_graph': {'nodes': {x: node_info[x] for x in connection_counts.keys()},
                             'edges': all_edges,
                            },
@@ -250,8 +215,10 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
         normalized_nodes = get_normalized_nodes(nodes_to_add, mode='post')
         for node_id in nodes_to_add:
             nn = normalized_nodes[node_id]
-            output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
+            if nn is not None:
+                output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
     return output
+
 
 def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = []):
     """
@@ -319,6 +286,7 @@ def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_pred
         # Step 7: Ranking the results. This ranking method is based on the number of unique
         # primary infores. It can only be used to rank the results with one defined node.
     result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed, input_node_id)   # input_node1_id is the curie id of the
-    return input_node_id, result, result_parsed, result_ranked_by_primary_infores1
+    parsed_results = parse_results_for_neighborhood_finder(input_node_id, result, input_node_category, node2_categories)
+    return input_node_id, result, parsed_results, result_ranked_by_primary_infores1
 
 
