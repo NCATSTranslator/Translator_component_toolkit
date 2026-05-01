@@ -75,6 +75,27 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.batch_synonyms">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">batch_synonyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/name_resolver.html#batch_synonyms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.batch_synonyms" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>synonyms</cite> API endpoint, using POST. Given a list of CURIEs, this returns a dict of CURIE:TranslatorNode, where each TranslatorNode contains all synonyms for the given CURIE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>strings</strong><span class="classifier">list[str]</span></dt><dd><p>List of CURIEs.</p>
+</dd>
+<dt><strong>size</strong><span class="classifier">int</span></dt><dd><p>Desired chunking size, default is 50.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Dict of CURIE</strong><span class="classifier">TranslatorNode</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TCT.name_resolver.lookup">
 <span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_top_response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_synonyms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.lookup" title="Link to this definition">¶</a></dt>
 <dd><p>A wrapper around the <cite>lookup</cite> api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</p>
@@ -117,12 +138,12 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.name_resolver.synonyms">
-<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">synonyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#synonyms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.synonyms" title="Link to this definition">¶</a></dt>
-<dd><p>A wrapper around the <cite>synonyms</cite> api endpoint. Given a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.</p>
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">synonyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#synonyms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.synonyms" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>synonyms</cite> api endpoint. Given a CURIE or a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>query</strong><span class="classifier">str</span></dt><dd><p>Query CURIE</p>
+<dt><strong>query</strong><span class="classifier">str|list</span></dt><dd><p>Query CURIE or list of CURIEs</p>
 </dd>
 <dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>synonyms</cite></p>
 </dd>
