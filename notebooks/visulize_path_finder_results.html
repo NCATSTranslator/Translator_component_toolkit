@@ -46,7 +46,9 @@
             border-radius: 4px;
         }
         #path-selector,
-        #predicate-selector {
+        #predicate-selector,
+        #object-direction-qualifier-selector,
+        #primary-knowledge-source-selector {
             width: 100%;
         }
         .instructions {
@@ -58,12 +60,45 @@
             flex-direction: column;
             gap: 20px;
         }
+        .network-frame {
+            position: relative;
+        }
         #network-container {
             width: 100%;
             height: 600px;
             border: 1px solid #ccc;
             background-color: #ffffff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .network-font-controls {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+            padding: 6px;
+            z-index: 5;
+        }
+        .network-font-controls button {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .network-font-size-indicator {
+            min-width: 48px;
+            text-align: center;
+            font-size: 12px;
+            color: #34495e;
+            user-select: none;
         }
         #info-panel {
             width: 100%;
@@ -141,7 +176,21 @@
             <button id="apply-predicate-filter" type="button" disabled>Apply</button>
         </div>
         <div class="control-group">
-            <label for="highlight-input" style="font-weight: bold;">5. Highlight Nodes:</label>
+            <label for="object-direction-qualifier-selector" style="font-weight: bold;">5. Filter Object Direction:</label>
+            <select id="object-direction-qualifier-selector" disabled multiple size="6">
+                <option value="__ALL__" selected>All object direction qualifiers</option>
+            </select>
+            <button id="apply-object-direction-qualifier-filter" type="button" disabled>Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="primary-knowledge-source-selector" style="font-weight: bold;">6. Filter Primary Knowledge Source:</label>
+            <select id="primary-knowledge-source-selector" disabled multiple size="6">
+                <option value="__ALL__" selected>All primary knowledge sources</option>
+            </select>
+            <button id="apply-primary-knowledge-source-filter" type="button" disabled>Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="highlight-input" style="font-weight: bold;">7. Highlight Nodes:</label>
             <textarea id="highlight-input" rows="3" placeholder="CURIE or name, comma-separated&#10;e.g. HGNC:1100, BRCA1" style="width:100%; box-sizing:border-box; font-size:12px; resize:vertical; border:1px solid #ccc; border-radius:3px; padding:4px;"></textarea>
             <div style="display:flex; gap:4px; margin-top:4px;">
                 <button id="apply-highlight" type="button">Apply</button>
@@ -150,7 +199,12 @@
             <div id="highlight-status" style="font-size:11px; color:#555; margin-top:3px;"></div>
         </div>
         <div class="control-group">
-            <label style="font-weight: bold;">6. Export:</label>
+            <label style="font-weight: bold;">8. Hidden Nodes:</label>
+            <span id="hidden-node-count" style="font-size:0.85em; color:#fff; background:#888; border-radius:12px; padding:2px 9px; display:none;"></span>
+            <button id="show-all-hidden" type="button" disabled>Restore All Hidden</button>
+        </div>
+        <div class="control-group">
+            <label style="font-weight: bold;">9. Export:</label>
             <button id="download-graph" type="button" disabled>Download Shown Graph</button>
         </div>
         <div class="instructions">
@@ -160,8 +214,15 @@
     </div>
 
     <div class="container">
-        <div id="network-container">
-            <p style="text-align: center; color: #888; margin-top: 20px;">Please upload a JSON file to view the network.</p>
+        <div class="network-frame">
+            <div id="network-container">
+                <p style="text-align: center; color: #888; margin-top: 20px;">Please upload a JSON file to view the network.</p>
+            </div>
+            <div class="network-font-controls" aria-label="Node font size controls">
+                <button id="decrease-node-font" type="button" title="Decrease node font size">-</button>
+                <span id="node-font-size-indicator" class="network-font-size-indicator">14px</span>
+                <button id="increase-node-font" type="button" title="Increase node font size">+</button>
+            </div>
         </div>
         <div id="info-panel">
             <p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>
@@ -181,13 +242,45 @@
         let graphViews = {};
         let allPathEntries = [];
         let availablePredicates = [];
+        let availableObjectDirectionQualifiers = [];
+        let availablePrimaryKnowledgeSources = [];
         let currentRenderedGraph = { nodes: [], edges: [] };
         let queryNodeIds = new Set(); // Subject/object nodes from the query
         let highlightNodeSet = new Set(); // User-supplied nodes to highlight in red
+        let hiddenNodeIds = new Set(); // Nodes manually hidden by the user
         let querySubjectIds = [];
         let queryObjectIds = [];
         let nodeLabels = {};           // curie -> human-readable label
         const DEFAULT_TOP_N = 200;
+        const MIN_NODE_FONT_SIZE = 8;
+        const MAX_NODE_FONT_SIZE = 36;
+        const DEFAULT_NODE_FONT_SIZE = 14;
+        let currentNodeFontSize = DEFAULT_NODE_FONT_SIZE;
+
+        function updateNodeFontSizeIndicator() {
+            const el = document.getElementById('node-font-size-indicator');
+            if (el) el.textContent = `${currentNodeFontSize}px`;
+        }
+
+        function setNodeFontSize(nextSize) {
+            const clamped = Math.max(MIN_NODE_FONT_SIZE, Math.min(MAX_NODE_FONT_SIZE, nextSize));
+            currentNodeFontSize = clamped;
+            updateNodeFontSizeIndicator();
+
+            if (!networkData || !networkData.nodes) return;
+            const nodeIds = networkData.nodes.getIds();
+            if (nodeIds.length === 0) return;
+
+            const updates = nodeIds.map(id => ({
+                id,
+                font: { size: currentNodeFontSize, face: 'Arial' }
+            }));
+            networkData.nodes.update(updates);
+        }
+
+        function changeNodeFontSize(delta) {
+            setNodeFontSize(currentNodeFontSize + delta);
+        }
 
         // Returns the background colour for a node, respecting the highlight set.
         function getNodeBgColor(nodeId) {
@@ -212,19 +305,16 @@
                 }
             });
 
-            // Resolve only those still missing labels.
-            const unresolvedIds = nodeIds.filter(id => !nodeLabels[id]);
+            // Resolve only those still missing labels (deduplicated).
+            const unresolvedIds = Array.from(new Set(nodeIds.filter(id => !nodeLabels[id])));
             if (unresolvedIds.length === 0) return;
 
-            const params = new URLSearchParams();
-            unresolvedIds.forEach(id => params.append('preferred_curies', id));
-            try {
-                const response = await fetch(
-                    `https://name-lookup.ci.transltr.io/synonyms?${params}`
-                );
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
-                Object.entries(data).forEach(([curie, nodeInfo]) => {
+            const API_BASE = 'https://name-lookup.ci.transltr.io/synonyms?';
+            const MAX_IDS_PER_BATCH = 500;
+            const MAX_QUERY_LENGTH = 7000; // Keep GET URL safely below browser/proxy limits.
+
+            function applyResolvedLabelMap(data) {
+                Object.entries(data || {}).forEach(([curie, nodeInfo]) => {
                     if (!nodeInfo) return;
                     if (Array.isArray(nodeInfo)) {
                         const first = nodeInfo[0] || {};
@@ -238,8 +328,63 @@
                         else if (nodeInfo.preferred_name) nodeLabels[curie] = nodeInfo.preferred_name;
                     }
                 });
-            } catch (err) {
-                console.warn('Name resolution failed, CURIEs will be shown instead.', err);
+            }
+
+            function buildSafeBatches(ids) {
+                const batches = [];
+                let currentBatch = [];
+                let currentLen = 0;
+
+                ids.forEach(id => {
+                    const entry = `preferred_curies=${encodeURIComponent(id)}`;
+                    const entryLen = entry.length + 1; // +1 for '&' separator
+                    const wouldExceedCount = currentBatch.length >= MAX_IDS_PER_BATCH;
+                    const wouldExceedLen = (API_BASE.length + currentLen + entryLen) > MAX_QUERY_LENGTH;
+
+                    if ((wouldExceedCount || wouldExceedLen) && currentBatch.length > 0) {
+                        batches.push(currentBatch);
+                        currentBatch = [];
+                        currentLen = 0;
+                    }
+
+                    currentBatch.push(id);
+                    currentLen += entryLen;
+                });
+
+                if (currentBatch.length > 0) batches.push(currentBatch);
+                return batches;
+            }
+
+            async function fetchBatch(batchIds) {
+                const params = new URLSearchParams();
+                batchIds.forEach(id => params.append('preferred_curies', id));
+                const response = await fetch(`${API_BASE}${params}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                applyResolvedLabelMap(data);
+            }
+
+            const batches = buildSafeBatches(unresolvedIds);
+            for (const batchIds of batches) {
+                try {
+                    await fetchBatch(batchIds);
+                } catch (err) {
+                    // Retry once using smaller sub-batches to avoid transient/network limits.
+                    const retrySize = Math.max(50, Math.floor(batchIds.length / 2));
+                    let recovered = false;
+                    for (let i = 0; i < batchIds.length; i += retrySize) {
+                        const sub = batchIds.slice(i, i + retrySize);
+                        try {
+                            await fetchBatch(sub);
+                            recovered = true;
+                        } catch (subErr) {
+                            console.warn('Name resolution sub-batch failed, CURIEs will be shown for unresolved nodes.', subErr);
+                        }
+                    }
+                    if (!recovered) {
+                        console.warn('Name resolution failed for one batch, CURIEs will be shown instead.', err);
+                    }
+                }
             }
         }
 
@@ -282,6 +427,36 @@
             return sources.size > 0 ? Array.from(sources).sort().join('|') : '__NO_PRIMARY_SOURCE__';
         }
 
+        function getPrimaryKnowledgeSources(edgeInfo) {
+            const sources = new Set();
+
+            if (Array.isArray(edgeInfo && edgeInfo.sources)) {
+                edgeInfo.sources.forEach(src => {
+                    const role = String(src && src.resource_role || '').toLowerCase();
+                    if (role.includes('primary') && src && src.resource_id) {
+                        sources.add(String(src.resource_id));
+                    }
+                });
+            }
+
+            if (Array.isArray(edgeInfo && edgeInfo.attributes)) {
+                edgeInfo.attributes.forEach(attr => {
+                    const typeId = String(attr && attr.attribute_type_id || '').toLowerCase();
+                    if (!typeId.includes('primary_knowledge_source')) return;
+
+                    if (Array.isArray(attr.value)) {
+                        attr.value.forEach(v => {
+                            if (v) sources.add(String(v));
+                        });
+                    } else if (attr.value) {
+                        sources.add(String(attr.value));
+                    }
+                });
+            }
+
+            return sources.size > 0 ? Array.from(sources) : ['__NO_PRIMARY_SOURCE__'];
+        }
+
         function getSelectedViewKeys() {
             const pathSelector = document.getElementById('path-selector');
             const selected = Array.from(pathSelector.selectedOptions).map(opt => opt.value).filter(Boolean);
@@ -290,6 +465,51 @@
 
         function formatPredicateLabel(predicate) {
             return predicate ? predicate.replace('biolink:', '').replace(/_/g, ' ') : 'related to';
+        }
+
+        function formatObjectDirectionQualifierLabel(qualifier) {
+            return qualifier ? qualifier.replace('biolink:', '').replace(/_/g, ' ') : 'unspecified';
+        }
+
+        function getObjectDirectionQualifier(edgeInfo) {
+            if (!edgeInfo) return '__UNSPECIFIED__';
+
+            if (Array.isArray(edgeInfo.qualifiers)) {
+                for (const qualifier of edgeInfo.qualifiers) {
+                    if (!qualifier) continue;
+                    const qType = String(qualifier.qualifier_type_id || '').toLowerCase();
+                    if (qType.includes('object_direction_qualifier')) {
+                        return qualifier.qualifier_value || '__UNSPECIFIED__';
+                    }
+                }
+            }
+
+            if (Array.isArray(edgeInfo.attributes)) {
+                for (const attr of edgeInfo.attributes) {
+                    if (!attr) continue;
+                    const attrType = String(attr.attribute_type_id || '').toLowerCase();
+                    if (attrType.includes('object_direction_qualifier')) {
+                        return attr.value || '__UNSPECIFIED__';
+                    }
+                }
+            }
+
+            return '__UNSPECIFIED__';
+        }
+
+        function getEdgeColorByObjectDirectionQualifier(edgeInfo) {
+            const qualifier = String(getObjectDirectionQualifier(edgeInfo) || '')
+                .toLowerCase()
+                .replace('biolink:', '')
+                .replace(/[^a-z]/g, '');
+
+            if (qualifier.includes('increase') || qualifier.includes('upregulat')) {
+                return '#D94141'; // red
+            }
+            if (qualifier.includes('decrease') || qualifier.includes('downregulat')) {
+                return '#2B7CE9'; // blue
+            }
+            return '#848484'; // default gray
         }
 
         function populatePredicateSelector() {
@@ -317,9 +537,73 @@
             applyPredicateBtn.disabled = false;
         }
 
+        function populateObjectDirectionQualifierSelector() {
+            const qualifierSelector = document.getElementById('object-direction-qualifier-selector');
+            const applyQualifierBtn = document.getElementById('apply-object-direction-qualifier-filter');
+
+            const qualifierSet = new Set();
+            Object.values(kgEdgesMaster).forEach(edgeInfo => {
+                if (edgeInfo && edgeInfo.subject && edgeInfo.object) {
+                    qualifierSet.add(getObjectDirectionQualifier(edgeInfo));
+                }
+            });
+
+            availableObjectDirectionQualifiers = Array.from(qualifierSet).sort((a, b) => a.localeCompare(b));
+
+            qualifierSelector.innerHTML = '<option value="__ALL__" selected>All object direction qualifiers</option>';
+            availableObjectDirectionQualifiers.forEach(qualifier => {
+                const option = document.createElement('option');
+                option.value = qualifier;
+                option.textContent = formatObjectDirectionQualifierLabel(qualifier);
+                qualifierSelector.appendChild(option);
+            });
+
+            qualifierSelector.disabled = false;
+            applyQualifierBtn.disabled = false;
+        }
+
+        function populatePrimaryKnowledgeSourceSelector() {
+            const pksSelector = document.getElementById('primary-knowledge-source-selector');
+            const applyPksBtn = document.getElementById('apply-primary-knowledge-source-filter');
+
+            const pksSet = new Set();
+            Object.values(kgEdgesMaster).forEach(edgeInfo => {
+                if (edgeInfo && edgeInfo.subject && edgeInfo.object) {
+                    getPrimaryKnowledgeSources(edgeInfo).forEach(sourceId => pksSet.add(sourceId));
+                }
+            });
+
+            availablePrimaryKnowledgeSources = Array.from(pksSet).sort((a, b) => a.localeCompare(b));
+
+            pksSelector.innerHTML = '<option value="__ALL__" selected>All primary knowledge sources</option>';
+            availablePrimaryKnowledgeSources.forEach(sourceId => {
+                const option = document.createElement('option');
+                option.value = sourceId;
+                option.textContent = sourceId === '__NO_PRIMARY_SOURCE__' ? 'No primary knowledge source' : sourceId;
+                pksSelector.appendChild(option);
+            });
+
+            pksSelector.disabled = false;
+            applyPksBtn.disabled = false;
+        }
+
         function getSelectedPredicateSet() {
             const predicateSelector = document.getElementById('predicate-selector');
             const selectedValues = Array.from(predicateSelector.selectedOptions).map(opt => opt.value);
+            if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
+            return new Set(selectedValues);
+        }
+
+        function getSelectedObjectDirectionQualifierSet() {
+            const qualifierSelector = document.getElementById('object-direction-qualifier-selector');
+            const selectedValues = Array.from(qualifierSelector.selectedOptions).map(opt => opt.value);
+            if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
+            return new Set(selectedValues);
+        }
+
+        function getSelectedPrimaryKnowledgeSourceSet() {
+            const pksSelector = document.getElementById('primary-knowledge-source-selector');
+            const selectedValues = Array.from(pksSelector.selectedOptions).map(opt => opt.value);
             if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
             return new Set(selectedValues);
         }
@@ -339,10 +623,14 @@
             }
 
             const selectedPredicates = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifiers = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSources = getSelectedPrimaryKnowledgeSourceSet();
             const exportPayload = {
                 exported_at: new Date().toISOString(),
                 selected_views: getSelectedViewKeys(),
                 selected_predicates: selectedPredicates ? Array.from(selectedPredicates) : ['ALL'],
+                selected_object_direction_qualifiers: selectedObjectDirectionQualifiers ? Array.from(selectedObjectDirectionQualifiers) : ['ALL'],
+                selected_primary_knowledge_sources: selectedPrimaryKnowledgeSources ? Array.from(selectedPrimaryKnowledgeSources) : ['ALL'],
                 node_count: currentRenderedGraph.nodes.length,
                 edge_count: currentRenderedGraph.edges.length,
                 nodes: currentRenderedGraph.nodes,
@@ -429,15 +717,16 @@
                 network.setOptions({ physics: { enabled: false } });
             });
 
-            // Temporarily unfreeze the node being dragged
+            // Disable physics and unfreeze only the dragged node – keeps all other nodes still.
             network.on("dragStart", function (params) {
+                network.setOptions({ physics: { enabled: false } });
                 if (params.nodes && params.nodes.length > 0) {
                     const updates = params.nodes.map(id => ({ id, fixed: { x: false, y: false } }));
                     networkData.nodes.update(updates);
                 }
             });
 
-            // Re-freeze it at its new position
+            // Re-freeze the dragged node at its new position; physics stays off.
             network.on("dragEnd", function (params) {
                 if (params.nodes && params.nodes.length > 0) {
                     const updates = params.nodes.map(id => ({ id, fixed: { x: true, y: true } }));
@@ -539,6 +828,8 @@
             kgEdgesMaster = kgData.edges;
             graphViews = { "ALL": Object.keys(kgEdgesMaster) }; // Default view: All edges
             populatePredicateSelector();
+            populateObjectDirectionQualifierSelector();
+            populatePrimaryKnowledgeSourceSelector();
 
             pathSelector.innerHTML = '<option value="ALL">All Paths (Full Graph)</option>';
 
@@ -611,6 +902,14 @@
         });
 
         document.getElementById('apply-predicate-filter').addEventListener('click', function() {
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('apply-object-direction-qualifier-filter').addEventListener('click', function() {
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('apply-primary-knowledge-source-filter').addEventListener('click', function() {
             applyPredicateFilterOnly();
         });
 
@@ -687,11 +986,55 @@
             networkData.nodes.update(updates);
         }
 
+        document.getElementById('show-all-hidden').addEventListener('click', function() {
+            showAllHiddenNodes();
+        });
+
         document.getElementById('download-graph').addEventListener('click', function() {
             downloadCurrentGraph();
         });
 
+        document.getElementById('decrease-node-font').addEventListener('click', function() {
+            changeNodeFontSize(-1);
+        });
+
+        document.getElementById('increase-node-font').addEventListener('click', function() {
+            changeNodeFontSize(1);
+        });
+
+        updateNodeFontSizeIndicator();
+
         document.getElementById('predicate-selector').addEventListener('change', function(e) {
+            const options = Array.from(e.target.options);
+            const allOption = options.find(opt => opt.value === '__ALL__');
+            const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
+
+            if (specificSelected && allOption) {
+                allOption.selected = false;
+            }
+            if (!specificSelected && allOption) {
+                allOption.selected = true;
+            }
+
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('object-direction-qualifier-selector').addEventListener('change', function(e) {
+            const options = Array.from(e.target.options);
+            const allOption = options.find(opt => opt.value === '__ALL__');
+            const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
+
+            if (specificSelected && allOption) {
+                allOption.selected = false;
+            }
+            if (!specificSelected && allOption) {
+                allOption.selected = true;
+            }
+
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('primary-knowledge-source-selector').addEventListener('change', function(e) {
             const options = Array.from(e.target.options);
             const allOption = options.find(opt => opt.value === '__ALL__');
             const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
@@ -718,10 +1061,24 @@
                 combinedEdgeIds.push(...ids);
             });
             const selectedPredicateSet = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifierSet = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSourceSet = getSelectedPrimaryKnowledgeSourceSet();
             const edgeIdsToShow = getRenderableUniqueEdgeIds(combinedEdgeIds).filter(edgeId => {
-                if (!selectedPredicateSet) return true;
                 const edgeInfo = kgEdgesMaster[edgeId];
-                return !!(edgeInfo && edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate));
+                if (!edgeInfo) return false;
+                if (selectedPredicateSet && !(edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate))) {
+                    return false;
+                }
+                if (selectedObjectDirectionQualifierSet) {
+                    const qualifierValue = getObjectDirectionQualifier(edgeInfo);
+                    if (!selectedObjectDirectionQualifierSet.has(qualifierValue)) return false;
+                }
+                if (selectedPrimaryKnowledgeSourceSet) {
+                    const pksValues = getPrimaryKnowledgeSources(edgeInfo);
+                    const hasMatch = pksValues.some(v => selectedPrimaryKnowledgeSourceSet.has(v));
+                    if (!hasMatch) return false;
+                }
+                return true;
             });
 
             // Build new vis-edges (same collapsing logic as updateNetworkView)
@@ -731,6 +1088,7 @@
             edgeIdsToShow.forEach(edgeId => {
                 const edgeInfo = kgEdgesMaster[edgeId];
                 if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                if (hiddenNodeIds.has(edgeInfo.subject) || hiddenNodeIds.has(edgeInfo.object)) return;
                 nodeSet.add(edgeInfo.subject);
                 nodeSet.add(edgeInfo.object);
                 const pairKey = `${edgeInfo.subject}=>${edgeInfo.object}`;
@@ -743,7 +1101,8 @@
                 group.forEach(item => {
                     const predicateKey = item.edgeInfo.predicate || '__NO_PREDICATE__';
                     const pksKey = getPrimaryKnowledgeSourceSignature(item.edgeInfo);
-                    const collapseKey = `${predicateKey}||${pksKey}`;
+                    const odqKey = getObjectDirectionQualifier(item.edgeInfo) || '__UNSPECIFIED__';
+                    const collapseKey = `${predicateKey}||${pksKey}||${odqKey}`;
                     if (!collapsedByRule[collapseKey]) collapsedByRule[collapseKey] = [];
                     collapsedByRule[collapseKey].push(item);
                 });
@@ -766,6 +1125,7 @@
                 collapsedEdges.forEach((edge, idx) => {
                     const labelBase = formatPredicateLabel(edge.predicate);
                     const label = edge.collapsed_count > 1 ? `${labelBase} (${edge.collapsed_count})` : labelBase;
+                    const edgeColor = getEdgeColorByObjectDirectionQualifier(edge.raw_data);
                     let smooth = { enabled: false };
                     let vadjust = 0;
                     if (total > 1) {
@@ -782,7 +1142,7 @@
                         font: { align: 'middle', size: 12, background: 'rgba(255,255,255,0.8)', vadjust },
                         arrows: 'to',
                         smooth,
-                        color: { color: '#848484', highlight: '#2B7CE9', hover: '#2B7CE9' },
+                        color: { color: edgeColor, highlight: edgeColor, hover: edgeColor },
                         raw_data: edge.raw_data,
                         raw_data_list: edge.raw_data_list,
                         raw_edge_ids: edge.raw_edge_ids,
@@ -791,8 +1151,6 @@
                 });
             });
 
-            // Preserve positions of nodes already rendered; only remove orphans / add newcomers.
-            const currentPositions = network.getPositions();
             const existingNodeIds = new Set(networkData.nodes.getIds());
             const newNodeIds = nodeSet;
 
@@ -800,35 +1158,39 @@
             const toRemove = Array.from(existingNodeIds).filter(id => !newNodeIds.has(id));
             if (toRemove.length) networkData.nodes.remove(toRemove);
 
-            // Add nodes that are new (not yet in dataset)
+            // Add nodes that are new; update existing ones unfixed so physics can re-settle them.
             const toAdd = [];
+            const toUpdate = [];
             Array.from(newNodeIds).forEach(nodeId => {
-                if (existingNodeIds.has(nodeId)) return; // already present, keep position
                 const bgColor = getNodeBgColor(nodeId);
-                toAdd.push({
+                const nodeBase = {
                     id: nodeId,
                     label: nodeLabels[nodeId] || nodeId,
                     title: nodeLabels[nodeId] ? `${nodeLabels[nodeId]}\n${nodeId}` : nodeId,
                     shape: 'box',
                     color: { background: bgColor, border: '#2c3e50', highlight: { background: '#FFF79A', border: '#2c3e50' } },
-                    font: { size: 14, face: 'Arial' }
-                });
-            });
-            if (toAdd.length) networkData.nodes.add(toAdd);
-
-            // For nodes that already exist and have a recorded position, pin them
-            // so the filter operation never triggers a re-layout.
-            Array.from(newNodeIds).forEach(nodeId => {
-                if (!existingNodeIds.has(nodeId)) return;
-                const pos = currentPositions[nodeId];
-                if (pos) {
-                    networkData.nodes.update({ id: nodeId, x: pos.x, y: pos.y, fixed: { x: true, y: true } });
+                    font: { size: currentNodeFontSize, face: 'Arial' },
+                    fixed: { x: false, y: false }
+                };
+                if (existingNodeIds.has(nodeId)) {
+                    toUpdate.push(nodeBase);
+                } else {
+                    toAdd.push(nodeBase);
                 }
             });
+            if (toUpdate.length) networkData.nodes.update(toUpdate);
+            if (toAdd.length) networkData.nodes.add(toAdd);
 
-            // Replace all edges without touching physics
+            // Replace all edges
             networkData.edges.clear();
             networkData.edges.add(visEdges);
+
+            // Re-run physics so all nodes settle naturally without overlap.
+            network.setOptions({ physics: { enabled: true } });
+            network.once('stabilized', function () {
+                network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+            });
+            network.stabilize(200);
 
             // Update download payload
             currentRenderedGraph = {
@@ -845,16 +1207,32 @@
         function updateNetworkView(viewKeys) {
             const keys = Array.isArray(viewKeys) ? viewKeys : [viewKeys];
             const isSinglePathSelection = keys.length === 1 && keys[0] !== 'ALL';
+            const isAllOnlySelection = keys.length === 1 && keys[0] === 'ALL';
+            const shouldPreserveExistingLayout = !isSinglePathSelection && !isAllOnlySelection;
             const combinedEdgeIds = [];
             keys.forEach(key => {
                 const ids = graphViews[key] || [];
                 combinedEdgeIds.push(...ids);
             });
             const selectedPredicateSet = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifierSet = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSourceSet = getSelectedPrimaryKnowledgeSourceSet();
             const edgeIdsToShow = getRenderableUniqueEdgeIds(combinedEdgeIds).filter(edgeId => {
-                if (!selectedPredicateSet) return true;
                 const edgeInfo = kgEdgesMaster[edgeId];
-                return !!(edgeInfo && edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate));
+                if (!edgeInfo) return false;
+                if (selectedPredicateSet && !(edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate))) {
+                    return false;
+                }
+                if (selectedObjectDirectionQualifierSet) {
+                    const qualifierValue = getObjectDirectionQualifier(edgeInfo);
+                    if (!selectedObjectDirectionQualifierSet.has(qualifierValue)) return false;
+                }
+                if (selectedPrimaryKnowledgeSourceSet) {
+                    const pksValues = getPrimaryKnowledgeSources(edgeInfo);
+                    const hasMatch = pksValues.some(v => selectedPrimaryKnowledgeSourceSet.has(v));
+                    if (!hasMatch) return false;
+                }
+                return true;
             });
             
             const visEdges = [];
@@ -864,6 +1242,7 @@
             edgeIdsToShow.forEach(edgeId => {
                 const edgeInfo = kgEdgesMaster[edgeId];
                 if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                if (hiddenNodeIds.has(edgeInfo.subject) || hiddenNodeIds.has(edgeInfo.object)) return;
 
                 nodeSet.add(edgeInfo.subject);
                 nodeSet.add(edgeInfo.object);
@@ -880,7 +1259,8 @@
                 group.forEach(item => {
                     const predicateKey = item.edgeInfo.predicate || '__NO_PREDICATE__';
                     const pksKey = getPrimaryKnowledgeSourceSignature(item.edgeInfo);
-                    const collapseKey = `${predicateKey}||${pksKey}`;
+                    const odqKey = getObjectDirectionQualifier(item.edgeInfo) || '__UNSPECIFIED__';
+                    const collapseKey = `${predicateKey}||${pksKey}||${odqKey}`;
                     if (!collapsedByRule[collapseKey]) collapsedByRule[collapseKey] = [];
                     collapsedByRule[collapseKey].push(item);
                 });
@@ -905,6 +1285,7 @@
                 collapsedEdges.forEach((edge, idx) => {
                     const labelBase = formatPredicateLabel(edge.predicate);
                     const label = edge.collapsed_count > 1 ? `${labelBase} (${edge.collapsed_count})` : labelBase;
+                    const edgeColor = getEdgeColorByObjectDirectionQualifier(edge.raw_data);
 
                     let smooth = { enabled: false };
                     let vadjust = 0;
@@ -927,7 +1308,7 @@
                         font: { align: 'middle', size: 12, background: 'rgba(255,255,255,0.8)', vadjust },
                         arrows: 'to',
                         smooth,
-                        color: { color: '#848484', highlight: '#2B7CE9', hover: '#2B7CE9' },
+                        color: { color: edgeColor, highlight: edgeColor, hover: edgeColor },
                         raw_data: edge.raw_data,
                         raw_data_list: edge.raw_data_list,
                         raw_edge_ids: edge.raw_edge_ids,
@@ -950,21 +1331,69 @@
                     id: nodeId,
                     label: nodeLabels[nodeId] || nodeId,
                     title: nodeLabels[nodeId] ? `${nodeLabels[nodeId]}\n${nodeId}` : nodeId,
-                    fixed: isSinglePathSelection ? { x: false, y: false } : undefined,
+                    fixed: { x: false, y: false },
                     shape: 'box',
                     color: {
                         background: bgColor,
                         border: '#2c3e50',
                         highlight: { background: '#FFF79A', border: '#2c3e50' }
                     },
-                    font: { size: 14, face: 'Arial' }
+                    font: { size: currentNodeFontSize, face: 'Arial' }
                 };
             });
 
-            networkData.nodes.clear();
-            networkData.edges.clear();
-            networkData.nodes.add(visNodes);
-            networkData.edges.add(visEdges);
+            if (network && shouldPreserveExistingLayout) {
+                // Keep existing node positions fixed, remove deselected nodes, and only add newcomers.
+                const currentPositions = network.getPositions();
+                const existingNodeIds = new Set(networkData.nodes.getIds());
+                const nextNodeById = {};
+                visNodes.forEach(node => {
+                    nextNodeById[node.id] = node;
+                });
+                const nextNodeIds = new Set(Object.keys(nextNodeById));
+
+                const toRemove = Array.from(existingNodeIds).filter(id => !nextNodeIds.has(id));
+                if (toRemove.length) {
+                    networkData.nodes.remove(toRemove);
+                }
+
+                const toAdd = [];
+                const toUpdate = [];
+                Array.from(nextNodeIds).forEach(nodeId => {
+                    const baseNode = nextNodeById[nodeId];
+                    if (!existingNodeIds.has(nodeId)) {
+                        // New node: no initial position, physics will place it naturally.
+                        toAdd.push({ ...baseNode, fixed: { x: false, y: false } });
+                    } else {
+                        // Existing node: start at its current position but free to move with physics.
+                        const pos = currentPositions[nodeId];
+                        toUpdate.push({
+                            ...baseNode,
+                            x: pos ? pos.x : undefined,
+                            y: pos ? pos.y : undefined,
+                            fixed: { x: false, y: false }
+                        });
+                    }
+                });
+
+                if (toUpdate.length) networkData.nodes.update(toUpdate);
+                if (toAdd.length) networkData.nodes.add(toAdd);
+
+                networkData.edges.clear();
+                networkData.edges.add(visEdges);
+
+                // Let all nodes (existing + new) settle naturally via physics.
+                network.setOptions({ physics: { enabled: true } });
+                network.once('stabilized', function () {
+                    network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+                });
+                network.stabilize(200);
+            } else {
+                networkData.nodes.clear();
+                networkData.edges.clear();
+                networkData.nodes.add(visNodes);
+                networkData.edges.add(visEdges);
+            }
 
             currentRenderedGraph = {
                 nodes: visNodes.map(n => ({ id: n.id, name: nodeLabels[n.id] || n.id, label: n.label })),
@@ -979,8 +1408,18 @@
             };
             document.getElementById('download-graph').disabled = false;
 
+            // Returning to ALL should restore the initial full-graph layout.
+            if (network && isAllOnlySelection) {
+                network.setOptions({ physics: { enabled: true } });
+                network.once('stabilized', function () {
+                    network.fit({
+                        animation: { duration: 300, easingFunction: 'easeInOutQuad' }
+                    });
+                });
+                network.stabilize(300);
+            }
             // For a single selected path, run a fresh auto-layout and fit so nodes/edges are clearly visible.
-            if (network && isSinglePathSelection) {
+            else if (network && isSinglePathSelection) {
                 network.setOptions({ physics: { enabled: true } });
                 network.once('stabilized', function () {
                     network.fit({
@@ -988,7 +1427,7 @@
                     });
                 });
                 network.stabilize(200);
-            } else if (network) {
+            } else if (network && !shouldPreserveExistingLayout) {
                 network.fit({
                     animation: { duration: 250, easingFunction: 'easeInOutQuad' }
                 });
@@ -996,6 +1435,49 @@
         }
 
         // 5. Render Panel Annotations
+        // Update hidden-node badge and button state.
+        function updateHiddenNodeUI() {
+            const count = hiddenNodeIds.size;
+            const badge = document.getElementById('hidden-node-count');
+            const btn = document.getElementById('show-all-hidden');
+            if (count > 0) {
+                badge.textContent = count + (count === 1 ? ' node' : ' nodes');
+                badge.style.display = 'inline';
+                btn.disabled = false;
+            } else {
+                badge.style.display = 'none';
+                btn.disabled = true;
+            }
+        }
+
+        // Hide the given node and all its connected edges from the graph.
+        function hideNode(nodeId) {
+            hiddenNodeIds.add(nodeId);
+
+            // Remove edges connected to this node.
+            const edgesToRemove = networkData.edges.getIds({
+                filter: e => e.from === nodeId || e.to === nodeId
+            });
+            if (edgesToRemove.length) networkData.edges.remove(edgesToRemove);
+            networkData.nodes.remove(nodeId);
+
+            updateHiddenNodeUI();
+            document.getElementById('info-panel').innerHTML =
+                `<p style="color:#666; font-style:italic;">Node hidden. Click <strong>Restore All Hidden</strong> in the sidebar to bring it back.</p>`;
+        }
+
+        // Restore all hidden nodes and their edges back into the visible graph.
+        function showAllHiddenNodes() {
+            if (hiddenNodeIds.size === 0) return;
+
+            // Rebuild from the current view without hidden exclusions.
+            hiddenNodeIds.clear();
+            updateHiddenNodeUI();
+
+            // Re-render current view so all nodes + edges come back.
+            updateNetworkView(getSelectedViewKeys());
+        }
+
         function handleNetworkClick(params) {
             const infoPanel = document.getElementById('info-panel');
             infoPanel.innerHTML = ""; // Clear panel
@@ -1035,7 +1517,7 @@
             } else if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
                 const nodeName = nodeLabels[nodeId] || nodeId;
-                infoPanel.innerHTML = `<h3>Node Details</h3><p><span class="detail-title">Name:</span> ${nodeName}</p><p><span class="detail-title">ID:</span> ${nodeId}</p><p><em>To view association details, click on the connecting lines (edges).</em></p>`;
+                infoPanel.innerHTML = `<h3>Node Details</h3><p><span class="detail-title">Name:</span> ${nodeName}</p><p><span class="detail-title">ID:</span> ${nodeId}</p><p><em>To view association details, click on the connecting lines (edges).</em></p><div style="margin-top:10px;"><button type="button" onclick="hideNode('${nodeId.replace(/'/g, "\\'")}')">Hide this node &amp; its edges</button></div>`;
             } else {
                 infoPanel.innerHTML = `<p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>`;
             }
