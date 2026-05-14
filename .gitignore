@@ -19,3 +19,4 @@ coverage.xml
 .coverage
 
 temp
+notebooks/PathFinder_testing_results/

@@ -146,11 +146,21 @@
     <div class="layout">
     <div class="controls">
         <div class="control-group">
-            <label for="file-upload" style="font-weight: bold;">1. Upload JSON Result:</label>
+            <label style="font-weight: bold;">1. Upload JSON Results:</label>
+            <label for="file-upload" style="font-size:0.9em;">File 1:</label>
             <input type="file" id="file-upload" accept=".json">
+            <div id="loaded-file-name" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <label for="file-upload-2" style="font-size:0.9em; margin-top:6px;">File 2 <span style="font-weight:normal;">(optional)</span>:</label>
+            <input type="file" id="file-upload-2" accept=".json">
+            <div id="loaded-file-name-2" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <button id="clear-file-2" type="button" style="margin-top:4px; display:none;">Remove File 2</button>
+            <label for="file-upload-3" style="font-size:0.9em; margin-top:6px;">File 3 <span style="font-weight:normal;">(optional)</span>:</label>
+            <input type="file" id="file-upload-3" accept=".json">
+            <div id="loaded-file-name-3" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <button id="clear-file-3" type="button" style="margin-top:4px; display:none;">Remove File 3</button>
         </div>
         <div class="control-group">
-            <label for="path-selector" style="font-weight: bold;">2. Select View:</label>
+            <label for="path-selector" style="font-weight: bold;">2. Select View (Score Ranked):</label>
             <span id="path-count" style="font-size:0.85em; color:#fff; background:#2B7CE9; border-radius:12px; padding:2px 9px; display:none;"></span>
             <select id="path-selector" disabled multiple size="8">
                 <option value="">Load a file first...</option>
@@ -169,28 +179,37 @@
             <button id="apply-top-n" type="button">Apply</button>
         </div>
         <div class="control-group">
-            <label for="predicate-selector" style="font-weight: bold;">4. Filter Predicates:</label>
+            <label for="intermediate-node-filter-input" style="font-weight: bold;">4. Filter Intermediate Nodes:</label>
+            <textarea id="intermediate-node-filter-input" rows="3" placeholder="CURIE or name, comma-separated&#10;e.g. NCBIGene:7157, TP53" style="width:100%; box-sizing:border-box; font-size:12px; resize:vertical; border:1px solid #ccc; border-radius:3px; padding:4px;"></textarea>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+                <button id="apply-intermediate-node-filter" type="button">Apply</button>
+                <button id="clear-intermediate-node-filter" type="button">Clear</button>
+            </div>
+            <div id="intermediate-node-filter-status" style="font-size:11px; color:#555; margin-top:3px;"></div>
+        </div>
+        <div class="control-group">
+            <label for="predicate-selector" style="font-weight: bold;">5. Filter Predicates:</label>
             <select id="predicate-selector" disabled multiple size="6">
                 <option value="__ALL__" selected>All predicates</option>
             </select>
             <button id="apply-predicate-filter" type="button" disabled>Apply</button>
         </div>
         <div class="control-group">
-            <label for="object-direction-qualifier-selector" style="font-weight: bold;">5. Filter Object Direction:</label>
+            <label for="object-direction-qualifier-selector" style="font-weight: bold;">6. Filter Object Direction:</label>
             <select id="object-direction-qualifier-selector" disabled multiple size="6">
                 <option value="__ALL__" selected>All object direction qualifiers</option>
             </select>
             <button id="apply-object-direction-qualifier-filter" type="button" disabled>Apply</button>
         </div>
         <div class="control-group">
-            <label for="primary-knowledge-source-selector" style="font-weight: bold;">6. Filter Primary Knowledge Source:</label>
+            <label for="primary-knowledge-source-selector" style="font-weight: bold;">7. Filter Primary Knowledge Source:</label>
             <select id="primary-knowledge-source-selector" disabled multiple size="6">
                 <option value="__ALL__" selected>All primary knowledge sources</option>
             </select>
             <button id="apply-primary-knowledge-source-filter" type="button" disabled>Apply</button>
         </div>
         <div class="control-group">
-            <label for="highlight-input" style="font-weight: bold;">7. Highlight Nodes:</label>
+            <label for="highlight-input" style="font-weight: bold;">8. Highlight Nodes:</label>
             <textarea id="highlight-input" rows="3" placeholder="CURIE or name, comma-separated&#10;e.g. HGNC:1100, BRCA1" style="width:100%; box-sizing:border-box; font-size:12px; resize:vertical; border:1px solid #ccc; border-radius:3px; padding:4px;"></textarea>
             <div style="display:flex; gap:4px; margin-top:4px;">
                 <button id="apply-highlight" type="button">Apply</button>
@@ -199,12 +218,12 @@
             <div id="highlight-status" style="font-size:11px; color:#555; margin-top:3px;"></div>
         </div>
         <div class="control-group">
-            <label style="font-weight: bold;">8. Hidden Nodes:</label>
+            <label style="font-weight: bold;">9. Hidden Nodes:</label>
             <span id="hidden-node-count" style="font-size:0.85em; color:#fff; background:#888; border-radius:12px; padding:2px 9px; display:none;"></span>
             <button id="show-all-hidden" type="button" disabled>Restore All Hidden</button>
         </div>
         <div class="control-group">
-            <label style="font-weight: bold;">9. Export:</label>
+            <label style="font-weight: bold;">10. Export:</label>
             <button id="download-graph" type="button" disabled>Download Shown Graph</button>
         </div>
         <div class="instructions">
@@ -251,6 +270,8 @@
         let querySubjectIds = [];
         let queryObjectIds = [];
         let nodeLabels = {};           // curie -> human-readable label
+        let jsonDataSlots = [null, null, null];   // raw parsed JSON for File 1, File 2, File 3
+        let slotFileNames = ['', '', ''];           // display names for the three slots
         const DEFAULT_TOP_N = 200;
         const MIN_NODE_FONT_SIZE = 8;
         const MAX_NODE_FONT_SIZE = 36;
@@ -393,6 +414,35 @@
                 const edgeInfo = kgEdgesMaster[edgeId];
                 return !!(edgeInfo && edgeInfo.subject && edgeInfo.object);
             });
+        }
+
+        function extractPathScores(resultsData) {
+            const scoreMap = {};
+            if (!Array.isArray(resultsData)) return scoreMap;
+
+            resultsData.forEach(result => {
+                const analyses = Array.isArray(result && result.analyses) ? result.analyses : [];
+                analyses.forEach(analysis => {
+                    const score = Number(analysis && analysis.score);
+                    if (!Number.isFinite(score)) return;
+
+                    const pathBindings = analysis && analysis.path_bindings;
+                    if (!pathBindings || typeof pathBindings !== 'object') return;
+
+                    Object.values(pathBindings).forEach(bindingList => {
+                        if (!Array.isArray(bindingList)) return;
+                        bindingList.forEach(binding => {
+                            const pathId = binding && binding.id;
+                            if (!pathId) return;
+                            if (!(pathId in scoreMap) || score > scoreMap[pathId]) {
+                                scoreMap[pathId] = score;
+                            }
+                        });
+                    });
+                });
+            });
+
+            return scoreMap;
         }
 
         function getPrimaryKnowledgeSourceSignature(edgeInfo) {
@@ -616,6 +666,77 @@
             return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TOP_N;
         }
 
+        function normalizeNodeFilterToken(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function getIntermediateNodeFilterTokens() {
+            const input = document.getElementById('intermediate-node-filter-input');
+            if (!input) return [];
+            return input.value
+                .split(',')
+                .map(token => normalizeNodeFilterToken(token))
+                .filter(Boolean);
+        }
+
+        function getPathIntermediateNodeIds(edgeIds) {
+            const degreeByNode = {};
+
+            edgeIds.forEach(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                degreeByNode[edgeInfo.subject] = (degreeByNode[edgeInfo.subject] || 0) + 1;
+                degreeByNode[edgeInfo.object] = (degreeByNode[edgeInfo.object] || 0) + 1;
+            });
+
+            return Object.keys(degreeByNode).filter(nodeId => {
+                if (queryNodeIds.size > 0) return !queryNodeIds.has(nodeId);
+                return degreeByNode[nodeId] > 1;
+            });
+        }
+
+        function getIntermediateNodeTerms(nodeIds) {
+            const terms = new Set();
+
+            nodeIds.forEach(nodeId => {
+                const normalizedId = normalizeNodeFilterToken(nodeId);
+                if (normalizedId) terms.add(normalizedId);
+
+                const label = nodeLabels[nodeId]
+                    || (kgNodesMaster[nodeId] && (kgNodesMaster[nodeId].name || kgNodesMaster[nodeId].label))
+                    || '';
+                const normalizedLabel = normalizeNodeFilterToken(label);
+                if (normalizedLabel) terms.add(normalizedLabel);
+            });
+
+            return Array.from(terms);
+        }
+
+        function getFilteredPathEntries() {
+            const filterTokens = getIntermediateNodeFilterTokens();
+            if (filterTokens.length === 0) return allPathEntries;
+
+            const filterTokenSet = new Set(filterTokens);
+            return allPathEntries.filter(entry =>
+                Array.isArray(entry.intermediateNodeTerms)
+                && entry.intermediateNodeTerms.some(term => filterTokenSet.has(term))
+            );
+        }
+
+        function updateIntermediateNodeFilterStatus(filteredEntries, filterTokens) {
+            const statusEl = document.getElementById('intermediate-node-filter-status');
+            if (!statusEl) return;
+
+            if (filterTokens.length === 0) {
+                statusEl.textContent = '';
+                return;
+            }
+
+            const pathLabel = filteredEntries.length === 1 ? 'path' : 'paths';
+            const filterLabel = filterTokens.length === 1 ? 'node filter' : 'node filters';
+            statusEl.textContent = `Showing ${filteredEntries.length} matching ${pathLabel} for ${filterTokens.length} ${filterLabel}.`;
+        }
+
         function downloadCurrentGraph() {
             if (!currentRenderedGraph || currentRenderedGraph.nodes.length === 0) {
                 alert('No graph is currently displayed to download.');
@@ -628,6 +749,7 @@
             const exportPayload = {
                 exported_at: new Date().toISOString(),
                 selected_views: getSelectedViewKeys(),
+                selected_intermediate_nodes: getIntermediateNodeFilterTokens(),
                 selected_predicates: selectedPredicates ? Array.from(selectedPredicates) : ['ALL'],
                 selected_object_direction_qualifiers: selectedObjectDirectionQualifiers ? Array.from(selectedObjectDirectionQualifiers) : ['ALL'],
                 selected_primary_knowledge_sources: selectedPrimaryKnowledgeSources ? Array.from(selectedPrimaryKnowledgeSources) : ['ALL'],
@@ -653,16 +775,21 @@
             const pathSelector = document.getElementById('path-selector');
             const topN = getTopNValue();
 
-            const limitedEntries = allPathEntries.slice(0, topN);
+            const filterTokens = getIntermediateNodeFilterTokens();
+            const filteredEntries = getFilteredPathEntries();
+            const limitedEntries = filteredEntries.slice(0, topN);
+            const allMatchingEdgeIds = getRenderableUniqueEdgeIds(filteredEntries.flatMap(entry => entry.edgeIds || []));
+            const allOptionLabel = filterTokens.length > 0 ? 'All Matching Paths' : 'All Paths (Full Graph)';
 
-            graphViews = { "ALL": Object.keys(kgEdgesMaster) };
-            pathSelector.innerHTML = '<option value="ALL">All Paths (Full Graph)</option>';
+            graphViews = { "ALL": filterTokens.length > 0 ? allMatchingEdgeIds : Object.keys(kgEdgesMaster) };
+            pathSelector.innerHTML = `<option value="ALL">${allOptionLabel}</option>`;
 
             limitedEntries.forEach(entry => {
                 graphViews[entry.key] = entry.edgeIds;
                 const option = document.createElement('option');
                 option.value = entry.key;
-                option.textContent = `${entry.displayName} (${entry.edgeCount} ${entry.edgeCount === 1 ? 'edge' : 'edges'})`;
+                const scoreText = Number.isFinite(entry.score) ? entry.score.toFixed(4) : 'N/A';
+                option.textContent = `${entry.displayName} (score: ${scoreText}, ${entry.edgeCount} ${entry.edgeCount === 1 ? 'edge' : 'edges'})`;
                 pathSelector.appendChild(option);
             });
 
@@ -671,30 +798,114 @@
 
             const countBadge = document.getElementById('path-count');
             const shownPathCount = limitedEntries.length;
-            countBadge.textContent = shownPathCount + (shownPathCount === 1 ? ' path' : ' paths');
+            const countSuffix = filterTokens.length > 0 ? ' matching path' : ' path';
+            countBadge.textContent = shownPathCount + (shownPathCount === 1 ? countSuffix : `${countSuffix}s`);
             countBadge.style.display = 'inline';
+
+            updateIntermediateNodeFilterStatus(filteredEntries, filterTokens);
 
             updateNetworkView(['ALL']);
         }
 
-        // 1. Listen for file upload
-        document.getElementById('file-upload').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const jsonData = JSON.parse(e.target.result);
-                    await processGraphData(jsonData);
-                } catch (error) {
-                    alert('Error parsing JSON file. Please ensure it is a valid JSON format.');
-                    console.error("JSON Parsing Error:", error);
-                }
+        // Merge N TRAPI/standard-format JSON payloads into one combined payload.
+        // Edge and aux-graph keys are prefixed with "f1_", "f2_", "f3_" to avoid collisions.
+        function mergeAllSlots(dataArray) {
+            const unwrap = d => d.message || d;
+            const remapEdgeIds = (prefix, value) => {
+                if (Array.isArray(value)) return value.map(eid => `${prefix}${eid}`);
+                return { ...value, edges: (value.edges || []).map(eid => `${prefix}${eid}`) };
             };
-            reader.readAsText(file);
-            // Allow selecting the same file again to trigger a reload.
-            event.target.value = '';
+
+            const mergedNodes = {};
+            const mergedEdges = {};
+            const mergedAux = {};
+            let firstQueryGraph = undefined;
+            const mergedResults = [];
+
+            dataArray.forEach((data, idx) => {
+                if (!data) return;
+                const prefix = `f${idx + 1}_`;
+                const u = unwrap(data);
+                const kg = u.knowledge_graph || {};
+
+                // Nodes: later files win on duplicate CURIEs.
+                Object.assign(mergedNodes, kg.nodes || {});
+
+                // Edges: prefix all keys.
+                Object.entries(kg.edges || {}).forEach(([k, v]) => { mergedEdges[`${prefix}${k}`] = v; });
+
+                // Auxiliary graphs: prefix keys and remap internal edge references.
+                Object.entries(u.auxiliary_graphs || {}).forEach(([k, v]) => {
+                    mergedAux[`${prefix}${k}`] = remapEdgeIds(prefix, v);
+                });
+
+                if (!firstQueryGraph) firstQueryGraph = u.query_graph;
+                mergedResults.push(...(u.results || []));
+            });
+
+            return {
+                knowledge_graph: { nodes: mergedNodes, edges: mergedEdges },
+                auxiliary_graphs: mergedAux,
+                query_graph: firstQueryGraph,
+                results: mergedResults
+            };
+        }
+
+        // (Re)process whichever slots are loaded.
+        async function tryMergeAndProcess() {
+            const loaded = jsonDataSlots.filter(Boolean);
+            if (loaded.length === 0) return;
+
+            const payload = loaded.length === 1 ? loaded[0] : mergeAllSlots(jsonDataSlots);
+            await processGraphData(payload);
+        }
+
+        function makeSlotReader(slotIndex, fileNameElId, clearBtnId) {
+            return function(event) {
+                const file = event.target.files[0];
+                const fileNameEl = document.getElementById(fileNameElId);
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        jsonDataSlots[slotIndex] = JSON.parse(e.target.result);
+                        slotFileNames[slotIndex] = file.name;
+                        fileNameEl.textContent = `Loaded: ${file.name}`;
+                        if (clearBtnId) document.getElementById(clearBtnId).style.display = '';
+                        await tryMergeAndProcess();
+                    } catch (error) {
+                        alert('Error parsing JSON file. Please ensure it is a valid JSON format.');
+                        console.error('JSON Parsing Error:', error);
+                        fileNameEl.textContent = '';
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+        }
+
+        // 1. Listen for file uploads
+        document.getElementById('file-upload').addEventListener('change', makeSlotReader(0, 'loaded-file-name', null));
+        document.getElementById('file-upload-2').addEventListener('change', makeSlotReader(1, 'loaded-file-name-2', 'clear-file-2'));
+        document.getElementById('file-upload-3').addEventListener('change', makeSlotReader(2, 'loaded-file-name-3', 'clear-file-3'));
+
+        document.getElementById('clear-file-2').addEventListener('click', function() {
+            jsonDataSlots[1] = null;
+            slotFileNames[1] = '';
+            document.getElementById('loaded-file-name-2').textContent = '';
+            document.getElementById('file-upload-2').value = '';
+            this.style.display = 'none';
+            tryMergeAndProcess();
+        });
+
+        document.getElementById('clear-file-3').addEventListener('click', function() {
+            jsonDataSlots[2] = null;
+            slotFileNames[2] = '';
+            document.getElementById('loaded-file-name-3').textContent = '';
+            document.getElementById('file-upload-3').value = '';
+            this.style.display = 'none';
+            tryMergeAndProcess();
         });
 
         function initializeNetwork(container) {
@@ -749,6 +960,7 @@
             const kgData = graphData.message ? graphData.message.knowledge_graph : graphData.knowledge_graph;
             const auxData = graphData.message ? graphData.message.auxiliary_graphs : graphData.auxiliary_graphs;
             const qgData = graphData.message ? graphData.message.query_graph : graphData.query_graph;
+            const resultsData = graphData.message ? graphData.message.results : graphData.results;
 
             // Collect query subject/object node IDs (nodes with explicit ids)
             queryNodeIds = new Set();
@@ -835,19 +1047,36 @@
 
             // 3. Extract paths/views. Use auxiliary_graphs if available, else group by intermediate nodes dynamically.
             const pathEntries = [];
+            const pathScoreMap = extractPathScores(resultsData);
             if (auxData && Object.keys(auxData).length > 0) {
                 Object.entries(auxData).forEach(([key, value]) => {
                     // Extract edge IDs whether it's an array or TRAPI 1.4 object
                     let edgeIds = Array.isArray(value) ? value : (value.edges || []);
                     const renderableEdgeIds = getRenderableUniqueEdgeIds(edgeIds);
                     const edgeCount = renderableEdgeIds.length;
+                    const score = Number.isFinite(pathScoreMap[key]) ? pathScoreMap[key] : null;
                     
-                    // Format the name nicely (e.g., "aux_1_NCBIGene:4297" -> "Path via NCBIGene:4297")
-                    let nodeNameMatch = key.match(/_(.+)$/); 
-                    let displayName = nodeNameMatch ? `Path via ${nodeNameMatch[1]}` : `Path: ${key}`;
+                    // Format the name nicely (e.g., "aux_1_NCBIGene:4297" -> "Path via NCBIGene:4297").
+                    // For merged two-file data, keys are prefixed with "f1_" or "f2_".
+                    let fileLabel = '';
+                    let bareKey = key;
+                    if (key.startsWith('f1_')) { fileLabel = '[File 1] '; bareKey = key.slice(3); }
+                    else if (key.startsWith('f2_')) { fileLabel = '[File 2] '; bareKey = key.slice(3); }
+                    else if (key.startsWith('f3_')) { fileLabel = '[File 3] '; bareKey = key.slice(3); }
+                    let nodeNameMatch = bareKey.match(/_(.+)$/);
+                    let displayName = fileLabel + (nodeNameMatch ? `Path via ${nodeNameMatch[1]}` : `Path: ${bareKey}`);
                     
                     if (edgeCount > 0) {
-                        pathEntries.push({ key, edgeIds: renderableEdgeIds, displayName, edgeCount });
+                        const intermediateNodeIds = getPathIntermediateNodeIds(renderableEdgeIds);
+                        pathEntries.push({
+                            key,
+                            edgeIds: renderableEdgeIds,
+                            displayName,
+                            edgeCount,
+                            score,
+                            intermediateNodeIds,
+                            intermediateNodeTerms: getIntermediateNodeTerms(intermediateNodeIds)
+                        });
                     }
                 });
             } else {
@@ -868,11 +1097,14 @@
                         const renderableEdgeIds = getRenderableUniqueEdgeIds(Array.from(edgeSet));
                         const edgeCount = renderableEdgeIds.length;
                         if (edgeCount > 0) {
+                            const intermediateNodeIds = getPathIntermediateNodeIds(renderableEdgeIds);
                             pathEntries.push({
                                 key: viewKey,
                                 edgeIds: renderableEdgeIds,
                                 displayName: `Path via ${nodeId}`,
-                                edgeCount
+                                edgeCount,
+                                intermediateNodeIds,
+                                intermediateNodeTerms: getIntermediateNodeTerms(intermediateNodeIds)
                             });
                         }
                     }
@@ -880,6 +1112,9 @@
             }
 
             pathEntries.sort((a, b) => {
+                const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
+                const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
+                if (bScore !== aScore) return bScore - aScore;
                 if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
                 return a.displayName.localeCompare(b.displayName);
             });
@@ -898,6 +1133,15 @@
         });
 
         document.getElementById('apply-top-n').addEventListener('click', function() {
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('apply-intermediate-node-filter').addEventListener('click', function() {
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('clear-intermediate-node-filter').addEventListener('click', function() {
+            document.getElementById('intermediate-node-filter-input').value = '';
             applyTopNPathsLimit();
         });
 
