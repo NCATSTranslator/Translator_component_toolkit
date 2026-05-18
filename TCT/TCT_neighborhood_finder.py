@@ -1,7 +1,8 @@
 from collections import Counter
 
-from .TCT import sele_predicates_API, format_query_json, parse_KG, rank_by_primary_infores
+from .TCT import sele_predicates_API, parse_KG, rank_by_primary_infores
 from .TCT_pathfinder import generate_score_results, build_query_graph
+from .translator_query import format_query_json
 
 def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
         start_node_categories=None, end_node_categories=None,
