@@ -79,6 +79,96 @@
     <span class="k">return</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span></div>
 
 
+
+<div class="viewcode-block" id="build_attribute_constraint">
+<a class="viewcode-back" href="../../translator_query.html#TCT.translator_query.build_attribute_constraint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_attribute_constraint</span><span class="p">(</span><span class="n">attribute_id</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_not</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This creates an attribute constraint for a TRAPI query dict.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">attribute_id</span><span class="p">,</span>
+            <span class="s1">&#39;operator&#39;</span><span class="p">:</span> <span class="n">operator</span><span class="p">,</span>
+            <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">value</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span>
+            <span class="p">}</span>
+    <span class="k">if</span> <span class="n">is_not</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;not&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+
+<div class="viewcode-block" id="format_query_json">
+<a class="viewcode-back" href="../../translator_query.html#TCT.translator_query.format_query_json">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_query_json</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">object_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">subject_categories</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">object_categories</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">predicates</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">attribute_constraints</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span><span class="o">|</span><span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Formats a query dict, with optional constraints.</span>
+
+<span class="sd">    Example input:</span>
+<span class="sd">    subject_ids = [&quot;NCBIGene:3845&quot;]</span>
+<span class="sd">    object_ids = []</span>
+<span class="sd">    subject_categories = [&quot;biolink:Gene&quot;]</span>
+<span class="sd">    object_categories = [&quot;biolink:Gene&quot;]</span>
+<span class="sd">    predicates = [&quot;biolink:positively_correlated_with&quot;, &quot;biolink:physically_interacts_with&quot;]</span>
+<span class="sd">    attribute_constraints = [build_attribute_constraint(&#39;biolink:has_total&#39;, &#39;&gt;&#39;, 2)]</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#edited Dec 5, 2023</span>
+    <span class="n">query_json_temp</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
+
+                <span class="s2">&quot;edges&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;e00&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="c1">#&quot;e1&quot;: {</span>
+                        <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;n01&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;n00&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;predicates&quot;</span><span class="p">:</span> <span class="n">predicates</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span>
+                <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;n00&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">&quot;ids&quot;</span><span class="p">:</span><span class="n">subject_ids</span><span class="p">,</span> <span class="c1"># required</span>
+                        <span class="c1">#&quot;categories&quot;:[] # optional, if not provided, it will be empty</span>
+                        <span class="p">},</span>
+                    <span class="s2">&quot;n01&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="c1">#&quot;ids&quot;:[],</span>
+                        <span class="s2">&quot;categories&quot;</span><span class="p">:[]</span> <span class="c1"># required</span>
+                        <span class="p">}}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">attribute_constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">attribute_constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="s1">&#39;attribute_constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_constraints</span>
+
+    <span class="k">if</span> <span class="n">subject_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">][</span><span class="s2">&quot;n00&quot;</span><span class="p">][</span><span class="s2">&quot;ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_ids</span>
+
+    <span class="k">if</span> <span class="n">object_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">object_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">][</span><span class="s2">&quot;n01&quot;</span><span class="p">][</span><span class="s2">&quot;ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_ids</span>
+
+    <span class="k">if</span> <span class="n">subject_categories</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">subject_categories</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">][</span><span class="s2">&quot;n01&quot;</span><span class="p">][</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_categories</span>
+
+    <span class="k">if</span> <span class="n">object_categories</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">object_categories</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">][</span><span class="s2">&quot;n01&quot;</span><span class="p">][</span><span class="s2">&quot;categories&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">object_categories</span>
+
+    <span class="k">if</span> <span class="n">predicates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">predicates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;edges&quot;</span><span class="p">][</span><span class="s2">&quot;e00&quot;</span><span class="p">][</span><span class="s2">&quot;predicates&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicates</span>
+
+    <span class="k">return</span> <span class="n">query_json_temp</span></div>
+
+
+
+
 <div class="viewcode-block" id="optimize_query_json">
 <a class="viewcode-back" href="../../translator_query.html#TCT.translator_query.optimize_query_json">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">optimize_query_json</span><span class="p">(</span><span class="n">query_json</span><span class="p">,</span> <span class="n">API_name_cur</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">):</span>
