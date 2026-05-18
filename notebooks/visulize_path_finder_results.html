@@ -160,7 +160,14 @@
             <button id="clear-file-3" type="button" style="margin-top:4px; display:none;">Remove File 3</button>
         </div>
         <div class="control-group">
-            <label for="path-selector" style="font-weight: bold;">2. Select View (Score Ranked):</label>
+            <label for="path-selector" id="path-selector-label" style="font-weight: bold;">2. Select View (Score Ranked):</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <label for="rank-method-selector" style="font-size:0.9em; white-space:nowrap;">Rank by:</label>
+                <select id="rank-method-selector" style="flex:1;">
+                    <option value="score" selected>Score</option>
+                    <option value="edge_count">Edge Count</option>
+                </select>
+            </div>
             <span id="path-count" style="font-size:0.85em; color:#fff; background:#2B7CE9; border-radius:12px; padding:2px 9px; display:none;"></span>
             <select id="path-selector" disabled multiple size="8">
                 <option value="">Load a file first...</option>
@@ -771,12 +778,43 @@
             URL.revokeObjectURL(downloadUrl);
         }
 
+        function getRankingMethod() {
+            const el = document.getElementById('rank-method-selector');
+            return el ? el.value : 'score';
+        }
+
+        function sortPathEntries(entries) {
+            const method = getRankingMethod();
+            return entries.slice().sort((a, b) => {
+                if (method === 'edge_count') {
+                    if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
+                    const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
+                    const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
+                    if (bScore !== aScore) return bScore - aScore;
+                } else {
+                    const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
+                    const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
+                    if (bScore !== aScore) return bScore - aScore;
+                    if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
+                }
+                return a.displayName.localeCompare(b.displayName);
+            });
+        }
+
         function applyTopNPathsLimit() {
             const pathSelector = document.getElementById('path-selector');
             const topN = getTopNValue();
+            const rankMethod = getRankingMethod();
+
+            // Update the label to reflect current ranking method.
+            const selectorLabel = document.getElementById('path-selector-label');
+            if (selectorLabel) {
+                const rankLabel = rankMethod === 'edge_count' ? 'Edge Count Ranked' : 'Score Ranked';
+                selectorLabel.textContent = `2. Select View (${rankLabel}):`;
+            }
 
             const filterTokens = getIntermediateNodeFilterTokens();
-            const filteredEntries = getFilteredPathEntries();
+            const filteredEntries = sortPathEntries(getFilteredPathEntries());
             const limitedEntries = filteredEntries.slice(0, topN);
             const allMatchingEdgeIds = getRenderableUniqueEdgeIds(filteredEntries.flatMap(entry => entry.edgeIds || []));
             const allOptionLabel = filterTokens.length > 0 ? 'All Matching Paths' : 'All Paths (Full Graph)';
@@ -1111,13 +1149,6 @@
                 });
             }
 
-            pathEntries.sort((a, b) => {
-                const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
-                const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
-                if (bScore !== aScore) return bScore - aScore;
-                if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
-                return a.displayName.localeCompare(b.displayName);
-            });
             allPathEntries = pathEntries;
 
             // Default to top 200 paths on each new file load.
@@ -1130,6 +1161,10 @@
         // 4. Update Network when Dropdown changes
         document.getElementById('path-selector').addEventListener('change', function() {
             updateNetworkView(getSelectedViewKeys());
+        });
+
+        document.getElementById('rank-method-selector').addEventListener('change', function() {
+            applyTopNPathsLimit();
         });
 
         document.getElementById('apply-top-n').addEventListener('click', function() {
