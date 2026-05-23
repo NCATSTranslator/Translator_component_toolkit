@@ -87,7 +87,9 @@ def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
     return output
 
 
-def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = [],
+def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates,
+        input_node_category = [],
+        predicates_subset=None,
         attribute_constraints=None):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
@@ -139,8 +141,8 @@ def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_pred
                                                                 metaKG, APInames)
 
     # Step 3: Format the query JSON for the input node
-    query_json = format_query_json([input_node_id], [],
-                                   [input_node_category],
+    query_json = format_query_json([input_node_id], None,
+                                   None,
                                    node2_categories,
                                    sele_predicates)
 
