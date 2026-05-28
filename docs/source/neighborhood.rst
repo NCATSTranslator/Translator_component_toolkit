@@ -1,4 +1,4 @@
-TCT.neighborhood
+TCT.TCT_neighborhood_finder
 =================
-.. automodule:: TCT.neighborhood
+.. automodule:: TCT.TCT_neighborhood_finder
    :members:
