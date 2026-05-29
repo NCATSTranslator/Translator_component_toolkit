@@ -47,6 +47,9 @@ def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
 def build_attribute_constraint(attribute_id, operator, value, name=None, is_not=False):
     """
     This creates an attribute constraint for a TRAPI query dict.
+
+    Example
+    -------
     """
     if name is None:
         name = ''
