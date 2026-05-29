@@ -38,7 +38,7 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">find_link</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="c1">#pre = &quot;https://dev.smart-api.info/api/metakg/consolidated?size=2000&amp;q=%28api.x-translator.component%3AKP+AND+api.name%3A&quot; # This works for the previous version</span>
-    <span class="n">pre</span> <span class="o">=</span> <span class="s2">&quot;https://smart-api.info/api/metakg/consolidated?size=2000&amp;q=</span><span class="si">%28a</span><span class="s2">pi.x-translator.component%3AKP+AND+api.name%3A&quot;</span> 
+    <span class="n">pre</span> <span class="o">=</span> <span class="s2">&quot;https://smart-api.info/api/metakg/consolidated?size=5000&amp;q=</span><span class="si">%28a</span><span class="s2">pi.x-translator.component%3AKP+AND+api.name%3A&quot;</span> 
     <span class="n">end</span> <span class="o">=</span> <span class="s2">&quot;%5C%28Trapi+v1.5.0%5C</span><span class="si">%29%</span><span class="s2">29&quot;</span>
     <span class="k">if</span> <span class="s1">&#39;(Trapi v1.5.0)&#39;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">pre</span>
