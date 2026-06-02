@@ -12,6 +12,7 @@ def find_link(name, use_new_url=True):
     else:
         pre = "https://smart-api.info/api/metakg/consolidated?size=5000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" 
         end = "%5C%28Trapi+v1.5.0%5C%29%29"
+    name = name.replace(' - ', ' ')
     if '(Trapi v1.5.0)' in name:
         url = pre
         name_raw = name.split("(")[0]
@@ -42,7 +43,7 @@ def find_link(name, use_new_url=True):
     return url
 
 
-def get_KP_metadata(APInames:dict[str, str]) -> pd.DataFrame:
+def get_KP_metadata(APInames:dict[str, str], use_new_url=True) -> pd.DataFrame:
     '''
     This function is used to get the metadata of the KPs in the APInames dictionary.
 
@@ -75,10 +76,12 @@ def get_KP_metadata(APInames:dict[str, str]) -> pd.DataFrame:
         if KP == "RTX KG2 - TRAPI 1.5.0": 
             text =requests.get("https://smart-api.info/api/metakg/consolidated?size=20&q=%28api.x-translator.component%3AKP+AND+api.name%3ARTX+KG2+%5C-+TRAPI+1%5C.4%5C.0%29").text  # This works for the previous version
             json_text = json.loads(text)
-        else:   
-            text = requests.get(find_link(KP)).text
+        else:
+            text = requests.get(find_link(KP, use_new_url=use_new_url)).text
             json_text = json.loads(text)
-
+            if 'hits' not in json_text:
+                text = requests.get(find_link(KP, use_new_url=False)).text
+                json_text = json.loads(text)
         for i in (json_text['hits']):
             Predicate_list.append("biolink:"+i['_id'].split("-")[1])
             API_list.append(KP)
@@ -256,9 +259,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     return APInames, metaKG
 
-def load_translator_resources():
+def load_translator_resources(use_new_metakg_url=True):
     """
     Load the necessary resources for the Translator.
+
+    Params
+    ------
+    use_new_metakg_url
+        If True, this uses https://smart-api.info/api/metakg. If False, this uses https://smart-api.info/api/metakg/consolidated?
 
     Returns
     -------
@@ -268,7 +276,7 @@ def load_translator_resources():
     """
     from .translator_kpinfo import get_translator_kp_info
     Translator_KP_info, APInames = get_translator_kp_info()
-    metaKG = get_KP_metadata(APInames)
+    metaKG = get_KP_metadata(APInames, use_new_url=use_new_metakg_url)
   
     APInames, metaKG = add_plover_API(APInames, metaKG)
     return  APInames, metaKG, Translator_KP_info
