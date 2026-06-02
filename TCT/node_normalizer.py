@@ -58,6 +58,8 @@ def get_normalized_nodes(query: str | list[str],
             json_query = [query]
         else:
             json_query = query
+        if len(json_query) == 0:
+            return {}
         response = requests.post(path, json={'curies': json_query, **kwargs})
     else:
         response = requests.get(path, params={'curie': query, **kwargs})

@@ -39,6 +39,8 @@ def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
             node_info[intermediate_node_id] = node_dict
         else:
             node_dict = node_info[intermediate_node_id]
+        if 'attributes' not in v:
+            v['attributes'] = []
         for attribute in v['attributes']:
             if attribute['attribute_type_id'] == f'{s_o}_category':
                 if 'categories' not in node_dict:
