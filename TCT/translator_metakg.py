@@ -3,15 +3,21 @@ import json
 import pandas as pd
 
 
-def find_link(name):
+def find_link(name, use_new_url=True):
     #pre = "https://dev.smart-api.info/api/metakg/consolidated?size=2000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" # This works for the previous version
-    pre = "https://smart-api.info/api/metakg/consolidated?size=5000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" 
-    end = "%5C%28Trapi+v1.5.0%5C%29%29"
+    print(name)
+    if use_new_url:
+        pre = "https://smart-api.info/api/metakg?size=5000&q=(api.x-translator.component:KP+AND+api.name:"
+        end = ")&facet_size=300&aggs=object.raw,subject.raw"
+    else:
+        pre = "https://smart-api.info/api/metakg/consolidated?size=5000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" 
+        end = "%5C%28Trapi+v1.5.0%5C%29%29"
     if '(Trapi v1.5.0)' in name:
         url = pre
         name_raw = name.split("(")[0]
         words = name_raw.split(" ")
     
+        # TODO: replace '(Trapi v1.5.0)' with '\(Trapi+v1.5.0\)'
         length = len(words)
         if length == 1:
             url = url + words[0] + end
@@ -19,7 +25,6 @@ def find_link(name):
             for i in range(0,length-1):
                 url = url + words[i] + "+"
             url = url+words[length-1]+end
-    
     else:
         words = name.split(" ")
         url = pre
@@ -27,8 +32,14 @@ def find_link(name):
         
         for i in range(0,length-1):
             url = url + words[i] + "+"
-        url = url+words[length-1]+"%29"
-    return(url)
+
+        url = url+words[length-1]
+        if use_new_url:
+            url += end
+        else:
+            url = url+"%29"
+    print(url)
+    return url
 
 
 def get_KP_metadata(APInames:dict[str, str]) -> pd.DataFrame:
