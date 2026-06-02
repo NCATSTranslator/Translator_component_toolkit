@@ -5,7 +5,7 @@ import pandas as pd
 
 def find_link(name):
     #pre = "https://dev.smart-api.info/api/metakg/consolidated?size=2000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" # This works for the previous version
-    pre = "https://smart-api.info/api/metakg/consolidated?size=2000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" 
+    pre = "https://smart-api.info/api/metakg/consolidated?size=5000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" 
     end = "%5C%28Trapi+v1.5.0%5C%29%29"
     if '(Trapi v1.5.0)' in name:
         url = pre

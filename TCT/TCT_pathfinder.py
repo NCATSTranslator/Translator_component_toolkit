@@ -7,8 +7,61 @@ from . import node_normalizer
 from . import translator_query
 from .TCT import sele_predicates_API
 
+def format_query_json_for_pathfinder_with_constraints(subject_ids, 
+                                     object_ids=None,
+        subject_categories=None,
+        object_categories=None,
+        predicates=None,
+        constraints=None,
+        ):
+    if constraints is None or len(constraints) == 0:
+        constraints_intermediate_category = None
+    else:
+        constraints_intermediate_category = constraints
+    q =  {
+        "message": {
+            "query_graph": {
+            "nodes": {
+                "n0": {
+                "ids": [
+                    subject_ids
+                ]
+                },
+                "n1": {
+                "ids": [
+                    object_ids
+                ]
+                }
+            },
+            "paths": {
+                "p0": {
+                "subject": "n0",
+                "object": "n1",
+                "predicates": [
+                    "biolink:related_to"
+                ],
+                "constraints": [
+                    {
+                    "intermediate_categories": constraints_intermediate_category
+                    }
+                ]
+                }
+            }
+            }
+        },
+        "submitter": "TCT",
+        #"stream_progress": True,
+        "query_options": {
+            "kp_timeout": "30",
+            "prune_threshold": "50",
+            "max_pathfinder_paths": "500",
+            "max_path_length": "4"
+        }
+        }
+  
+    return q
 
-def build_query_graph(start_node_id, end_node_id, start_node_categories=None, end_node_categories=None):
+def build_query_graph(start_node_id, end_node_id, start_node_categories=None, end_node_categories=None, constraints_path=None):
     """
     start_node_categories and end_node_categories are lists of categories.
     """
@@ -39,7 +92,7 @@ def build_query_graph(start_node_id, end_node_id, start_node_categories=None, en
             },
             "paths": {
                 "p0": {
-                    "constraints": None,
+                    "constraints": constraints_path,
                     "object": "on",
                     "predicates": None,
                     "subject": "sn"
@@ -307,9 +360,20 @@ def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category)
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
+def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
+    aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
+    query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, node1_category, node2_category, constraints)
+    response = requests.post(aragorn_endpoint, json=query_current)
+    return response
 
 def query_arax_pathfinder(node1_id, node1_category, node2_id, node2_category):
     ARAX_endpoint = 'https://arax.ci.transltr.io/api/arax/v1.4/query'
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
+    response = requests.post(ARAX_endpoint, json=query_current)
+    return response
+
+def query_arax_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
+    ARAX_endpoint = 'https://arax.ci.transltr.io/api/arax/v1.4/query'
+    query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, node1_category, node2_category, constraints)
     response = requests.post(ARAX_endpoint, json=query_current)
     return response
