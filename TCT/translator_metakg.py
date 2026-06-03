@@ -5,7 +5,6 @@ import pandas as pd
 
 def find_link(name, use_new_url=True):
     #pre = "https://dev.smart-api.info/api/metakg/consolidated?size=2000&q=%28api.x-translator.component%3AKP+AND+api.name%3A" # This works for the previous version
-    print(name)
     if use_new_url:
         pre = "https://smart-api.info/api/metakg?size=5000&q=(api.x-translator.component:KP+AND+api.name:"
         end = ")&facet_size=300&aggs=object.raw,subject.raw"
@@ -39,7 +38,6 @@ def find_link(name, use_new_url=True):
             url += end
         else:
             url = url+"%29"
-    print(url)
     return url
 
 
@@ -80,8 +78,13 @@ def get_KP_metadata(APInames:dict[str, str], use_new_url=True) -> pd.DataFrame:
             text = requests.get(find_link(KP, use_new_url=use_new_url)).text
             json_text = json.loads(text)
             if 'hits' not in json_text:
-                text = requests.get(find_link(KP, use_new_url=False)).text
-                json_text = json.loads(text)
+                if use_new_url:
+                    print(KP, '- no hits found in new metakg URL, trying old URL pattern')
+                    text = requests.get(find_link(KP, use_new_url=False)).text
+                    json_text = json.loads(text)
+                else:
+                    print(KP, '- no hits found')
+                    continue
         for i in (json_text['hits']):
             Predicate_list.append("biolink:"+i['_id'].split("-")[1])
             API_list.append(KP)
