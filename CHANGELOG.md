@@ -44,6 +44,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `pyproject.toml`: added `nbconvert`, `ipykernel`, `notebook` dev deps; coverage threshold set to 95%
 - Existing notebooks updated to use new result class APIs and `TranslatorResources`
 
+### Merged from upstream (NCATSTranslator/main)
+- New pipeline modules `TCT_pathfinder.py`, `TCT_neighborhood_finder.py`, `kg_loader.py`, `graph_downloader.py`, plus `igraph`/`zstandard`/`scipy` dependencies, with tests added to keep the 95% coverage gate
+- `trapi.build_query` now defaults to `return_json=False`; `query()` raises `TypeError` on a string argument
+- `translator_query` gains `format_query_json()` and `build_attribute_constraint()` (used by the new pipeline modules)
+- `translator_metakg`: Plover endpoints are fetched with per-endpoint error handling; `find_link`/`get_KP_metadata` use the new SmartAPI metakg URL with fallback (`use_new_url`)
+- Corrected spelling `Neighborhood_finder` is now canonical; `Neiborhood_finder` remains as a deprecated alias
+- Fixed a latent argument-passing bug in `kg_loader.load_kg2`/`load_kg2_networkx`/`load_kg2_igraph`
+- Follow-up: the branch's `Neighborhood_finder`/`Path_finder` (returning result classes) and upstream's `TCT_neighborhood_finder`/`TCT_pathfinder` modules currently coexist; unifying them so the upstream pipelines return result classes is left as future work
+
 ## [0.1.6] - 2025-12-09
 
 ### Added

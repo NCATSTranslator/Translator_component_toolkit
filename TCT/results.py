@@ -306,7 +306,7 @@ class ParsedKnowledgeGraph:
 
 @dataclass
 class NeighborhoodResult:
-    """Wraps Neiborhood_finder() output."""
+    """Wraps Neighborhood_finder() output."""
 
     input_node_id: str
     knowledge_graph: KnowledgeGraph
