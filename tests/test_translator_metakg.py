@@ -17,31 +17,39 @@ from TCT.translator_metakg import (
 class TestFindLink:
     """Tests for the find_link function."""
 
-    def test_name_with_trapi_suffix(self):
-        """Test with a name containing '(Trapi v1.5.0)' suffix."""
-        url = find_link("Some API (Trapi v1.5.0)")
+    def test_name_with_trapi_suffix_old_url(self):
+        """The legacy consolidated URL (use_new_url=False) encodes the Trapi suffix."""
+        url = find_link("Some API (Trapi v1.5.0)", use_new_url=False)
         assert url.startswith(
-            "https://smart-api.info/api/metakg/consolidated?size=2000&q="
+            "https://smart-api.info/api/metakg/consolidated?size=5000&q="
         )
         # The URL should end with the encoded Trapi suffix
         assert "%5C%28Trapi+v1.5.0%5C%29" in url
 
-    def test_name_without_trapi_suffix(self):
-        """Test with a multi-word name without the Trapi suffix."""
+    def test_name_without_trapi_suffix_new_url(self):
+        """The default (new) URL uses the metakg endpoint with aggs facets."""
         url = find_link("Some API Name")
         assert url.startswith(
-            "https://smart-api.info/api/metakg/consolidated?size=2000&q="
+            "https://smart-api.info/api/metakg?size=5000&q="
         )
-        # Should end with the closing paren encoding
-        assert url.endswith("%29")
+        assert "Some+API+Name" in url
+        assert url.endswith(")&facet_size=300&aggs=object.raw,subject.raw")
 
-    def test_single_word_name(self):
-        """Test with a single-word name."""
+    def test_single_word_name_new_url(self):
+        """Single-word name on the default (new) URL."""
         url = find_link("SingleWord")
         assert url.startswith(
-            "https://smart-api.info/api/metakg/consolidated?size=2000&q="
+            "https://smart-api.info/api/metakg?size=5000&q="
         )
         assert "SingleWord" in url
+
+    def test_single_word_name_old_url(self):
+        """Single-word name on the legacy URL ends with the encoded paren."""
+        url = find_link("SingleWord", use_new_url=False)
+        assert url.startswith(
+            "https://smart-api.info/api/metakg/consolidated?size=5000&q="
+        )
+        assert url.endswith("%29")
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +144,7 @@ class TestAddPloverAPI:
     def test_adds_plover_apis(self, mock_get):
         """Mock all 7 Plover API meta_knowledge_graph endpoints."""
         mock_response = MagicMock()
+        mock_response.status_code = 200
         mock_response.json.return_value = {
             "edges": [
                 {
