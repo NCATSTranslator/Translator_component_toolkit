@@ -262,11 +262,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     return APInames, metaKG
 
-<<<<<<< HEAD
-def load_translator_resources(use_new_metakg_url=True):
-=======
 def load_translator_resources(use_new_metakg_url=False):
->>>>>>> 0380a61416c49cb575cf0ec2d9e69b733004dcc6
     """
     Load the necessary resources for the Translator.
 
