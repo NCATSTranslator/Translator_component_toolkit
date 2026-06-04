@@ -354,12 +354,18 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
     }
     return query_json
 
+
 def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category):
     aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
+def query_aragorn_pathfinder_with_constraints(node1_id, node2_id, constraints):
+    aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
+    query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, constraints)
+    response = requests.post(aragorn_endpoint, json=query_current)
+    return response 
 def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
     aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
     query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, node1_category, node2_category, constraints)

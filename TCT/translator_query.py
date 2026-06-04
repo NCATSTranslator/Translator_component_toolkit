@@ -170,7 +170,7 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
     Query an individual API with a TRAPI 1.5.0 query JSON,
     without modifying the original query_json.
     """
-    API_url_cur = APInames[API_name_cur]
+    API_url_cur = APInames[API_name_cur].strip('/')
     # deep‐copy so we never touch the caller’s data
     query_copy = deepcopy(query_json)
     # optimize on our private copy

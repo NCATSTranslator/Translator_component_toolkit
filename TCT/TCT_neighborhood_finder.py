@@ -81,11 +81,17 @@ def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
         for k, v in output['knowledge_graph']['nodes'].items():
             if 'name' not in v or 'categories' not in v:
                 nodes_to_add.append(k)
-        normalized_nodes = get_normalized_nodes(nodes_to_add, mode='post')
-        for node_id in nodes_to_add:
-            nn = normalized_nodes[node_id]
-            if nn is not None:
-                output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
+        if nodes_to_add:
+            batch_limit = 1000
+            all_normalized_nodes = {}
+            for idx in range(0, len(nodes_to_add), batch_limit):
+                batch = nodes_to_add[idx:idx + batch_limit]
+                batch_result = get_normalized_nodes(batch, mode='post')
+                all_normalized_nodes.update(batch_result)
+            for node_id in nodes_to_add:
+                nn = all_normalized_nodes.get(node_id)
+                if nn is not None:
+                    output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
     return output
 
 
