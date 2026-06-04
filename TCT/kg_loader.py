@@ -255,9 +255,9 @@ def to_sparse(nodes, edges):
 
 def load_kg2(filename='kg2.csv', edges_to_include=None, remove_unused_nodes=False, mtx_filename='spoke.mtx', **kwargs):
     if filename.endswith('.csv') or filename.endswith('.csv.gz') or filename.endswith('.tsv') or filename.endswith('.tsv.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_csv(filename, edges_to_include, remove_unused_nodes, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_csv(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, **kwargs)
     elif filename.endswith('.json') or filename.endswith('.json.gz') or filename.endswith('.jsonl') or filename.endswith('.jsonl.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, edges_to_include, remove_unused_nodes, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, **kwargs)
     else:
         raise Exception('Filename should be a csv, tsv, json, or jsonl.')
     if not os.path.exists(mtx_filename):
@@ -322,9 +322,9 @@ def load_kg2_igraph_from_data(nodes, edges, node_types, edge_types, remove_unuse
 def load_kg2_networkx(filename='spoke.csv', edges_to_include=None, remove_unused_nodes=True, directed=False, **kwargs):
     import networkx as nx
     if filename.endswith('.csv') or filename.endswith('.csv.gz') or filename.endswith('.tsv') or filename.endswith('.tsv.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_csv(filename, edges_to_include, remove_unused_nodes, reindex_edges=False, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_csv(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, reindex_edges=False, **kwargs)
     elif filename.endswith('.json') or filename.endswith('.json.gz') or filename.endswith('.jsonl') or filename.endswith('.jsonl.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, edges_to_include, remove_unused_nodes, reindex_edges=False, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, reindex_edges=False, **kwargs)
     else:
         raise Exception('Filename should be a csv, tsv, json, or jsonl.')
     edge_list = edges.keys()
@@ -356,9 +356,9 @@ def load_kg2_igraph(filename='graph.jsonl.gz', edges_to_include=None, remove_unu
     if low_memory:
         kwargs['use_edge_properties'] = False
     if filename.endswith('.csv') or filename.endswith('.csv.gz') or filename.endswith('.tsv') or filename.endswith('.tsv.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_csv(filename, edges_to_include, remove_unused_nodes, reindex_edges=False, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_csv(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, reindex_edges=False, **kwargs)
     elif filename.endswith('.json') or filename.endswith('.json.gz') or filename.endswith('.jsonl') or filename.endswith('.jsonl.gz'):
-        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, edges_to_include, remove_unused_nodes, reindex_edges=False, **kwargs)
+        nodes, edges, node_types, edge_types = import_kg2_jsonl(filename, None, edges_to_include=edges_to_include, remove_unused_nodes=remove_unused_nodes, reindex_edges=False, **kwargs)
     else:
         raise Exception('Filename should be a csv, tsv, json, or jsonl.')
     if verbose:
