@@ -217,7 +217,7 @@
 <span class="sd">    Query an individual API with a TRAPI 1.5.0 query JSON,</span>
 <span class="sd">    without modifying the original query_json.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">API_url_cur</span> <span class="o">=</span> <span class="n">APInames</span><span class="p">[</span><span class="n">API_name_cur</span><span class="p">]</span>
+    <span class="n">API_url_cur</span> <span class="o">=</span> <span class="n">APInames</span><span class="p">[</span><span class="n">API_name_cur</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
     <span class="c1"># deep‐copy so we never touch the caller’s data</span>
     <span class="n">query_copy</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">query_json</span><span class="p">)</span>
     <span class="c1"># optimize on our private copy</span>

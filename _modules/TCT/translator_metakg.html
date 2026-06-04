@@ -114,7 +114,7 @@
             <span class="n">json_text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">&#39;hits&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">json_text</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">use_new_url</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">KP</span><span class="p">,</span> <span class="s1">&#39;- no hits found in new metakg URL, trying old URL pattern&#39;</span><span class="p">)</span>
+                    <span class="c1">#print(KP, &#39;- no hits found in new metakg URL, trying old URL pattern&#39;)</span>
                     <span class="n">text</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">find_link</span><span class="p">(</span><span class="n">KP</span><span class="p">,</span> <span class="n">use_new_url</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span><span class="o">.</span><span class="n">text</span>
                     <span class="n">json_text</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -306,7 +306,7 @@
 
 <div class="viewcode-block" id="load_translator_resources">
 <a class="viewcode-back" href="../../translator_metakg.html#TCT.translator_metakg.load_translator_resources">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">load_translator_resources</span><span class="p">(</span><span class="n">use_new_metakg_url</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_translator_resources</span><span class="p">(</span><span class="n">use_new_metakg_url</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load the necessary resources for the Translator.</span>
 
