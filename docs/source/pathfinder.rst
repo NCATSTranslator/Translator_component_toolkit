@@ -1,4 +1,4 @@
-TCT.pathfinder
+TCT.TCT_pathfinder
 =================
-.. automodule:: TCT.pathfinder
+.. automodule:: TCT.TCT_pathfinder
    :members:

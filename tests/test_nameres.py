@@ -42,7 +42,7 @@ def test_nameres_status():
     assert status['status'] == 'ok'
     assert status['babel_version'] != ''
     assert status['babel_version_url'] != ''
-    assert status['numDocs'] > 425_000_000
+    assert status['solr']['numDocs'] > 425_000_000
 
 
 def test_nameres_incorrect():

@@ -1,5 +1,6 @@
 import requests
 import json
+import warnings
 from dataclasses import dataclass as _dataclass
 import pandas as pd
 import  seaborn as sns
@@ -30,6 +31,7 @@ __all__ = [
     'get_SmartAPI_Translator_KP_info',
     'list_Translator_APIs',
     'load_translator_resources',
+    'Neighborhood_finder',
     'Neiborhood_finder',
     'Path_finder',
     'format_query_json',
@@ -649,8 +651,8 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     return ranked_result
 
-def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_category=None,
-                      *, APInames=None, metaKG=None, API_predicates=None):
+def Neighborhood_finder(input_node, node2_categories, resources=None, input_node_category=None,
+                        *, APInames=None, metaKG=None, API_predicates=None):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
 
@@ -667,9 +669,9 @@ def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_c
 
     --------------
     Example:
-    >>> nb_result = Neiborhood_finder('MONDO:0008170',
-                                      node2_categories=['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                      resources=resources)
+    >>> nb_result = Neighborhood_finder('MONDO:0008170',
+                                        node2_categories=['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
+                                        resources=resources)
     --------------
 
     """
@@ -718,6 +720,17 @@ def Neiborhood_finder(input_node, node2_categories, resources=None, input_node_c
         parsed=result_parsed,
         ranked=result_ranked_by_primary_infores1,
     )
+
+
+def Neiborhood_finder(*args, **kwargs):
+    """Deprecated misspelled alias for :func:`Neighborhood_finder`."""
+    warnings.warn(
+        "Neiborhood_finder is deprecated; use Neighborhood_finder",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return Neighborhood_finder(*args, **kwargs)
+
 
 def Path_finder(input_node1, input_node2, intermediate_categories, resources=None,
                 input_node1_category=None, input_node2_category=None,
@@ -1028,6 +1041,7 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
 
 def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
                                        result_ranked_by_primary_infores1,
+                                       plot=True,
                                        top_n = 30,
                                        fontsize = 12,
                                        title_fontsize = 12,
@@ -1060,8 +1074,8 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
 
 
     #result_xy["output_node_name"] = new_colnames
-    result_xy['predictes1'] = predicts_list1
-    result_xy['predictes2'] = predicts_list2
+    result_xy['predicates1'] = predicts_list1
+    result_xy['predicates2'] = predicts_list2
 
     result_xy_sorted = result_xy.sort_values(by=['score'], ascending=False)
 
@@ -1072,7 +1086,8 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
     x = result_xy_sorted.iloc[0:top_n].index
     y = result_xy_sorted.iloc[0:top_n]['score']
 
-    plot_path_bar(x,y,fontsize, title_fontsize, output_png=output_png)
+    if plot:
+        plot_path_bar(x,y,fontsize, title_fontsize, output_png=output_png)
 
     return result_xy_sorted
 

@@ -33,7 +33,10 @@ dependencies = [
     "fastmcp>=2.12.2",
     "click>=8.2.1",
     "networkx",
-    "pyvis"
+    "igraph",
+    "pyvis",
+    "scipy",
+    "zstandard",
 ]
 
 [project.scripts]

@@ -24,3 +24,6 @@ coverage.xml
 # Claude code
 .claude/
 CLAUDE.md
+
+temp
+notebooks/PathFinder_testing_results/

@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> TCT Knowledge Graph Path Visualization</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 4fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .controls {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 15px;
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        select, input[type="file"], button {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #path-selector,
+        #predicate-selector,
+        #object-direction-qualifier-selector,
+        #primary-knowledge-source-selector {
+            width: 100%;
+        }
+        .instructions {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .network-frame {
+            position: relative;
+        }
+        #network-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .network-font-controls {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #cfd8dc;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+            padding: 6px;
+            z-index: 5;
+        }
+        .network-font-controls button {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .network-font-size-indicator {
+            min-width: 48px;
+            text-align: center;
+            font-size: 12px;
+            color: #34495e;
+            user-select: none;
+        }
+        #info-panel {
+            width: 100%;
+            max-height: 400px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .detail-row {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .detail-title {
+            font-weight: bold;
+            color: #2c3e50;
+            text-transform: capitalize;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+        @media (max-width: 1000px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .controls {
+                max-height: none;
+                overflow-y: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Path Finder Result Graph</h2>
+    <div class="layout">
+    <div class="controls">
+        <div class="control-group">
+            <label style="font-weight: bold;">1. Upload JSON Results:</label>
+            <label for="file-upload" style="font-size:0.9em;">File 1:</label>
+            <input type="file" id="file-upload" accept=".json">
+            <div id="loaded-file-name" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <label for="file-upload-2" style="font-size:0.9em; margin-top:6px;">File 2 <span style="font-weight:normal;">(optional)</span>:</label>
+            <input type="file" id="file-upload-2" accept=".json">
+            <div id="loaded-file-name-2" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <button id="clear-file-2" type="button" style="margin-top:4px; display:none;">Remove File 2</button>
+            <label for="file-upload-3" style="font-size:0.9em; margin-top:6px;">File 3 <span style="font-weight:normal;">(optional)</span>:</label>
+            <input type="file" id="file-upload-3" accept=".json">
+            <div id="loaded-file-name-3" style="font-size: 0.82em; color: #555; min-height: 1.2em; margin-top: 2px;"></div>
+            <button id="clear-file-3" type="button" style="margin-top:4px; display:none;">Remove File 3</button>
+        </div>
+        <div class="control-group">
+            <label for="path-selector" id="path-selector-label" style="font-weight: bold;">2. Select View (Score Ranked):</label>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <label for="rank-method-selector" style="font-size:0.9em; white-space:nowrap;">Rank by:</label>
+                <select id="rank-method-selector" style="flex:1;">
+                    <option value="score" selected>Score</option>
+                    <option value="edge_count">Edge Count</option>
+                </select>
+            </div>
+            <span id="path-count" style="font-size:0.85em; color:#fff; background:#2B7CE9; border-radius:12px; padding:2px 9px; display:none;"></span>
+            <select id="path-selector" disabled multiple size="8">
+                <option value="">Load a file first...</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="top-n-selector" style="font-weight: bold;">3. Top N Paths:</label>
+            <select id="top-n-selector">
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200" selected>200</option>
+                <option value="500">500</option>
+                <option value="all">All</option>
+            </select>
+            <button id="apply-top-n" type="button">Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="intermediate-node-filter-input" style="font-weight: bold;">4. Filter Intermediate Nodes:</label>
+            <textarea id="intermediate-node-filter-input" rows="3" placeholder="CURIE or name, comma-separated&#10;e.g. NCBIGene:7157, TP53" style="width:100%; box-sizing:border-box; font-size:12px; resize:vertical; border:1px solid #ccc; border-radius:3px; padding:4px;"></textarea>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+                <button id="apply-intermediate-node-filter" type="button">Apply</button>
+                <button id="clear-intermediate-node-filter" type="button">Clear</button>
+            </div>
+            <div id="intermediate-node-filter-status" style="font-size:11px; color:#555; margin-top:3px;"></div>
+        </div>
+        <div class="control-group">
+            <label for="predicate-selector" style="font-weight: bold;">5. Filter Predicates:</label>
+            <select id="predicate-selector" disabled multiple size="6">
+                <option value="__ALL__" selected>All predicates</option>
+            </select>
+            <button id="apply-predicate-filter" type="button" disabled>Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="object-direction-qualifier-selector" style="font-weight: bold;">6. Filter Object Direction:</label>
+            <select id="object-direction-qualifier-selector" disabled multiple size="6">
+                <option value="__ALL__" selected>All object direction qualifiers</option>
+            </select>
+            <button id="apply-object-direction-qualifier-filter" type="button" disabled>Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="primary-knowledge-source-selector" style="font-weight: bold;">7. Filter Primary Knowledge Source:</label>
+            <select id="primary-knowledge-source-selector" disabled multiple size="6">
+                <option value="__ALL__" selected>All primary knowledge sources</option>
+            </select>
+            <button id="apply-primary-knowledge-source-filter" type="button" disabled>Apply</button>
+        </div>
+        <div class="control-group">
+            <label for="highlight-input" style="font-weight: bold;">8. Highlight Nodes:</label>
+            <textarea id="highlight-input" rows="3" placeholder="CURIE or name, comma-separated&#10;e.g. HGNC:1100, BRCA1" style="width:100%; box-sizing:border-box; font-size:12px; resize:vertical; border:1px solid #ccc; border-radius:3px; padding:4px;"></textarea>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+                <button id="apply-highlight" type="button">Apply</button>
+                <button id="clear-highlight" type="button">Clear</button>
+            </div>
+            <div id="highlight-status" style="font-size:11px; color:#555; margin-top:3px;"></div>
+        </div>
+        <div class="control-group">
+            <label style="font-weight: bold;">9. Hidden Nodes:</label>
+            <span id="hidden-node-count" style="font-size:0.85em; color:#fff; background:#888; border-radius:12px; padding:2px 9px; display:none;"></span>
+            <button id="show-all-hidden" type="button" disabled>Restore All Hidden</button>
+        </div>
+        <div class="control-group">
+            <label style="font-weight: bold;">10. Export:</label>
+            <button id="download-graph" type="button" disabled>Download Shown Graph</button>
+        </div>
+        <div class="instructions">
+            <strong>Tip:</strong> Select one path or multiple paths in the dropdown (Command/Ctrl-click for non-adjacent options). Drag nodes freely to rearrange the graph.
+        </div>
+        <div id="query-summary" class="instructions" style="display:none;"></div>
+    </div>
+
+    <div class="container">
+        <div class="network-frame">
+            <div id="network-container">
+                <p style="text-align: center; color: #888; margin-top: 20px;">Please upload a JSON file to view the network.</p>
+            </div>
+            <div class="network-font-controls" aria-label="Node font size controls">
+                <button id="decrease-node-font" type="button" title="Decrease node font size">-</button>
+                <span id="node-font-size-indicator" class="network-font-size-indicator">14px</span>
+                <button id="increase-node-font" type="button" title="Increase node font size">+</button>
+            </div>
+        </div>
+        <div id="info-panel">
+            <p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>
+        </div>
+    </div>
+    </div>
+
+    <script type="text/javascript">
+        // Global variables to hold the network data
+        let network = null;
+        let networkData = {
+            nodes: new vis.DataSet([]),
+            edges: new vis.DataSet([])
+        };
+        let kgNodesMaster = {};
+        let kgEdgesMaster = {};
+        let graphViews = {};
+        let allPathEntries = [];
+        let availablePredicates = [];
+        let availableObjectDirectionQualifiers = [];
+        let availablePrimaryKnowledgeSources = [];
+        let currentRenderedGraph = { nodes: [], edges: [] };
+        let queryNodeIds = new Set(); // Subject/object nodes from the query
+        let highlightNodeSet = new Set(); // User-supplied nodes to highlight in red
+        let hiddenNodeIds = new Set(); // Nodes manually hidden by the user
+        let querySubjectIds = [];
+        let queryObjectIds = [];
+        let nodeLabels = {};           // curie -> human-readable label
+        let jsonDataSlots = [null, null, null];   // raw parsed JSON for File 1, File 2, File 3
+        let slotFileNames = ['', '', ''];           // display names for the three slots
+        const DEFAULT_TOP_N = 200;
+        const MIN_NODE_FONT_SIZE = 8;
+        const MAX_NODE_FONT_SIZE = 36;
+        const DEFAULT_NODE_FONT_SIZE = 14;
+        let currentNodeFontSize = DEFAULT_NODE_FONT_SIZE;
+
+        function updateNodeFontSizeIndicator() {
+            const el = document.getElementById('node-font-size-indicator');
+            if (el) el.textContent = `${currentNodeFontSize}px`;
+        }
+
+        function setNodeFontSize(nextSize) {
+            const clamped = Math.max(MIN_NODE_FONT_SIZE, Math.min(MAX_NODE_FONT_SIZE, nextSize));
+            currentNodeFontSize = clamped;
+            updateNodeFontSizeIndicator();
+
+            if (!networkData || !networkData.nodes) return;
+            const nodeIds = networkData.nodes.getIds();
+            if (nodeIds.length === 0) return;
+
+            const updates = nodeIds.map(id => ({
+                id,
+                font: { size: currentNodeFontSize, face: 'Arial' }
+            }));
+            networkData.nodes.update(updates);
+        }
+
+        function changeNodeFontSize(delta) {
+            setNodeFontSize(currentNodeFontSize + delta);
+        }
+
+        // Returns the background colour for a node, respecting the highlight set.
+        function getNodeBgColor(nodeId) {
+            if (highlightNodeSet.has(nodeId)) return '#FF4444'; // User-highlighted – red
+            if (queryNodeIds.has(nodeId)) return '#4A90D9';     // Query subject/object – blue
+            if (nodeId.includes('PUBCHEM')) return '#FFD2D2';   // Compound – light red
+            if (nodeId.includes('MONDO') || nodeId.includes('DOID')) return '#D2FFD2'; // Disease – green
+            return '#D2E5FF'; // Default – light blue
+        }
+
+        async function resolveNodeLabels(nodeIds) {
+            if (nodeIds.length === 0) return;
+
+            // Prefer labels already present in the uploaded KG payload.
+            nodeIds.forEach(id => {
+                const nodeMeta = kgNodesMaster[id];
+                if (!nodeMeta) return;
+                if (typeof nodeMeta.name === 'string' && nodeMeta.name.trim()) {
+                    nodeLabels[id] = nodeMeta.name;
+                } else if (typeof nodeMeta.label === 'string' && nodeMeta.label.trim()) {
+                    nodeLabels[id] = nodeMeta.label;
+                }
+            });
+
+            // Resolve only those still missing labels (deduplicated).
+            const unresolvedIds = Array.from(new Set(nodeIds.filter(id => !nodeLabels[id])));
+            if (unresolvedIds.length === 0) return;
+
+            const API_BASE = 'https://name-lookup.ci.transltr.io/synonyms?';
+            const MAX_IDS_PER_BATCH = 500;
+            const MAX_QUERY_LENGTH = 7000; // Keep GET URL safely below browser/proxy limits.
+
+            function applyResolvedLabelMap(data) {
+                Object.entries(data || {}).forEach(([curie, nodeInfo]) => {
+                    if (!nodeInfo) return;
+                    if (Array.isArray(nodeInfo)) {
+                        const first = nodeInfo[0] || {};
+                        if (first.label) nodeLabels[curie] = first.label;
+                        else if (first.name) nodeLabels[curie] = first.name;
+                        return;
+                    }
+                    if (typeof nodeInfo === 'object') {
+                        if (nodeInfo.label) nodeLabels[curie] = nodeInfo.label;
+                        else if (nodeInfo.name) nodeLabels[curie] = nodeInfo.name;
+                        else if (nodeInfo.preferred_name) nodeLabels[curie] = nodeInfo.preferred_name;
+                    }
+                });
+            }
+
+            function buildSafeBatches(ids) {
+                const batches = [];
+                let currentBatch = [];
+                let currentLen = 0;
+
+                ids.forEach(id => {
+                    const entry = `preferred_curies=${encodeURIComponent(id)}`;
+                    const entryLen = entry.length + 1; // +1 for '&' separator
+                    const wouldExceedCount = currentBatch.length >= MAX_IDS_PER_BATCH;
+                    const wouldExceedLen = (API_BASE.length + currentLen + entryLen) > MAX_QUERY_LENGTH;
+
+                    if ((wouldExceedCount || wouldExceedLen) && currentBatch.length > 0) {
+                        batches.push(currentBatch);
+                        currentBatch = [];
+                        currentLen = 0;
+                    }
+
+                    currentBatch.push(id);
+                    currentLen += entryLen;
+                });
+
+                if (currentBatch.length > 0) batches.push(currentBatch);
+                return batches;
+            }
+
+            async function fetchBatch(batchIds) {
+                const params = new URLSearchParams();
+                batchIds.forEach(id => params.append('preferred_curies', id));
+                const response = await fetch(`${API_BASE}${params}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                applyResolvedLabelMap(data);
+            }
+
+            const batches = buildSafeBatches(unresolvedIds);
+            for (const batchIds of batches) {
+                try {
+                    await fetchBatch(batchIds);
+                } catch (err) {
+                    // Retry once using smaller sub-batches to avoid transient/network limits.
+                    const retrySize = Math.max(50, Math.floor(batchIds.length / 2));
+                    let recovered = false;
+                    for (let i = 0; i < batchIds.length; i += retrySize) {
+                        const sub = batchIds.slice(i, i + retrySize);
+                        try {
+                            await fetchBatch(sub);
+                            recovered = true;
+                        } catch (subErr) {
+                            console.warn('Name resolution sub-batch failed, CURIEs will be shown for unresolved nodes.', subErr);
+                        }
+                    }
+                    if (!recovered) {
+                        console.warn('Name resolution failed for one batch, CURIEs will be shown instead.', err);
+                    }
+                }
+            }
+        }
+
+        function getRenderableUniqueEdgeIds(edgeIds) {
+            return [...new Set(edgeIds)].filter(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                return !!(edgeInfo && edgeInfo.subject && edgeInfo.object);
+            });
+        }
+
+        function extractPathScores(resultsData) {
+            const scoreMap = {};
+            if (!Array.isArray(resultsData)) return scoreMap;
+
+            resultsData.forEach(result => {
+                const analyses = Array.isArray(result && result.analyses) ? result.analyses : [];
+                analyses.forEach(analysis => {
+                    const score = Number(analysis && analysis.score);
+                    if (!Number.isFinite(score)) return;
+
+                    const pathBindings = analysis && analysis.path_bindings;
+                    if (!pathBindings || typeof pathBindings !== 'object') return;
+
+                    Object.values(pathBindings).forEach(bindingList => {
+                        if (!Array.isArray(bindingList)) return;
+                        bindingList.forEach(binding => {
+                            const pathId = binding && binding.id;
+                            if (!pathId) return;
+                            if (!(pathId in scoreMap) || score > scoreMap[pathId]) {
+                                scoreMap[pathId] = score;
+                            }
+                        });
+                    });
+                });
+            });
+
+            return scoreMap;
+        }
+
+        function getPrimaryKnowledgeSourceSignature(edgeInfo) {
+            const sources = new Set();
+
+            // TRAPI sources array format
+            if (Array.isArray(edgeInfo.sources)) {
+                edgeInfo.sources.forEach(src => {
+                    const role = (src.resource_role || '').toLowerCase();
+                    if (role.includes('primary') && src.resource_id) {
+                        sources.add(src.resource_id);
+                    }
+                });
+            }
+
+            // Fallback: attribute-style primary knowledge source
+            if (Array.isArray(edgeInfo.attributes)) {
+                edgeInfo.attributes.forEach(attr => {
+                    const typeId = (attr.attribute_type_id || '').toLowerCase();
+                    if (typeId.includes('primary_knowledge_source')) {
+                        if (Array.isArray(attr.value)) {
+                            attr.value.forEach(v => {
+                                if (v) sources.add(String(v));
+                            });
+                        } else if (attr.value) {
+                            sources.add(String(attr.value));
+                        }
+                    }
+                });
+            }
+
+            return sources.size > 0 ? Array.from(sources).sort().join('|') : '__NO_PRIMARY_SOURCE__';
+        }
+
+        function getPrimaryKnowledgeSources(edgeInfo) {
+            const sources = new Set();
+
+            if (Array.isArray(edgeInfo && edgeInfo.sources)) {
+                edgeInfo.sources.forEach(src => {
+                    const role = String(src && src.resource_role || '').toLowerCase();
+                    if (role.includes('primary') && src && src.resource_id) {
+                        sources.add(String(src.resource_id));
+                    }
+                });
+            }
+
+            if (Array.isArray(edgeInfo && edgeInfo.attributes)) {
+                edgeInfo.attributes.forEach(attr => {
+                    const typeId = String(attr && attr.attribute_type_id || '').toLowerCase();
+                    if (!typeId.includes('primary_knowledge_source')) return;
+
+                    if (Array.isArray(attr.value)) {
+                        attr.value.forEach(v => {
+                            if (v) sources.add(String(v));
+                        });
+                    } else if (attr.value) {
+                        sources.add(String(attr.value));
+                    }
+                });
+            }
+
+            return sources.size > 0 ? Array.from(sources) : ['__NO_PRIMARY_SOURCE__'];
+        }
+
+        function getSelectedViewKeys() {
+            const pathSelector = document.getElementById('path-selector');
+            const selected = Array.from(pathSelector.selectedOptions).map(opt => opt.value).filter(Boolean);
+            return selected.length > 0 ? selected : ['ALL'];
+        }
+
+        function formatPredicateLabel(predicate) {
+            return predicate ? predicate.replace('biolink:', '').replace(/_/g, ' ') : 'related to';
+        }
+
+        function formatObjectDirectionQualifierLabel(qualifier) {
+            return qualifier ? qualifier.replace('biolink:', '').replace(/_/g, ' ') : 'unspecified';
+        }
+
+        function getObjectDirectionQualifier(edgeInfo) {
+            if (!edgeInfo) return '__UNSPECIFIED__';
+
+            if (Array.isArray(edgeInfo.qualifiers)) {
+                for (const qualifier of edgeInfo.qualifiers) {
+                    if (!qualifier) continue;
+                    const qType = String(qualifier.qualifier_type_id || '').toLowerCase();
+                    if (qType.includes('object_direction_qualifier')) {
+                        return qualifier.qualifier_value || '__UNSPECIFIED__';
+                    }
+                }
+            }
+
+            if (Array.isArray(edgeInfo.attributes)) {
+                for (const attr of edgeInfo.attributes) {
+                    if (!attr) continue;
+                    const attrType = String(attr.attribute_type_id || '').toLowerCase();
+                    if (attrType.includes('object_direction_qualifier')) {
+                        return attr.value || '__UNSPECIFIED__';
+                    }
+                }
+            }
+
+            return '__UNSPECIFIED__';
+        }
+
+        function getEdgeColorByObjectDirectionQualifier(edgeInfo) {
+            const qualifier = String(getObjectDirectionQualifier(edgeInfo) || '')
+                .toLowerCase()
+                .replace('biolink:', '')
+                .replace(/[^a-z]/g, '');
+
+            if (qualifier.includes('increase') || qualifier.includes('upregulat')) {
+                return '#D94141'; // red
+            }
+            if (qualifier.includes('decrease') || qualifier.includes('downregulat')) {
+                return '#2B7CE9'; // blue
+            }
+            return '#848484'; // default gray
+        }
+
+        function populatePredicateSelector() {
+            const predicateSelector = document.getElementById('predicate-selector');
+            const applyPredicateBtn = document.getElementById('apply-predicate-filter');
+
+            const predicateSet = new Set();
+            Object.values(kgEdgesMaster).forEach(edgeInfo => {
+                if (edgeInfo && edgeInfo.subject && edgeInfo.object && edgeInfo.predicate) {
+                    predicateSet.add(edgeInfo.predicate);
+                }
+            });
+
+            availablePredicates = Array.from(predicateSet).sort((a, b) => a.localeCompare(b));
+
+            predicateSelector.innerHTML = '<option value="__ALL__" selected>All predicates</option>';
+            availablePredicates.forEach(predicate => {
+                const option = document.createElement('option');
+                option.value = predicate;
+                option.textContent = formatPredicateLabel(predicate);
+                predicateSelector.appendChild(option);
+            });
+
+            predicateSelector.disabled = false;
+            applyPredicateBtn.disabled = false;
+        }
+
+        function populateObjectDirectionQualifierSelector() {
+            const qualifierSelector = document.getElementById('object-direction-qualifier-selector');
+            const applyQualifierBtn = document.getElementById('apply-object-direction-qualifier-filter');
+
+            const qualifierSet = new Set();
+            Object.values(kgEdgesMaster).forEach(edgeInfo => {
+                if (edgeInfo && edgeInfo.subject && edgeInfo.object) {
+                    qualifierSet.add(getObjectDirectionQualifier(edgeInfo));
+                }
+            });
+
+            availableObjectDirectionQualifiers = Array.from(qualifierSet).sort((a, b) => a.localeCompare(b));
+
+            qualifierSelector.innerHTML = '<option value="__ALL__" selected>All object direction qualifiers</option>';
+            availableObjectDirectionQualifiers.forEach(qualifier => {
+                const option = document.createElement('option');
+                option.value = qualifier;
+                option.textContent = formatObjectDirectionQualifierLabel(qualifier);
+                qualifierSelector.appendChild(option);
+            });
+
+            qualifierSelector.disabled = false;
+            applyQualifierBtn.disabled = false;
+        }
+
+        function populatePrimaryKnowledgeSourceSelector() {
+            const pksSelector = document.getElementById('primary-knowledge-source-selector');
+            const applyPksBtn = document.getElementById('apply-primary-knowledge-source-filter');
+
+            const pksSet = new Set();
+            Object.values(kgEdgesMaster).forEach(edgeInfo => {
+                if (edgeInfo && edgeInfo.subject && edgeInfo.object) {
+                    getPrimaryKnowledgeSources(edgeInfo).forEach(sourceId => pksSet.add(sourceId));
+                }
+            });
+
+            availablePrimaryKnowledgeSources = Array.from(pksSet).sort((a, b) => a.localeCompare(b));
+
+            pksSelector.innerHTML = '<option value="__ALL__" selected>All primary knowledge sources</option>';
+            availablePrimaryKnowledgeSources.forEach(sourceId => {
+                const option = document.createElement('option');
+                option.value = sourceId;
+                option.textContent = sourceId === '__NO_PRIMARY_SOURCE__' ? 'No primary knowledge source' : sourceId;
+                pksSelector.appendChild(option);
+            });
+
+            pksSelector.disabled = false;
+            applyPksBtn.disabled = false;
+        }
+
+        function getSelectedPredicateSet() {
+            const predicateSelector = document.getElementById('predicate-selector');
+            const selectedValues = Array.from(predicateSelector.selectedOptions).map(opt => opt.value);
+            if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
+            return new Set(selectedValues);
+        }
+
+        function getSelectedObjectDirectionQualifierSet() {
+            const qualifierSelector = document.getElementById('object-direction-qualifier-selector');
+            const selectedValues = Array.from(qualifierSelector.selectedOptions).map(opt => opt.value);
+            if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
+            return new Set(selectedValues);
+        }
+
+        function getSelectedPrimaryKnowledgeSourceSet() {
+            const pksSelector = document.getElementById('primary-knowledge-source-selector');
+            const selectedValues = Array.from(pksSelector.selectedOptions).map(opt => opt.value);
+            if (selectedValues.length === 0 || selectedValues.includes('__ALL__')) return null;
+            return new Set(selectedValues);
+        }
+
+        function getTopNValue() {
+            const topNSelector = document.getElementById('top-n-selector');
+            const value = topNSelector ? topNSelector.value : String(DEFAULT_TOP_N);
+            if (value === 'all') return Number.MAX_SAFE_INTEGER;
+            const parsed = parseInt(value, 10);
+            return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TOP_N;
+        }
+
+        function normalizeNodeFilterToken(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function getIntermediateNodeFilterTokens() {
+            const input = document.getElementById('intermediate-node-filter-input');
+            if (!input) return [];
+            return input.value
+                .split(',')
+                .map(token => normalizeNodeFilterToken(token))
+                .filter(Boolean);
+        }
+
+        function getPathIntermediateNodeIds(edgeIds) {
+            const degreeByNode = {};
+
+            edgeIds.forEach(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                degreeByNode[edgeInfo.subject] = (degreeByNode[edgeInfo.subject] || 0) + 1;
+                degreeByNode[edgeInfo.object] = (degreeByNode[edgeInfo.object] || 0) + 1;
+            });
+
+            return Object.keys(degreeByNode).filter(nodeId => {
+                if (queryNodeIds.size > 0) return !queryNodeIds.has(nodeId);
+                return degreeByNode[nodeId] > 1;
+            });
+        }
+
+        function getIntermediateNodeTerms(nodeIds) {
+            const terms = new Set();
+
+            nodeIds.forEach(nodeId => {
+                const normalizedId = normalizeNodeFilterToken(nodeId);
+                if (normalizedId) terms.add(normalizedId);
+
+                const label = nodeLabels[nodeId]
+                    || (kgNodesMaster[nodeId] && (kgNodesMaster[nodeId].name || kgNodesMaster[nodeId].label))
+                    || '';
+                const normalizedLabel = normalizeNodeFilterToken(label);
+                if (normalizedLabel) terms.add(normalizedLabel);
+            });
+
+            return Array.from(terms);
+        }
+
+        function getFilteredPathEntries() {
+            const filterTokens = getIntermediateNodeFilterTokens();
+            if (filterTokens.length === 0) return allPathEntries;
+
+            const filterTokenSet = new Set(filterTokens);
+            return allPathEntries.filter(entry =>
+                Array.isArray(entry.intermediateNodeTerms)
+                && entry.intermediateNodeTerms.some(term => filterTokenSet.has(term))
+            );
+        }
+
+        function updateIntermediateNodeFilterStatus(filteredEntries, filterTokens) {
+            const statusEl = document.getElementById('intermediate-node-filter-status');
+            if (!statusEl) return;
+
+            if (filterTokens.length === 0) {
+                statusEl.textContent = '';
+                return;
+            }
+
+            const pathLabel = filteredEntries.length === 1 ? 'path' : 'paths';
+            const filterLabel = filterTokens.length === 1 ? 'node filter' : 'node filters';
+            statusEl.textContent = `Showing ${filteredEntries.length} matching ${pathLabel} for ${filterTokens.length} ${filterLabel}.`;
+        }
+
+        function downloadCurrentGraph() {
+            if (!currentRenderedGraph || currentRenderedGraph.nodes.length === 0) {
+                alert('No graph is currently displayed to download.');
+                return;
+            }
+
+            const selectedPredicates = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifiers = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSources = getSelectedPrimaryKnowledgeSourceSet();
+            const exportPayload = {
+                exported_at: new Date().toISOString(),
+                selected_views: getSelectedViewKeys(),
+                selected_intermediate_nodes: getIntermediateNodeFilterTokens(),
+                selected_predicates: selectedPredicates ? Array.from(selectedPredicates) : ['ALL'],
+                selected_object_direction_qualifiers: selectedObjectDirectionQualifiers ? Array.from(selectedObjectDirectionQualifiers) : ['ALL'],
+                selected_primary_knowledge_sources: selectedPrimaryKnowledgeSources ? Array.from(selectedPrimaryKnowledgeSources) : ['ALL'],
+                node_count: currentRenderedGraph.nodes.length,
+                edge_count: currentRenderedGraph.edges.length,
+                nodes: currentRenderedGraph.nodes,
+                edges: currentRenderedGraph.edges
+            };
+
+            const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.href = downloadUrl;
+            link.download = `shown_graph_${stamp}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(downloadUrl);
+        }
+
+        function getRankingMethod() {
+            const el = document.getElementById('rank-method-selector');
+            return el ? el.value : 'score';
+        }
+
+        function sortPathEntries(entries) {
+            const method = getRankingMethod();
+            return entries.slice().sort((a, b) => {
+                if (method === 'edge_count') {
+                    if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
+                    const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
+                    const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
+                    if (bScore !== aScore) return bScore - aScore;
+                } else {
+                    const aScore = Number.isFinite(a.score) ? a.score : Number.NEGATIVE_INFINITY;
+                    const bScore = Number.isFinite(b.score) ? b.score : Number.NEGATIVE_INFINITY;
+                    if (bScore !== aScore) return bScore - aScore;
+                    if (b.edgeCount !== a.edgeCount) return b.edgeCount - a.edgeCount;
+                }
+                return a.displayName.localeCompare(b.displayName);
+            });
+        }
+
+        function applyTopNPathsLimit() {
+            const pathSelector = document.getElementById('path-selector');
+            const topN = getTopNValue();
+            const rankMethod = getRankingMethod();
+
+            // Update the label to reflect current ranking method.
+            const selectorLabel = document.getElementById('path-selector-label');
+            if (selectorLabel) {
+                const rankLabel = rankMethod === 'edge_count' ? 'Edge Count Ranked' : 'Score Ranked';
+                selectorLabel.textContent = `2. Select View (${rankLabel}):`;
+            }
+
+            const filterTokens = getIntermediateNodeFilterTokens();
+            const filteredEntries = sortPathEntries(getFilteredPathEntries());
+            const limitedEntries = filteredEntries.slice(0, topN);
+            const allMatchingEdgeIds = getRenderableUniqueEdgeIds(filteredEntries.flatMap(entry => entry.edgeIds || []));
+            const allOptionLabel = filterTokens.length > 0 ? 'All Matching Paths' : 'All Paths (Full Graph)';
+
+            graphViews = { "ALL": filterTokens.length > 0 ? allMatchingEdgeIds : Object.keys(kgEdgesMaster) };
+            pathSelector.innerHTML = `<option value="ALL">${allOptionLabel}</option>`;
+
+            limitedEntries.forEach(entry => {
+                graphViews[entry.key] = entry.edgeIds;
+                const option = document.createElement('option');
+                option.value = entry.key;
+                const scoreText = Number.isFinite(entry.score) ? entry.score.toFixed(4) : 'N/A';
+                option.textContent = `${entry.displayName} (score: ${scoreText}, ${entry.edgeCount} ${entry.edgeCount === 1 ? 'edge' : 'edges'})`;
+                pathSelector.appendChild(option);
+            });
+
+            pathSelector.disabled = false;
+            pathSelector.options[0].selected = true;
+
+            const countBadge = document.getElementById('path-count');
+            const shownPathCount = limitedEntries.length;
+            const countSuffix = filterTokens.length > 0 ? ' matching path' : ' path';
+            countBadge.textContent = shownPathCount + (shownPathCount === 1 ? countSuffix : `${countSuffix}s`);
+            countBadge.style.display = 'inline';
+
+            updateIntermediateNodeFilterStatus(filteredEntries, filterTokens);
+
+            updateNetworkView(['ALL']);
+        }
+
+        // Merge N TRAPI/standard-format JSON payloads into one combined payload.
+        // Edge and aux-graph keys are prefixed with "f1_", "f2_", "f3_" to avoid collisions.
+        function mergeAllSlots(dataArray) {
+            const unwrap = d => d.message || d;
+            const remapEdgeIds = (prefix, value) => {
+                if (Array.isArray(value)) return value.map(eid => `${prefix}${eid}`);
+                return { ...value, edges: (value.edges || []).map(eid => `${prefix}${eid}`) };
+            };
+
+            const mergedNodes = {};
+            const mergedEdges = {};
+            const mergedAux = {};
+            let firstQueryGraph = undefined;
+            const mergedResults = [];
+
+            dataArray.forEach((data, idx) => {
+                if (!data) return;
+                const prefix = `f${idx + 1}_`;
+                const u = unwrap(data);
+                const kg = u.knowledge_graph || {};
+
+                // Nodes: later files win on duplicate CURIEs.
+                Object.assign(mergedNodes, kg.nodes || {});
+
+                // Edges: prefix all keys.
+                Object.entries(kg.edges || {}).forEach(([k, v]) => { mergedEdges[`${prefix}${k}`] = v; });
+
+                // Auxiliary graphs: prefix keys and remap internal edge references.
+                Object.entries(u.auxiliary_graphs || {}).forEach(([k, v]) => {
+                    mergedAux[`${prefix}${k}`] = remapEdgeIds(prefix, v);
+                });
+
+                if (!firstQueryGraph) firstQueryGraph = u.query_graph;
+                mergedResults.push(...(u.results || []));
+            });
+
+            return {
+                knowledge_graph: { nodes: mergedNodes, edges: mergedEdges },
+                auxiliary_graphs: mergedAux,
+                query_graph: firstQueryGraph,
+                results: mergedResults
+            };
+        }
+
+        // (Re)process whichever slots are loaded.
+        async function tryMergeAndProcess() {
+            const loaded = jsonDataSlots.filter(Boolean);
+            if (loaded.length === 0) return;
+
+            const payload = loaded.length === 1 ? loaded[0] : mergeAllSlots(jsonDataSlots);
+            await processGraphData(payload);
+        }
+
+        function makeSlotReader(slotIndex, fileNameElId, clearBtnId) {
+            return function(event) {
+                const file = event.target.files[0];
+                const fileNameEl = document.getElementById(fileNameElId);
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        jsonDataSlots[slotIndex] = JSON.parse(e.target.result);
+                        slotFileNames[slotIndex] = file.name;
+                        fileNameEl.textContent = `Loaded: ${file.name}`;
+                        if (clearBtnId) document.getElementById(clearBtnId).style.display = '';
+                        await tryMergeAndProcess();
+                    } catch (error) {
+                        alert('Error parsing JSON file. Please ensure it is a valid JSON format.');
+                        console.error('JSON Parsing Error:', error);
+                        fileNameEl.textContent = '';
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            };
+        }
+
+        // 1. Listen for file uploads
+        document.getElementById('file-upload').addEventListener('change', makeSlotReader(0, 'loaded-file-name', null));
+        document.getElementById('file-upload-2').addEventListener('change', makeSlotReader(1, 'loaded-file-name-2', 'clear-file-2'));
+        document.getElementById('file-upload-3').addEventListener('change', makeSlotReader(2, 'loaded-file-name-3', 'clear-file-3'));
+
+        document.getElementById('clear-file-2').addEventListener('click', function() {
+            jsonDataSlots[1] = null;
+            slotFileNames[1] = '';
+            document.getElementById('loaded-file-name-2').textContent = '';
+            document.getElementById('file-upload-2').value = '';
+            this.style.display = 'none';
+            tryMergeAndProcess();
+        });
+
+        document.getElementById('clear-file-3').addEventListener('click', function() {
+            jsonDataSlots[2] = null;
+            slotFileNames[2] = '';
+            document.getElementById('loaded-file-name-3').textContent = '';
+            document.getElementById('file-upload-3').value = '';
+            this.style.display = 'none';
+            tryMergeAndProcess();
+        });
+
+        function initializeNetwork(container) {
+            if (network) {
+                network.destroy();
+                network = null;
+            }
+
+            const options = {
+                interaction: { hover: true, tooltipDelay: 200, dragNodes: true },
+                physics: { barnesHut: { gravitationalConstant: -3000, centralGravity: 0.3, springLength: 250 } }
+            };
+
+            network = new vis.Network(container, networkData, options);
+
+            // After initial layout, freeze all nodes so dragging one doesn't pull others
+            network.on("stabilized", function () {
+                const updates = networkData.nodes.getIds().map(id => ({ id, fixed: { x: true, y: true } }));
+                networkData.nodes.update(updates);
+                network.setOptions({ physics: { enabled: false } });
+            });
+
+            // Disable physics and unfreeze only the dragged node – keeps all other nodes still.
+            network.on("dragStart", function (params) {
+                network.setOptions({ physics: { enabled: false } });
+                if (params.nodes && params.nodes.length > 0) {
+                    const updates = params.nodes.map(id => ({ id, fixed: { x: false, y: false } }));
+                    networkData.nodes.update(updates);
+                }
+            });
+
+            // Re-freeze the dragged node at its new position; physics stays off.
+            network.on("dragEnd", function (params) {
+                if (params.nodes && params.nodes.length > 0) {
+                    const updates = params.nodes.map(id => ({ id, fixed: { x: true, y: true } }));
+                    networkData.nodes.update(updates);
+                }
+            });
+
+            // Handle click events for annotations
+            network.on("click", handleNetworkClick);
+        }
+
+        // 2. Process data and build the Dropdown Views
+        async function processGraphData(graphData) {
+            const container = document.getElementById('network-container');
+            const infoPanel = document.getElementById('info-panel');
+            const pathSelector = document.getElementById('path-selector');
+            const querySummary = document.getElementById('query-summary');
+            
+            // Check TRAPI vs Standard nesting formats
+            const kgData = graphData.message ? graphData.message.knowledge_graph : graphData.knowledge_graph;
+            const auxData = graphData.message ? graphData.message.auxiliary_graphs : graphData.auxiliary_graphs;
+            const qgData = graphData.message ? graphData.message.query_graph : graphData.query_graph;
+            const resultsData = graphData.message ? graphData.message.results : graphData.results;
+
+            // Collect query subject/object node IDs (nodes with explicit ids)
+            queryNodeIds = new Set();
+            querySubjectIds = [];
+            queryObjectIds = [];
+            if (qgData && qgData.nodes) {
+                Object.values(qgData.nodes).forEach(qNode => {
+                    if (qNode.ids && Array.isArray(qNode.ids)) {
+                        qNode.ids.forEach(id => queryNodeIds.add(id));
+                    }
+                });
+
+                // Prefer explicit roles from query edges/paths when available.
+                const nodeMap = qgData.nodes || {};
+                const subjectNodeKeys = new Set();
+                const objectNodeKeys = new Set();
+                if (qgData.edges) {
+                    Object.values(qgData.edges).forEach(edge => {
+                        if (edge.subject) subjectNodeKeys.add(edge.subject);
+                        if (edge.object) objectNodeKeys.add(edge.object);
+                    });
+                }
+                if (qgData.paths) {
+                    Object.values(qgData.paths).forEach(path => {
+                        if (path.subject) subjectNodeKeys.add(path.subject);
+                        if (path.object) objectNodeKeys.add(path.object);
+                    });
+                }
+
+                subjectNodeKeys.forEach(nodeKey => {
+                    const ids = nodeMap[nodeKey] && Array.isArray(nodeMap[nodeKey].ids) ? nodeMap[nodeKey].ids : [];
+                    ids.forEach(id => querySubjectIds.push(id));
+                });
+                objectNodeKeys.forEach(nodeKey => {
+                    const ids = nodeMap[nodeKey] && Array.isArray(nodeMap[nodeKey].ids) ? nodeMap[nodeKey].ids : [];
+                    ids.forEach(id => queryObjectIds.push(id));
+                });
+            }
+
+            if (!kgData || !kgData.edges) {
+                container.innerHTML = '<p style="color: red; padding: 20px;">Invalid file structure: Missing knowledge_graph.edges.</p>';
+                return;
+            }
+
+            // Clear UI
+            container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Resolving node names\u2026</p>';
+            infoPanel.innerHTML = '<p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>';
+
+            // Resolve node labels from name-lookup API before rendering
+            kgNodesMaster = kgData.nodes || {};
+            nodeLabels = {};
+            let allNodeIds = Object.keys(kgNodesMaster);
+            if (allNodeIds.length === 0) {
+                Object.values(kgData.edges).forEach(e => {
+                    if (e.subject) allNodeIds.push(e.subject);
+                    if (e.object)  allNodeIds.push(e.object);
+                });
+            }
+            allNodeIds = [...new Set([...allNodeIds, ...Array.from(queryNodeIds)])];
+            await resolveNodeLabels(allNodeIds);
+
+            // Show query endpoints using names when available.
+            const renderEntityList = (ids) => {
+                const unique = [...new Set(ids)];
+                if (unique.length === 0) return 'N/A';
+                return unique.map(id => nodeLabels[id] || id).join(', ');
+            };
+            if (querySubjectIds.length > 0 || queryObjectIds.length > 0) {
+                querySummary.innerHTML = `<strong>Query:</strong> Subject: ${renderEntityList(querySubjectIds)} | Object: ${renderEntityList(queryObjectIds)}`;
+                querySummary.style.display = 'block';
+            } else {
+                querySummary.style.display = 'none';
+                querySummary.innerHTML = '';
+            }
+
+            container.innerHTML = '';
+            kgEdgesMaster = kgData.edges;
+            graphViews = { "ALL": Object.keys(kgEdgesMaster) }; // Default view: All edges
+            populatePredicateSelector();
+            populateObjectDirectionQualifierSelector();
+            populatePrimaryKnowledgeSourceSelector();
+
+            pathSelector.innerHTML = '<option value="ALL">All Paths (Full Graph)</option>';
+
+            // 3. Extract paths/views. Use auxiliary_graphs if available, else group by intermediate nodes dynamically.
+            const pathEntries = [];
+            const pathScoreMap = extractPathScores(resultsData);
+            if (auxData && Object.keys(auxData).length > 0) {
+                Object.entries(auxData).forEach(([key, value]) => {
+                    // Extract edge IDs whether it's an array or TRAPI 1.4 object
+                    let edgeIds = Array.isArray(value) ? value : (value.edges || []);
+                    const renderableEdgeIds = getRenderableUniqueEdgeIds(edgeIds);
+                    const edgeCount = renderableEdgeIds.length;
+                    const score = Number.isFinite(pathScoreMap[key]) ? pathScoreMap[key] : null;
+                    
+                    // Format the name nicely (e.g., "aux_1_NCBIGene:4297" -> "Path via NCBIGene:4297").
+                    // For merged two-file data, keys are prefixed with "f1_" or "f2_".
+                    let fileLabel = '';
+                    let bareKey = key;
+                    if (key.startsWith('f1_')) { fileLabel = '[File 1] '; bareKey = key.slice(3); }
+                    else if (key.startsWith('f2_')) { fileLabel = '[File 2] '; bareKey = key.slice(3); }
+                    else if (key.startsWith('f3_')) { fileLabel = '[File 3] '; bareKey = key.slice(3); }
+                    let nodeNameMatch = bareKey.match(/_(.+)$/);
+                    let displayName = fileLabel + (nodeNameMatch ? `Path via ${nodeNameMatch[1]}` : `Path: ${bareKey}`);
+                    
+                    if (edgeCount > 0) {
+                        const intermediateNodeIds = getPathIntermediateNodeIds(renderableEdgeIds);
+                        pathEntries.push({
+                            key,
+                            edgeIds: renderableEdgeIds,
+                            displayName,
+                            edgeCount,
+                            score,
+                            intermediateNodeIds,
+                            intermediateNodeTerms: getIntermediateNodeTerms(intermediateNodeIds)
+                        });
+                    }
+                });
+            } else {
+                // Fallback: Group by nodes with Degree > 1 to simulate intermediate paths
+                const nodeEdges = {};
+                Object.entries(kgEdgesMaster).forEach(([edgeId, edgeInfo]) => {
+                    if(edgeInfo.subject && edgeInfo.object) {
+                        if (!nodeEdges[edgeInfo.subject]) nodeEdges[edgeInfo.subject] = new Set();
+                        if (!nodeEdges[edgeInfo.object]) nodeEdges[edgeInfo.object] = new Set();
+                        nodeEdges[edgeInfo.subject].add(edgeId);
+                        nodeEdges[edgeInfo.object].add(edgeId);
+                    }
+                });
+
+                Object.entries(nodeEdges).forEach(([nodeId, edgeSet]) => {
+                    if (edgeSet.size > 1) { // Node acts as an intermediate hub
+                        let viewKey = `node_${nodeId}`;
+                        const renderableEdgeIds = getRenderableUniqueEdgeIds(Array.from(edgeSet));
+                        const edgeCount = renderableEdgeIds.length;
+                        if (edgeCount > 0) {
+                            const intermediateNodeIds = getPathIntermediateNodeIds(renderableEdgeIds);
+                            pathEntries.push({
+                                key: viewKey,
+                                edgeIds: renderableEdgeIds,
+                                displayName: `Path via ${nodeId}`,
+                                edgeCount,
+                                intermediateNodeIds,
+                                intermediateNodeTerms: getIntermediateNodeTerms(intermediateNodeIds)
+                            });
+                        }
+                    }
+                });
+            }
+
+            allPathEntries = pathEntries;
+
+            // Default to top 200 paths on each new file load.
+            document.getElementById('top-n-selector').value = String(DEFAULT_TOP_N);
+            applyTopNPathsLimit();
+
+            initializeNetwork(container);
+        }
+
+        // 4. Update Network when Dropdown changes
+        document.getElementById('path-selector').addEventListener('change', function() {
+            updateNetworkView(getSelectedViewKeys());
+        });
+
+        document.getElementById('rank-method-selector').addEventListener('change', function() {
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('apply-top-n').addEventListener('click', function() {
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('apply-intermediate-node-filter').addEventListener('click', function() {
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('clear-intermediate-node-filter').addEventListener('click', function() {
+            document.getElementById('intermediate-node-filter-input').value = '';
+            applyTopNPathsLimit();
+        });
+
+        document.getElementById('apply-predicate-filter').addEventListener('click', function() {
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('apply-object-direction-qualifier-filter').addEventListener('click', function() {
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('apply-primary-knowledge-source-filter').addEventListener('click', function() {
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('apply-highlight').addEventListener('click', function() {
+            applyNodeHighlight();
+        });
+
+        document.getElementById('clear-highlight').addEventListener('click', function() {
+            document.getElementById('highlight-input').value = '';
+            highlightNodeSet.clear();
+            document.getElementById('highlight-status').textContent = '';
+            refreshNodeColors();
+        });
+
+        // Parse the highlight input and update node colours without re-layout.
+        function applyNodeHighlight() {
+            const raw = document.getElementById('highlight-input').value;
+            const tokens = raw.split(',').map(s => s.trim()).filter(Boolean);
+            if (!tokens.length) {
+                highlightNodeSet.clear();
+                document.getElementById('highlight-status').textContent = '';
+                refreshNodeColors();
+                return;
+            }
+
+            // Build reverse map: lowercase name/curie -> nodeId
+            const allRenderedIds = networkData.nodes.getIds();
+            const lowerIdMap = {};
+            allRenderedIds.forEach(id => {
+                lowerIdMap[id.toLowerCase()] = id;
+                const name = nodeLabels[id];
+                if (name) lowerIdMap[name.toLowerCase()] = id;
+            });
+
+            highlightNodeSet.clear();
+            const matched = [];
+            const unmatched = [];
+            tokens.forEach(tok => {
+                const key = tok.toLowerCase();
+                if (lowerIdMap[key]) {
+                    highlightNodeSet.add(lowerIdMap[key]);
+                    matched.push(tok);
+                } else {
+                    unmatched.push(tok);
+                }
+            });
+
+            const statusEl = document.getElementById('highlight-status');
+            if (matched.length && !unmatched.length) {
+                statusEl.textContent = `Highlighted ${matched.length} node(s).`;
+                statusEl.style.color = '#2a7a2a';
+            } else if (matched.length) {
+                statusEl.textContent = `Highlighted ${matched.length}; not found: ${unmatched.join(', ')}.`;
+                statusEl.style.color = '#c07000';
+            } else {
+                statusEl.textContent = `No matching nodes found in current view.`;
+                statusEl.style.color = '#aa0000';
+            }
+
+            refreshNodeColors();
+        }
+
+        // Re-apply colours to all currently rendered nodes without touching positions or edges.
+        function refreshNodeColors() {
+            const allRenderedIds = networkData.nodes.getIds();
+            const updates = allRenderedIds.map(nodeId => ({
+                id: nodeId,
+                color: {
+                    background: getNodeBgColor(nodeId),
+                    border: '#2c3e50',
+                    highlight: { background: '#FFF79A', border: '#2c3e50' }
+                }
+            }));
+            networkData.nodes.update(updates);
+        }
+
+        document.getElementById('show-all-hidden').addEventListener('click', function() {
+            showAllHiddenNodes();
+        });
+
+        document.getElementById('download-graph').addEventListener('click', function() {
+            downloadCurrentGraph();
+        });
+
+        document.getElementById('decrease-node-font').addEventListener('click', function() {
+            changeNodeFontSize(-1);
+        });
+
+        document.getElementById('increase-node-font').addEventListener('click', function() {
+            changeNodeFontSize(1);
+        });
+
+        updateNodeFontSizeIndicator();
+
+        document.getElementById('predicate-selector').addEventListener('change', function(e) {
+            const options = Array.from(e.target.options);
+            const allOption = options.find(opt => opt.value === '__ALL__');
+            const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
+
+            if (specificSelected && allOption) {
+                allOption.selected = false;
+            }
+            if (!specificSelected && allOption) {
+                allOption.selected = true;
+            }
+
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('object-direction-qualifier-selector').addEventListener('change', function(e) {
+            const options = Array.from(e.target.options);
+            const allOption = options.find(opt => opt.value === '__ALL__');
+            const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
+
+            if (specificSelected && allOption) {
+                allOption.selected = false;
+            }
+            if (!specificSelected && allOption) {
+                allOption.selected = true;
+            }
+
+            applyPredicateFilterOnly();
+        });
+
+        document.getElementById('primary-knowledge-source-selector').addEventListener('change', function(e) {
+            const options = Array.from(e.target.options);
+            const allOption = options.find(opt => opt.value === '__ALL__');
+            const specificSelected = options.some(opt => opt.value !== '__ALL__' && opt.selected);
+
+            if (specificSelected && allOption) {
+                allOption.selected = false;
+            }
+            if (!specificSelected && allOption) {
+                allOption.selected = true;
+            }
+
+            applyPredicateFilterOnly();
+        });
+
+        // Lightweight predicate filter that preserves existing node positions.
+        function applyPredicateFilterOnly() {
+            if (!network) return;
+
+            const viewKeys = getSelectedViewKeys();
+            const keys = Array.isArray(viewKeys) ? viewKeys : [viewKeys];
+            const combinedEdgeIds = [];
+            keys.forEach(key => {
+                const ids = graphViews[key] || [];
+                combinedEdgeIds.push(...ids);
+            });
+            const selectedPredicateSet = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifierSet = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSourceSet = getSelectedPrimaryKnowledgeSourceSet();
+            const edgeIdsToShow = getRenderableUniqueEdgeIds(combinedEdgeIds).filter(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo) return false;
+                if (selectedPredicateSet && !(edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate))) {
+                    return false;
+                }
+                if (selectedObjectDirectionQualifierSet) {
+                    const qualifierValue = getObjectDirectionQualifier(edgeInfo);
+                    if (!selectedObjectDirectionQualifierSet.has(qualifierValue)) return false;
+                }
+                if (selectedPrimaryKnowledgeSourceSet) {
+                    const pksValues = getPrimaryKnowledgeSources(edgeInfo);
+                    const hasMatch = pksValues.some(v => selectedPrimaryKnowledgeSourceSet.has(v));
+                    if (!hasMatch) return false;
+                }
+                return true;
+            });
+
+            // Build new vis-edges (same collapsing logic as updateNetworkView)
+            const visEdges = [];
+            const nodeSet = new Set();
+            const edgeGroups = {};
+            edgeIdsToShow.forEach(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                if (hiddenNodeIds.has(edgeInfo.subject) || hiddenNodeIds.has(edgeInfo.object)) return;
+                nodeSet.add(edgeInfo.subject);
+                nodeSet.add(edgeInfo.object);
+                const pairKey = `${edgeInfo.subject}=>${edgeInfo.object}`;
+                if (!edgeGroups[pairKey]) edgeGroups[pairKey] = [];
+                edgeGroups[pairKey].push({ edgeId, edgeInfo });
+            });
+
+            Object.values(edgeGroups).forEach(group => {
+                const collapsedByRule = {};
+                group.forEach(item => {
+                    const predicateKey = item.edgeInfo.predicate || '__NO_PREDICATE__';
+                    const pksKey = getPrimaryKnowledgeSourceSignature(item.edgeInfo);
+                    const odqKey = getObjectDirectionQualifier(item.edgeInfo) || '__UNSPECIFIED__';
+                    const collapseKey = `${predicateKey}||${pksKey}||${odqKey}`;
+                    if (!collapsedByRule[collapseKey]) collapsedByRule[collapseKey] = [];
+                    collapsedByRule[collapseKey].push(item);
+                });
+                const collapsedEdges = Object.values(collapsedByRule).map(items => {
+                    const rep = items[0];
+                    const rawDataList = items.map(i => i.edgeInfo);
+                    const rawEdgeIds = items.map(i => i.edgeId);
+                    return {
+                        id: rawEdgeIds.join('||'),
+                        from: rep.edgeInfo.subject,
+                        to: rep.edgeInfo.object,
+                        predicate: rep.edgeInfo.predicate,
+                        raw_data: rep.edgeInfo,
+                        raw_data_list: rawDataList,
+                        raw_edge_ids: rawEdgeIds,
+                        collapsed_count: items.length
+                    };
+                });
+                const total = collapsedEdges.length;
+                collapsedEdges.forEach((edge, idx) => {
+                    const labelBase = formatPredicateLabel(edge.predicate);
+                    const label = edge.collapsed_count > 1 ? `${labelBase} (${edge.collapsed_count})` : labelBase;
+                    const edgeColor = getEdgeColorByObjectDirectionQualifier(edge.raw_data);
+                    let smooth = { enabled: false };
+                    let vadjust = 0;
+                    if (total > 1) {
+                        const band = Math.floor(idx / 2) + 1;
+                        const clockwise = idx % 2 === 0;
+                        smooth = { enabled: true, type: clockwise ? 'curvedCW' : 'curvedCCW', roundness: Math.min(0.12 + band * 0.08, 0.6) };
+                        vadjust = (clockwise ? 1 : -1) * (6 + band * 4);
+                    }
+                    visEdges.push({
+                        id: edge.id,
+                        from: edge.from,
+                        to: edge.to,
+                        label,
+                        font: { align: 'middle', size: 12, background: 'rgba(255,255,255,0.8)', vadjust },
+                        arrows: 'to',
+                        smooth,
+                        color: { color: edgeColor, highlight: edgeColor, hover: edgeColor },
+                        raw_data: edge.raw_data,
+                        raw_data_list: edge.raw_data_list,
+                        raw_edge_ids: edge.raw_edge_ids,
+                        collapsed_count: edge.collapsed_count
+                    });
+                });
+            });
+
+            const existingNodeIds = new Set(networkData.nodes.getIds());
+            const newNodeIds = nodeSet;
+
+            // Remove nodes no longer needed
+            const toRemove = Array.from(existingNodeIds).filter(id => !newNodeIds.has(id));
+            if (toRemove.length) networkData.nodes.remove(toRemove);
+
+            // Add nodes that are new; update existing ones unfixed so physics can re-settle them.
+            const toAdd = [];
+            const toUpdate = [];
+            Array.from(newNodeIds).forEach(nodeId => {
+                const bgColor = getNodeBgColor(nodeId);
+                const nodeBase = {
+                    id: nodeId,
+                    label: nodeLabels[nodeId] || nodeId,
+                    title: nodeLabels[nodeId] ? `${nodeLabels[nodeId]}\n${nodeId}` : nodeId,
+                    shape: 'box',
+                    color: { background: bgColor, border: '#2c3e50', highlight: { background: '#FFF79A', border: '#2c3e50' } },
+                    font: { size: currentNodeFontSize, face: 'Arial' },
+                    fixed: { x: false, y: false }
+                };
+                if (existingNodeIds.has(nodeId)) {
+                    toUpdate.push(nodeBase);
+                } else {
+                    toAdd.push(nodeBase);
+                }
+            });
+            if (toUpdate.length) networkData.nodes.update(toUpdate);
+            if (toAdd.length) networkData.nodes.add(toAdd);
+
+            // Replace all edges
+            networkData.edges.clear();
+            networkData.edges.add(visEdges);
+
+            // Re-run physics so all nodes settle naturally without overlap.
+            network.setOptions({ physics: { enabled: true } });
+            network.once('stabilized', function () {
+                network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+            });
+            network.stabilize(200);
+
+            // Update download payload
+            currentRenderedGraph = {
+                nodes: Array.from(newNodeIds).map(id => ({ id, name: nodeLabels[id] || id, label: nodeLabels[id] || id })),
+                edges: visEdges.map(e => ({
+                    id: e.id, from: e.from, to: e.to, label: e.label,
+                    collapsed_count: e.collapsed_count || 1,
+                    underlying_edge_ids: e.raw_edge_ids || [e.id]
+                }))
+            };
+            document.getElementById('download-graph').disabled = false;
+        }
+
+        function updateNetworkView(viewKeys) {
+            const keys = Array.isArray(viewKeys) ? viewKeys : [viewKeys];
+            const isSinglePathSelection = keys.length === 1 && keys[0] !== 'ALL';
+            const isAllOnlySelection = keys.length === 1 && keys[0] === 'ALL';
+            const shouldPreserveExistingLayout = !isSinglePathSelection && !isAllOnlySelection;
+            const combinedEdgeIds = [];
+            keys.forEach(key => {
+                const ids = graphViews[key] || [];
+                combinedEdgeIds.push(...ids);
+            });
+            const selectedPredicateSet = getSelectedPredicateSet();
+            const selectedObjectDirectionQualifierSet = getSelectedObjectDirectionQualifierSet();
+            const selectedPrimaryKnowledgeSourceSet = getSelectedPrimaryKnowledgeSourceSet();
+            const edgeIdsToShow = getRenderableUniqueEdgeIds(combinedEdgeIds).filter(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo) return false;
+                if (selectedPredicateSet && !(edgeInfo.predicate && selectedPredicateSet.has(edgeInfo.predicate))) {
+                    return false;
+                }
+                if (selectedObjectDirectionQualifierSet) {
+                    const qualifierValue = getObjectDirectionQualifier(edgeInfo);
+                    if (!selectedObjectDirectionQualifierSet.has(qualifierValue)) return false;
+                }
+                if (selectedPrimaryKnowledgeSourceSet) {
+                    const pksValues = getPrimaryKnowledgeSources(edgeInfo);
+                    const hasMatch = pksValues.some(v => selectedPrimaryKnowledgeSourceSet.has(v));
+                    if (!hasMatch) return false;
+                }
+                return true;
+            });
+            
+            const visEdges = [];
+            const nodeSet = new Set();
+
+            const edgeGroups = {};
+            edgeIdsToShow.forEach(edgeId => {
+                const edgeInfo = kgEdgesMaster[edgeId];
+                if (!edgeInfo || !edgeInfo.subject || !edgeInfo.object) return;
+                if (hiddenNodeIds.has(edgeInfo.subject) || hiddenNodeIds.has(edgeInfo.object)) return;
+
+                nodeSet.add(edgeInfo.subject);
+                nodeSet.add(edgeInfo.object);
+
+                // Group by directed node pair first.
+                const pairKey = `${edgeInfo.subject}=>${edgeInfo.object}`;
+                if (!edgeGroups[pairKey]) edgeGroups[pairKey] = [];
+                edgeGroups[pairKey].push({ edgeId, edgeInfo });
+            });
+
+            Object.values(edgeGroups).forEach(group => {
+                // Collapse only when predicate + primary knowledge source signature are the same.
+                const collapsedByRule = {};
+                group.forEach(item => {
+                    const predicateKey = item.edgeInfo.predicate || '__NO_PREDICATE__';
+                    const pksKey = getPrimaryKnowledgeSourceSignature(item.edgeInfo);
+                    const odqKey = getObjectDirectionQualifier(item.edgeInfo) || '__UNSPECIFIED__';
+                    const collapseKey = `${predicateKey}||${pksKey}||${odqKey}`;
+                    if (!collapsedByRule[collapseKey]) collapsedByRule[collapseKey] = [];
+                    collapsedByRule[collapseKey].push(item);
+                });
+
+                const collapsedEdges = Object.values(collapsedByRule).map(items => {
+                    const representative = items[0];
+                    const rawDataList = items.map(i => i.edgeInfo);
+                    const rawEdgeIds = items.map(i => i.edgeId);
+                    return {
+                        id: rawEdgeIds.join('||'),
+                        from: representative.edgeInfo.subject,
+                        to: representative.edgeInfo.object,
+                        predicate: representative.edgeInfo.predicate,
+                        raw_data: representative.edgeInfo,
+                        raw_data_list: rawDataList,
+                        raw_edge_ids: rawEdgeIds,
+                        collapsed_count: items.length
+                    };
+                });
+
+                const total = collapsedEdges.length;
+                collapsedEdges.forEach((edge, idx) => {
+                    const labelBase = formatPredicateLabel(edge.predicate);
+                    const label = edge.collapsed_count > 1 ? `${labelBase} (${edge.collapsed_count})` : labelBase;
+                    const edgeColor = getEdgeColorByObjectDirectionQualifier(edge.raw_data);
+
+                    let smooth = { enabled: false };
+                    let vadjust = 0;
+                    if (total > 1) {
+                        const band = Math.floor(idx / 2) + 1;
+                        const clockwise = idx % 2 === 0;
+                        smooth = {
+                            enabled: true,
+                            type: clockwise ? 'curvedCW' : 'curvedCCW',
+                            roundness: Math.min(0.12 + band * 0.08, 0.6)
+                        };
+                        vadjust = (clockwise ? 1 : -1) * (6 + band * 4);
+                    }
+
+                    visEdges.push({
+                        id: edge.id,
+                        from: edge.from,
+                        to: edge.to,
+                        label,
+                        font: { align: 'middle', size: 12, background: 'rgba(255,255,255,0.8)', vadjust },
+                        arrows: 'to',
+                        smooth,
+                        color: { color: edgeColor, highlight: edgeColor, hover: edgeColor },
+                        raw_data: edge.raw_data,
+                        raw_data_list: edge.raw_data_list,
+                        raw_edge_ids: edge.raw_edge_ids,
+                        collapsed_count: edge.collapsed_count
+                    });
+                });
+            });
+
+            const visNodes = Array.from(nodeSet).map(nodeId => {
+                let bgColor = getNodeBgColor(nodeId);
+
+                // Highlight intermediate node if it's currently selected in the view
+                if (!highlightNodeSet.has(nodeId)) {
+                    const selectedTexts = Array.from(document.getElementById('path-selector').selectedOptions).map(opt => opt.text);
+                    const isTargetNode = selectedTexts.some(text => text.includes(nodeId));
+                    if (isTargetNode) bgColor = '#FFF79A';
+                }
+
+                return {
+                    id: nodeId,
+                    label: nodeLabels[nodeId] || nodeId,
+                    title: nodeLabels[nodeId] ? `${nodeLabels[nodeId]}\n${nodeId}` : nodeId,
+                    fixed: { x: false, y: false },
+                    shape: 'box',
+                    color: {
+                        background: bgColor,
+                        border: '#2c3e50',
+                        highlight: { background: '#FFF79A', border: '#2c3e50' }
+                    },
+                    font: { size: currentNodeFontSize, face: 'Arial' }
+                };
+            });
+
+            if (network && shouldPreserveExistingLayout) {
+                // Keep existing node positions fixed, remove deselected nodes, and only add newcomers.
+                const currentPositions = network.getPositions();
+                const existingNodeIds = new Set(networkData.nodes.getIds());
+                const nextNodeById = {};
+                visNodes.forEach(node => {
+                    nextNodeById[node.id] = node;
+                });
+                const nextNodeIds = new Set(Object.keys(nextNodeById));
+
+                const toRemove = Array.from(existingNodeIds).filter(id => !nextNodeIds.has(id));
+                if (toRemove.length) {
+                    networkData.nodes.remove(toRemove);
+                }
+
+                const toAdd = [];
+                const toUpdate = [];
+                Array.from(nextNodeIds).forEach(nodeId => {
+                    const baseNode = nextNodeById[nodeId];
+                    if (!existingNodeIds.has(nodeId)) {
+                        // New node: no initial position, physics will place it naturally.
+                        toAdd.push({ ...baseNode, fixed: { x: false, y: false } });
+                    } else {
+                        // Existing node: start at its current position but free to move with physics.
+                        const pos = currentPositions[nodeId];
+                        toUpdate.push({
+                            ...baseNode,
+                            x: pos ? pos.x : undefined,
+                            y: pos ? pos.y : undefined,
+                            fixed: { x: false, y: false }
+                        });
+                    }
+                });
+
+                if (toUpdate.length) networkData.nodes.update(toUpdate);
+                if (toAdd.length) networkData.nodes.add(toAdd);
+
+                networkData.edges.clear();
+                networkData.edges.add(visEdges);
+
+                // Let all nodes (existing + new) settle naturally via physics.
+                network.setOptions({ physics: { enabled: true } });
+                network.once('stabilized', function () {
+                    network.fit({ animation: { duration: 300, easingFunction: 'easeInOutQuad' } });
+                });
+                network.stabilize(200);
+            } else {
+                networkData.nodes.clear();
+                networkData.edges.clear();
+                networkData.nodes.add(visNodes);
+                networkData.edges.add(visEdges);
+            }
+
+            currentRenderedGraph = {
+                nodes: visNodes.map(n => ({ id: n.id, name: nodeLabels[n.id] || n.id, label: n.label })),
+                edges: visEdges.map(e => ({
+                    id: e.id,
+                    from: e.from,
+                    to: e.to,
+                    label: e.label,
+                    collapsed_count: e.collapsed_count || 1,
+                    underlying_edge_ids: e.raw_edge_ids || [e.id]
+                }))
+            };
+            document.getElementById('download-graph').disabled = false;
+
+            // Returning to ALL should restore the initial full-graph layout.
+            if (network && isAllOnlySelection) {
+                network.setOptions({ physics: { enabled: true } });
+                network.once('stabilized', function () {
+                    network.fit({
+                        animation: { duration: 300, easingFunction: 'easeInOutQuad' }
+                    });
+                });
+                network.stabilize(300);
+            }
+            // For a single selected path, run a fresh auto-layout and fit so nodes/edges are clearly visible.
+            else if (network && isSinglePathSelection) {
+                network.setOptions({ physics: { enabled: true } });
+                network.once('stabilized', function () {
+                    network.fit({
+                        animation: { duration: 300, easingFunction: 'easeInOutQuad' }
+                    });
+                });
+                network.stabilize(200);
+            } else if (network && !shouldPreserveExistingLayout) {
+                network.fit({
+                    animation: { duration: 250, easingFunction: 'easeInOutQuad' }
+                });
+            }
+        }
+
+        // 5. Render Panel Annotations
+        // Update hidden-node badge and button state.
+        function updateHiddenNodeUI() {
+            const count = hiddenNodeIds.size;
+            const badge = document.getElementById('hidden-node-count');
+            const btn = document.getElementById('show-all-hidden');
+            if (count > 0) {
+                badge.textContent = count + (count === 1 ? ' node' : ' nodes');
+                badge.style.display = 'inline';
+                btn.disabled = false;
+            } else {
+                badge.style.display = 'none';
+                btn.disabled = true;
+            }
+        }
+
+        // Hide the given node and all its connected edges from the graph.
+        function hideNode(nodeId) {
+            hiddenNodeIds.add(nodeId);
+
+            // Remove edges connected to this node.
+            const edgesToRemove = networkData.edges.getIds({
+                filter: e => e.from === nodeId || e.to === nodeId
+            });
+            if (edgesToRemove.length) networkData.edges.remove(edgesToRemove);
+            networkData.nodes.remove(nodeId);
+
+            updateHiddenNodeUI();
+            document.getElementById('info-panel').innerHTML =
+                `<p style="color:#666; font-style:italic;">Node hidden. Click <strong>Restore All Hidden</strong> in the sidebar to bring it back.</p>`;
+        }
+
+        // Restore all hidden nodes and their edges back into the visible graph.
+        function showAllHiddenNodes() {
+            if (hiddenNodeIds.size === 0) return;
+
+            // Rebuild from the current view without hidden exclusions.
+            hiddenNodeIds.clear();
+            updateHiddenNodeUI();
+
+            // Re-render current view so all nodes + edges come back.
+            updateNetworkView(getSelectedViewKeys());
+        }
+
+        function handleNetworkClick(params) {
+            const infoPanel = document.getElementById('info-panel');
+            infoPanel.innerHTML = ""; // Clear panel
+
+            if (params.edges.length > 0 && params.nodes.length === 0) {
+                const edgeId = params.edges[0];
+                const visEdge = networkData.edges.get(edgeId);
+                const edgeData = visEdge.raw_data;
+                const subjectName = nodeLabels[edgeData.subject] || edgeData.subject;
+                const objectName = nodeLabels[edgeData.object] || edgeData.object;
+
+                let htmlContent = `<h3>Edge Details (ID: ${edgeId})</h3>`;
+                if (visEdge.collapsed_count && visEdge.collapsed_count > 1) {
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Collapsed Edges:</span> ${visEdge.collapsed_count}</div>`;
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Underlying Edge IDs:</span> <pre>${JSON.stringify(visEdge.raw_edge_ids || [], null, 2)}</pre></div>`;
+                }
+                
+                const coreKeys = ['subject', 'predicate', 'object'];
+                htmlContent += `<div class="detail-row"><span class="detail-title">Subject:</span> ${subjectName} (${edgeData.subject})</div>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">Predicate:</span> ${edgeData.predicate}</div>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">Object:</span> ${objectName} (${edgeData.object})</div>`;
+                
+                Object.keys(edgeData).forEach(key => {
+                    if (!coreKeys.includes(key)) {
+                        htmlContent += `<div class="detail-row"><span class="detail-title">${key.replace(/_/g, ' ')}:</span>`;
+                        if (typeof edgeData[key] === 'object' && edgeData[key] !== null) {
+                            htmlContent += `<pre>${JSON.stringify(edgeData[key], null, 2)}</pre>`;
+                        } else {
+                            htmlContent += ` <span>${edgeData[key]}</span>`;
+                        }
+                        htmlContent += `</div>`;
+                    }
+                });
+
+                infoPanel.innerHTML = htmlContent;
+
+            } else if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const nodeName = nodeLabels[nodeId] || nodeId;
+                infoPanel.innerHTML = `<h3>Node Details</h3><p><span class="detail-title">Name:</span> ${nodeName}</p><p><span class="detail-title">ID:</span> ${nodeId}</p><p><em>To view association details, click on the connecting lines (edges).</em></p><div style="margin-top:10px;"><button type="button" onclick="hideNode('${nodeId.replace(/'/g, "\\'")}')">Hide this node &amp; its edges</button></div>`;
+            } else {
+                infoPanel.innerHTML = `<p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

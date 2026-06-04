@@ -19,6 +19,8 @@ Welcome to Translator Component Toolkit's documentation!
    translator_query
    translator_node
    TCT
+   neighborhood
+   pathfinder
 
 Indices and tables
 ==================

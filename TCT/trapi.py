@@ -88,7 +88,7 @@ def build_multi_hop_query(
 # TODO: incorporate object ids into the method.
 def build_query(subject_ids:list[str],
         object_categories:list[str], predicates:list[str],
-        return_json:bool=True,
+        return_json:bool=False,
         object_ids=None, subject_categories=None):
     """
     This constructs a query json for use with TRAPI. Queries are of the form [subject_ids]-[predicates]-[object_categories].
@@ -109,7 +109,7 @@ def build_query(subject_ids:list[str],
         A list of predicates that we are interested in. Example: ["biolink:positively_correlated_with", "biolink:physically_interacts_with"].
 
     return_json
-        If true, returns a json string; if false, returns a dict.
+        If true, returns a json string; if false, returns a dict (default).
 
     object_ids
         None by default
@@ -118,7 +118,7 @@ def build_query(subject_ids:list[str],
 
     Returns
     -------
-    A json string
+    A dict (default) or json string if return_json=True
 
     Examples
     --------
@@ -170,7 +170,7 @@ def process_result(result:dict):  # pragma: no cover
     """
 
 
-def query(url:str, query:str):
+def query(url:str, query:dict):
     """
     Queries a single TRAPI endpoint.
 
@@ -178,8 +178,8 @@ def query(url:str, query:str):
     ------
     url : str
         The URL for the API endpoint.
-    query : str
-        A JSON string representing the query, as produced by build_query
+    query : dict
+        A dict representing the query, as produced by build_query
 
     Returns
     -------
@@ -187,11 +187,17 @@ def query(url:str, query:str):
 
     Examples
     --------
-    >>> query = build_query(['NCBIGene:3845'], ['biolink:Gene'], ['biolink:physically_interacts_with'])
-    >>> response = query(url, query)
+    >>> query_dict = build_query(['NCBIGene:3845'], ['biolink:Gene'], ['biolink:physically_interacts_with'])
+    >>> response = query(url, query_dict)
     >>> print(response)
     """
     # example: 1. get APIs, 2. get APIs that have the target object and subject types, and the target predicates. 3. build the query and run the query.
+    if isinstance(query, str):
+        raise TypeError(
+            "query must be a dict, not a JSON string. "
+            "Use build_query(...) without return_json=True, "
+            "or pass json.loads(query) instead."
+        )
     response = requests.post(url, json=query, timeout=60)
     if response.status_code == 200:
         # TODO

@@ -89,6 +89,9 @@ class HeatmapConfig:
 def _plot_heatmap_impl(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png, config):
     """Shared implementation for heatmap plotting."""
     df = predicates_by_nodes_df.iloc[:,0:num_of_nodes]
+    if df.empty:
+        print("No data to plot in the heatmap. Please check your input data.")
+        return
     fig = plt.figure(figsize=(0.8+df.shape[1]*config.figsize_multiplier, 3.5), dpi=config.dpi)
     ax = fig.add_subplot(111)
 
@@ -244,6 +247,11 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
                                  output_png2="NE_heatmap2.png"
                                  ):
     # edited Dec 5, 2023
+    # if result_parsed is empty, print a message and return an empty dataframe
+    if result_parsed == {}:
+        print("No results found in result_parsed. Please check your input data.")
+        return pd.DataFrame()
+
     predicates_list = []
     primary_infore_list = []
     aggregator_infore_list = []
@@ -331,8 +339,16 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
     predicates_by_nodes_df.index = new_colnames
     predicates_by_nodes_df = predicates_by_nodes_df.T
 
-    plot_heatmap(primary_infore_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png1)
-    plot_heatmap(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize,output_png2)
+    if not primary_infore_by_nodes_df.empty:
+        plot_heatmap(primary_infore_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png1)
+    else:
+        print("No primary infores found in primary_infore_by_nodes_df.")
+
+    if not predicates_by_nodes_df.empty:
+        plot_heatmap(predicates_by_nodes_df, num_of_nodes, fontsize, title_fontsize, output_png2)
+    else:
+        print("No predicates found in predicates_by_nodes_df.")
+        return pd.DataFrame()
 
     return(predicates_by_nodes_df)
 
@@ -480,13 +496,14 @@ def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, res
 # Neighborhood graph (pyvis)
 # ---------------------------------------------------------------------------
 
-def visualize_neighborhood_graph(result, show_label=True, height="1000px", width="100%"):
+def visualize_neighborhood_graph(result, show_label=True, height="1000px", width="100%", output_filename_prefix=None):
     '''Visualize the neighborhood graph using pyvis
     Args:
         result: the output from the KP query, a dictionary or json format
         show_label: whether to convert the node id to preferred name
         height: the height of the figure
         width: the width of the figure
+        output_filename_prefix: if present, this is appended to the end of every output graph file.
     Returns:
         dic_graph: a dictionary of networkx graph for each predicate
     Example:
@@ -566,5 +583,8 @@ def visualize_neighborhood_graph(result, show_label=True, height="1000px", width
         # add title in the figure
         title_html = f"<h3>Predicate: {predicate}</h3>"
         net.title = title_html + f"<p>Nodes: {net.num_nodes()} Edges: {net.num_edges()}</p>"
-        net.show(f"{predicate}.html")
+        if output_filename_prefix is None:
+            net.show(f"{predicate}.html")
+        else:
+            net.show(f"{output_filename_prefix}{predicate}.html")
     return dic_graph

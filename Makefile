@@ -10,11 +10,11 @@ test:
 
 # Run spell checking
 spell:
-	uv run codespell --skip=metaData,notebooks,htmlcov --ignore-words-list=EHR
+	uv run codespell --skip=metaData,notebooks,htmlcov,*.json --ignore-words-list=EHR
 
 # Run spell checking interactively (allows fixing)
 spell-fix:
-	uv run codespell --interactive 3 --skip=metaData,notebooks,htmlcov --ignore-words-list=EHR
+	uv run codespell --interactive 3 --skip=metaData,notebooks,htmlcov,*.json --ignore-words-list=EHR
 
 # Run linting
 lint:
