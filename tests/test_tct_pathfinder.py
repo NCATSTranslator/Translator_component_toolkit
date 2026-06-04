@@ -140,7 +140,8 @@ def test_parse_results_for_pathfinder(result1, result2):
 
 def test_parse_results_for_pathfinder_all_branches():
     """Exercise object-side, subject-side, multi-edge, unrelated, and new-node branches."""
-    src = lambda rid: [{"resource_id": rid, "resource_role": "primary_knowledge_source"}]
+    def src(rid):
+        return [{"resource_id": rid, "resource_role": "primary_knowledge_source"}]
     result1 = {
         # start -> M1 (object side), with category + name
         "r1a": {"subject": "S", "object": "M1", "predicate": "biolink:related_to", "sources": src("i:1"),

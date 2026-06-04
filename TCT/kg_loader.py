@@ -277,7 +277,7 @@ def load_kg2_igraph_from_data(nodes, edges, node_types, edge_types, remove_unuse
         edge_list = ({'s': str(v[0]), 't': str(v[1])} for v in edges.keys())
         del edges
     else:
-        if 'use_edge_properties' in kwargs and kwargs['use_edge_properties'] == True:
+        if 'use_edge_properties' in kwargs and kwargs['use_edge_properties']:
             # igraph doesn't allow lists as edge properties, so we are converting them to a string.
             for v, e in edges.items():
                 for key, value in e.copy().items():
