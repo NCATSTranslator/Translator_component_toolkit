@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>TCT.neighborhood &#8212; Translator Component Toolkit 0.1 documentation</title>
+    <title>TCT.TCT_neighborhood_finder &#8212; Translator Component Toolkit 0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TCT.TCT_pathfinder" href="pathfinder.html" />
+    <link rel="prev" title="TCT utility functions" href="TCT.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,8 +33,67 @@
 
           <div class="body" role="main">
             
-  <section id="tct-neighborhood">
-<h1>TCT.neighborhood<a class="headerlink" href="#tct-neighborhood" title="Link to this heading">¶</a></h1>
+  <section id="tct-tct-neighborhood-finder">
+<h1>TCT.TCT_neighborhood_finder<a class="headerlink" href="#tct-tct-neighborhood-finder" title="Link to this heading">¶</a></h1>
+<span class="target" id="module-TCT.TCT_neighborhood_finder"></span><dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_neighborhood_finder.neighborhood_finder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_neighborhood_finder.</span></span><span class="sig-name descname"><span class="pre">neighborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates_subset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_neighborhood_finder.html#neighborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_neighborhood_finder.neighborhood_finder" title="Link to this definition">¶</a></dt>
+<dd><p>This function is used to find the neighborhood of a given input node with intermediate categories.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>input_node (str)</strong></dt><dd><p>The input node - should be a CURIE id.</p>
+</dd>
+<dt><strong>node2_categories (list)</strong></dt><dd><p>A list of intermediate categories to be used in the neighborhood finding process.</p>
+</dd>
+<dt><strong>APInames (dict)</strong></dt><dd><p>A dictionary containing the names of the APIs to be used.</p>
+</dd>
+<dt><strong>metaKG (DataFrame)</strong></dt><dd><p>The metadata knowledge graph containing information about the APIs and their predicates.</p>
+</dd>
+<dt><strong>API_predicates (dict)</strong></dt><dd><p>A dictionary containing the predicates for each API.</p>
+</dd>
+<dt><strong>input_node_category (list)</strong></dt><dd><p>Optional. A list of categories for the input node. If empty, it will be derived from the input node’s types.</p>
+</dd>
+<dt><strong>attribute_constraints (list)</strong></dt><dd><p>Optional. List of outputs of translator_query.build_attribute_constraint</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>input_node_id (str)</dt><dd><p>The curie id of the input node.</p>
+</dd>
+<dt>result (dict)</dt><dd><p>The result of the query for the input node.</p>
+</dd>
+<dt>result_parsed (DataFrame)</dt><dd><p>The parsed results for the input node.</p>
+</dd>
+<dt>result_ranked_by_primary_infores (DataFrame)</dt><dd><p>The ranked results based on primary infores.</p>
+</dd>
+</dl>
+<blockquote>
+<div></div></blockquote>
+<dl class="simple">
+<dt>Example:</dt><dd></dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_node_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">result_parsed</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores1</span> <span class="o">=</span> <span class="n">neighborhood_finder</span><span class="p">(</span><span class="s1">&#39;MONDO:0008170&#39;</span><span class="p">,</span> <span class="c1">#Ovarian Cancer</span>
+<span class="go">    node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
+<span class="go">    APInames = APInames,</span>
+<span class="go">    metaKG = metaKG,</span>
+<span class="go">    API_predicates = API_predicates)</span>
+</pre></div>
+</div>
+<blockquote>
+<div></div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_neighborhood_finder.parse_results_for_neighborhood_finder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_neighborhood_finder.</span></span><span class="sig-name descname"><span class="pre">parse_results_for_neighborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_node_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scoring_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_neighborhood_finder.html#parse_results_for_neighborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_neighborhood_finder.parse_results_for_neighborhood_finder" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.
+scoring_method is how the node scores are generated, and could be ‘infores’ or ‘edges’.</p>
+</dd></dl>
+
 </section>
 
 
@@ -62,7 +123,7 @@
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="components.html">Translator Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="name_resolver.html">TCT.name_resolver</a></li>
@@ -72,12 +133,20 @@
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.TCT_neighborhood_finder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_neighborhood_finder.neighborhood_finder"><code class="docutils literal notranslate"><span class="pre">neighborhood_finder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_neighborhood_finder.parse_results_for_neighborhood_finder"><code class="docutils literal notranslate"><span class="pre">parse_results_for_neighborhood_finder()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pathfinder.html">TCT.TCT_pathfinder</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="TCT.html" title="previous chapter">TCT utility functions</a></li>
+      <li>Next: <a href="pathfinder.html" title="next chapter">TCT.TCT_pathfinder</a></li>
   </ul></li>
 </ul>
 </div>

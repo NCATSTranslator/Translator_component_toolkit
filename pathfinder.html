@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>TCT.pathfinder &#8212; Translator Component Toolkit 0.1 documentation</title>
+    <title>TCT.TCT_pathfinder &#8212; Translator Component Toolkit 0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
     <link rel="stylesheet" type="text/css" href="_static/basic.css?v=686e5160" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
@@ -14,6 +14,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="TCT.TCT_neighborhood_finder" href="neighborhood.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -31,8 +32,34 @@
 
           <div class="body" role="main">
             
-  <section id="tct-pathfinder">
-<h1>TCT.pathfinder<a class="headerlink" href="#tct-pathfinder" title="Link to this heading">¶</a></h1>
+  <section id="tct-tct-pathfinder">
+<h1>TCT.TCT_pathfinder<a class="headerlink" href="#tct-tct-pathfinder" title="Link to this heading">¶</a></h1>
+<span class="target" id="module-TCT.TCT_pathfinder"></span><dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.build_query_graph">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">build_query_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#build_query_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.build_query_graph" title="Link to this definition">¶</a></dt>
+<dd><p>start_node_categories and end_node_categories are lists of categories.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.generate_score_results">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">generate_score_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#generate_score_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.generate_score_results" title="Link to this definition">¶</a></dt>
+<dd><p>Generates a score dict, and a list of “analyses”.
+method can be ‘infores’ or ‘edges’</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.parse_results_for_pathfinder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">parse_results_for_pathfinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_node_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scoring_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#parse_results_for_pathfinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.parse_results_for_pathfinder" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.
+scoring_method is how the node scores are generated, and could be ‘infores’ or ‘edges’.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.pathfinder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">pathfinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scoring_method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#pathfinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.pathfinder" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a Pathfinder output for the given pair of nodes. scoring_method could be ‘infores’ or ‘edges’.</p>
+</dd></dl>
+
 </section>
 
 
@@ -62,7 +89,7 @@
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="components.html">Translator Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="name_resolver.html">TCT.name_resolver</a></li>
@@ -72,12 +99,21 @@
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="neighborhood.html">TCT.TCT_neighborhood_finder</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.TCT_pathfinder</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.build_query_graph"><code class="docutils literal notranslate"><span class="pre">build_query_graph()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.generate_score_results"><code class="docutils literal notranslate"><span class="pre">generate_score_results()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.parse_results_for_pathfinder"><code class="docutils literal notranslate"><span class="pre">parse_results_for_pathfinder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.pathfinder"><code class="docutils literal notranslate"><span class="pre">pathfinder()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="neighborhood.html" title="previous chapter">TCT.TCT_neighborhood_finder</a></li>
   </ul></li>
 </ul>
 </div>
