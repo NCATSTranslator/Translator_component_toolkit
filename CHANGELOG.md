@@ -42,13 +42,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `translator_kpinfo.py`, `translator_metakg.py`, `translator_query.py`, `node_normalizer.py` refactored for consistency
 - `__init__.py` updated to export result classes, `TranslatorResources`, `HopSpec`, and attribute extraction functions
 - `pyproject.toml`: added `nbconvert`, `ipykernel`, `notebook` dev deps; coverage threshold set to 95%
-- Existing notebooks updated to use new result class APIs and `TranslatorResources`
+- Existing notebooks re-modernized after the upstream merge to use the result-class API (`Neighborhood_finder`/`Path_finder` → result objects) and `TranslatorResources.load()`/`.filter()`
 
 ### Merged from upstream (NCATSTranslator/main)
-- New pipeline modules `TCT_pathfinder.py`, `TCT_neighborhood_finder.py`, `kg_loader.py`, `graph_downloader.py`, plus `igraph`/`zstandard`/`scipy` dependencies, with tests added to keep the 95% coverage gate
+- New pipeline modules (with tests added to keep the 95% coverage gate):
+  - `TCT_pathfinder.py` — multi-hop pathfinding: constraint-aware query builders, ARAGORN/ARAX endpoint wrappers, `pathfinder()` and `parse_results_for_pathfinder()`
+  - `TCT_neighborhood_finder.py` — `neighborhood_finder()` and `parse_results_for_neighborhood_finder()`
+  - `kg_loader.py` — KG2 CSV/JSONL import with NetworkX/igraph conversion and sparse-matrix utilities
+  - `graph_downloader.py` — cached download/load of compressed (`.tar.zst`) graphs
+- New dependencies: `igraph`, `zstandard`, `scipy`
 - `trapi.build_query` now defaults to `return_json=False`; `query()` raises `TypeError` on a string argument
 - `translator_query` gains `format_query_json()` and `build_attribute_constraint()` (used by the new pipeline modules)
-- `translator_metakg`: Plover endpoints are fetched with per-endpoint error handling; `find_link`/`get_KP_metadata` use the new SmartAPI metakg URL with fallback (`use_new_url`)
+- `name_resolver`: `synonyms()` now accepts a list of CURIEs; new `batch_synonyms()` for POST-based batch lookup
+- `node_normalizer.get_normalized_nodes()` guards empty input and handles single-node responses
+- `translator_metakg`: Plover endpoints are fetched with per-endpoint error handling; `find_link`/`get_KP_metadata` use the new SmartAPI metakg URL (result limit raised to 5000) with fallback (`use_new_url`)
+- Visualization: `visualize_neighborhood_graph(output_filename_prefix=...)`; empty-result guards in `visulization_one_hop_ranking`/`plot_heatmap`
+- New upstream notebooks: `Compare_pathfinder`, `Pathfinder_new`, `metakg_tests`, `queries_with_constraints`, `individual_endpoint_overview`
 - Corrected spelling `Neighborhood_finder` is now canonical; `Neiborhood_finder` remains as a deprecated alias
 - Fixed a latent argument-passing bug in `kg_loader.load_kg2`/`load_kg2_networkx`/`load_kg2_igraph`
 - Follow-up: the branch's `Neighborhood_finder`/`Path_finder` (returning result classes) and upstream's `TCT_neighborhood_finder`/`TCT_pathfinder` modules currently coexist; unifying them so the upstream pipelines return result classes is left as future work
