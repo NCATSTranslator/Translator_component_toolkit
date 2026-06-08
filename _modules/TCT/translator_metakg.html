@@ -324,8 +324,10 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">.translator_kpinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_translator_kp_info</span>
     <span class="n">Translator_KP_info</span><span class="p">,</span> <span class="n">APInames</span> <span class="o">=</span> <span class="n">get_translator_kp_info</span><span class="p">()</span>
     <span class="n">metaKG</span> <span class="o">=</span> <span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">use_new_url</span><span class="o">=</span><span class="n">use_new_metakg_url</span><span class="p">)</span>
-  
+    
     <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_plover_API</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">)</span>
+    <span class="n">metaKG</span> <span class="o">=</span> <span class="n">metaKG</span><span class="p">[</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Predicate&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;biolink:rdfs:subClassOf&#39;</span><span class="p">]</span>
+
     <span class="k">return</span>  <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">Translator_KP_info</span></div>
 
 </pre></div>
