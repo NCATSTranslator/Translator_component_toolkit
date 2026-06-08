@@ -176,10 +176,10 @@
         <div class="control-group">
             <label for="top-n-selector" style="font-weight: bold;">3. Top N Paths:</label>
             <select id="top-n-selector">
-                <option value="20">20</option>
+                <option value="20" selected>20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
-                <option value="200" selected>200</option>
+                <option value="200">200</option>
                 <option value="500">500</option>
                 <option value="all">All</option>
             </select>
@@ -279,7 +279,8 @@
         let nodeLabels = {};           // curie -> human-readable label
         let jsonDataSlots = [null, null, null];   // raw parsed JSON for File 1, File 2, File 3
         let slotFileNames = ['', '', ''];           // display names for the three slots
-        const DEFAULT_TOP_N = 200;
+        let currentQueryGraph = null;              // query_graph from the most recently loaded file
+        const DEFAULT_TOP_N = 20;
         const MIN_NODE_FONT_SIZE = 8;
         const MAX_NODE_FONT_SIZE = 36;
         const DEFAULT_NODE_FONT_SIZE = 14;
@@ -750,21 +751,33 @@
                 return;
             }
 
-            const selectedPredicates = getSelectedPredicateSet();
-            const selectedObjectDirectionQualifiers = getSelectedObjectDirectionQualifierSet();
-            const selectedPrimaryKnowledgeSources = getSelectedPrimaryKnowledgeSourceSet();
+            // Build knowledge_graph.nodes from original KG data
+            const exportNodes = {};
+            currentRenderedGraph.nodes.forEach(n => {
+                exportNodes[n.id] = kgNodesMaster[n.id] || { name: n.name || n.id };
+            });
+
+            // Expand collapsed visual edges back to their original underlying edges
+            const exportEdges = {};
+            currentRenderedGraph.edges.forEach(e => {
+                const underlyingIds = e.underlying_edge_ids || [e.id];
+                underlyingIds.forEach(edgeId => {
+                    if (kgEdgesMaster[edgeId]) {
+                        exportEdges[edgeId] = kgEdgesMaster[edgeId];
+                    }
+                });
+            });
+
             const exportPayload = {
-                exported_at: new Date().toISOString(),
-                selected_views: getSelectedViewKeys(),
-                selected_intermediate_nodes: getIntermediateNodeFilterTokens(),
-                selected_predicates: selectedPredicates ? Array.from(selectedPredicates) : ['ALL'],
-                selected_object_direction_qualifiers: selectedObjectDirectionQualifiers ? Array.from(selectedObjectDirectionQualifiers) : ['ALL'],
-                selected_primary_knowledge_sources: selectedPrimaryKnowledgeSources ? Array.from(selectedPrimaryKnowledgeSources) : ['ALL'],
-                node_count: currentRenderedGraph.nodes.length,
-                edge_count: currentRenderedGraph.edges.length,
-                nodes: currentRenderedGraph.nodes,
-                edges: currentRenderedGraph.edges
+                knowledge_graph: {
+                    nodes: exportNodes,
+                    edges: exportEdges
+                }
             };
+
+            if (currentQueryGraph) {
+                exportPayload.query_graph = currentQueryGraph;
+            }
 
             const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
             const downloadUrl = URL.createObjectURL(blob);
@@ -1076,6 +1089,7 @@
 
             container.innerHTML = '';
             kgEdgesMaster = kgData.edges;
+            currentQueryGraph = qgData || null;
             graphViews = { "ALL": Object.keys(kgEdgesMaster) }; // Default view: All edges
             populatePredicateSelector();
             populateObjectDirectionQualifierSelector();

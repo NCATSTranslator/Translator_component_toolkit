@@ -1268,8 +1268,20 @@ def Path_finder(input_node1, input_node2, intermediate_categories, APInames, met
                                             top_n = 30,
                                             fontsize=10,
                                             title_fontsize=12,)
-
-    return paths,  input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2
+    # return an boject containing the paths and the ranked results for both input nodes. The ranked results can be used for further analysis or visualization.
+    result = {
+        "paths": paths,
+        "input_node1_id": input_node1_id,
+        "input_node2_id": input_node2_id,
+        "result1": result1,
+        "result2": result2,
+        "result_parsed1": result_parsed1,
+        "result_parsed2": result_parsed2,
+        "result_ranked_by_primary_infores1": result_ranked_by_primary_infores1,
+        "result_ranked_by_primary_infores2": result_ranked_by_primary_infores2
+    }
+    #return paths,  input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2
+    return  result
 
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 
