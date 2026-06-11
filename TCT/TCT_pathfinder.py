@@ -350,7 +350,8 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
                     }
                 }
             }
-        }
+        },
+        "submitter": "TCT",
     }
     return query_json
 

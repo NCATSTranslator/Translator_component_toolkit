@@ -160,13 +160,23 @@ def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_pred
                                                                 node2_categories,
                                                                 metaKG, APInames)
 
+    if len(sele_predicates) ==0:
+        sele_predicates = ["biolink:related_to"]
+        
     # Step 3: Format the query JSON for the input node
-    query_json = format_query_json([input_node_id], None,
-                                   None,
-                                   node2_categories,
-                                   sele_predicates,
-                                   attribute_constraints=attribute_constraints)
-
+    #query_json = format_query_json([input_node_id], 
+    #                               None,
+    #                               None,
+    #                               node2_categories,
+    #                               sele_predicates,
+    #                               attribute_constraints=attribute_constraints)
+    query_json = format_query_json(subject_ids = [input_node_id],
+        object_ids = None,
+        subject_categories = None,
+        object_categories = node2_categories,
+        predicates = sele_predicates,
+        attribute_constraints = None,
+        )
     # Step 4: Query the APIs in parallel
     result = translator_query.parallel_api_query(query_json=query_json,
                              select_APIs= sele_APIs,

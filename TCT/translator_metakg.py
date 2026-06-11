@@ -280,6 +280,8 @@ def load_translator_resources(use_new_metakg_url=False):
     from .translator_kpinfo import get_translator_kp_info
     Translator_KP_info, APInames = get_translator_kp_info()
     metaKG = get_KP_metadata(APInames, use_new_url=use_new_metakg_url)
-  
+    
     APInames, metaKG = add_plover_API(APInames, metaKG)
+    metaKG = metaKG[metaKG['Predicate'] != 'biolink:rdfs:subClassOf']
+
     return  APInames, metaKG, Translator_KP_info

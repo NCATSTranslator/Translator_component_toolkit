@@ -59,30 +59,22 @@ pip install -e .
 ### Please follow the example notebooks (four utilities) below to explore the Translator APIs.
 
 #### KG overview
-Explore different KGs **[KG overview](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/overview_of_KGs.ipynb)**
+Explore different KGs **[KG overview](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/overview_of_KGs.ipynb)**
 
 #### Name Resolver and Node Normalizer
-Example notebook for **[Name Resolver and Node Normalizer](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/name_resolver_lookup.ipynb)**
+Example notebook for **[Name Resolver and Node Normalizer](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/name_resolver_lookup.ipynb)**
 
 #### Neighborhood finder
-Example notebook for **[NeighborhoodFinder](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Neighborhood_finder.ipynb)**
+Example notebook for **[NeighborhoodFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder.ipynb)**
 
 #### Path finder
-Example notebook for **[PathFinder](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Path_finder.ipynb)**
+Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Path_finder.ipynb)**
 
 #### Network finder
-Example notebook for **[NetworkFinder](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Network_finder.ipynb)**
-
-#### Translate users' questions into TRAPI queries
-Example notebook for translating users' questions into TRAPI queries can be found [here](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Question2Query_chatGPT.ipynb). 
-
-#### Connecting to a user's API
-API should be developed following the standard from [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI). <br>
-An example notebook for add a user's API can be found [here](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Connecting_userAPI.ipynb).<br>
-**Warning: It does not work if no user' API is established**<br>
+Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Network_finder.ipynb)**
 
 ## Key Translator components
-Connecting to key Translator components can be found [here](https://github.com/gloriachin/Translator_component_toolkit/tree/main/TranslatorComponentsIntroduction.md)
+Connecting to key Translator components can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/TranslatorComponentsIntroduction.md)
 
 ### Contributing
 TCT is a tool that helps to explore knowledge graphs developed in the Biomedical Data Translator Consortium. Consortium members and external contributors are encouraged to submit issues and pull requests. 
