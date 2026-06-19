@@ -81,9 +81,7 @@ def build_query_graph(start_node_id, end_node_id, start_node_categories=None, en
                 "sn": {
                     "categories": start_node_categories,
                     "constraints": [],
-                    "ids": [
-                        start_node_id
-                    ],
+                    "ids": [start_node_id] if isinstance(start_node_id, str) else start_node_id,
                     "is_set": False,
                     "option_group_id": None,
                     "set_id": None,
