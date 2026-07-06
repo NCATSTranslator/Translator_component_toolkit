@@ -45,12 +45,16 @@
         <span class="n">subject_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">object_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">predicates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">):</span>
     <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="n">constraints</span>
+    
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="p">[</span><span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: for ARAGORN or ARAX pathfinder pipeline, it is only allowed to have only one intermediate category in the constraints list. If there are multiple intermediate categories, the query will return an error. Therefore, we will only use one intermediate category in  the constraints list. &quot;</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span>  <span class="p">{</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -68,15 +72,15 @@
             <span class="p">},</span>
             <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">{</span>
                 <span class="s2">&quot;p0&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;n0&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;n1&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;predicates&quot;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="s2">&quot;biolink:related_to&quot;</span>
-                <span class="p">],</span>
-                <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[</span>
-                    <span class="p">{</span>
-                    <span class="s2">&quot;intermediate_categories&quot;</span><span class="p">:</span> <span class="n">constraints_intermediate_category</span>
-                    <span class="p">}</span>
+                    <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;n0&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;n1&quot;</span><span class="p">,</span>
+                    <span class="c1">#&quot;predicates&quot;: [</span>
+                    <span class="c1">#    &quot;biolink:related_to&quot;</span>
+                    <span class="c1">#],</span>
+                    <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;intermediate_categories&quot;</span><span class="p">:</span> <span class="n">constraints_intermediate_category</span>
+                        <span class="p">}</span>
                 <span class="p">]</span>
                 <span class="p">}</span>
             <span class="p">}</span>
@@ -88,7 +92,7 @@
             <span class="s2">&quot;kp_timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>
             <span class="s2">&quot;prune_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;50&quot;</span><span class="p">,</span>
             <span class="s2">&quot;max_pathfinder_paths&quot;</span><span class="p">:</span> <span class="s2">&quot;500&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;max_path_length&quot;</span><span class="p">:</span> <span class="s2">&quot;4&quot;</span>
+            <span class="s2">&quot;max_path_length&quot;</span><span class="p">:</span> <span class="mi">4</span>
         <span class="p">}</span>
         <span class="p">}</span>
   
@@ -387,7 +391,7 @@
                     <span class="p">}</span>
                 <span class="p">},</span>
                 <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;p0&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;qpath&quot;</span><span class="p">:</span> <span class="p">{</span>
                         <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;SN&quot;</span><span class="p">,</span>
                         <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;ON&quot;</span>
                     <span class="p">}</span>
@@ -401,18 +405,22 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
     <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://shepherd.renci.org/aragorn/query&#39;</span>
+    <span class="c1">#aragorn_endpoint = &#39;https://shepherd.ci.transltr.io/aragorn/query&#39; new ci endpoint</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
-    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://shepherd.renci.org/aragorn/query&#39;</span>
-    <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span> 
+
 <span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
     <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://shepherd.renci.org/aragorn/query&#39;</span>
-    <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+    <span class="c1">#aragorn_endpoint = &#39;https://shepherd.ci.transltr.io/aragorn/query&#39; # new ci endpoint</span>
+    <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
+        <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
+        <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>
+        <span class="n">subject_categories</span><span class="o">=</span><span class="n">node1_category</span><span class="p">,</span>
+        <span class="n">object_categories</span><span class="o">=</span><span class="n">node2_category</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span>
+    <span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
 
@@ -424,7 +432,13 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
     <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://arax.ci.transltr.io/api/arax/v1.4/query&#39;</span>
-    <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+    <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
+        <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
+        <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>
+        <span class="n">subject_categories</span><span class="o">=</span><span class="n">node1_category</span><span class="p">,</span>
+        <span class="n">object_categories</span><span class="o">=</span><span class="n">node2_category</span><span class="p">,</span>
+        <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span>
+    <span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ARAX_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
 </pre></div>
