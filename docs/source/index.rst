@@ -22,6 +22,7 @@ Welcome to Translator Component Toolkit's documentation!
    neighborhood
    pathfinder
    network_annotator
+   node_annotator
 
 Indices and tables
 ==================
