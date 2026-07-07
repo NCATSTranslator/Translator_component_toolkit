@@ -185,8 +185,8 @@ def get_connected_graph(result_parsed, input_identifiers):
     result_parsed : dict
         The connected graph extracted from the parsed results.
 
-    Example
-    -------
+    Examples
+    --------
     >>> input_identifiers = ['NCBIGene:6774', 'NCBIGene:4170','NCBIGene:4792','NCBIGene:4288','NCBIGene:596','NCBIGene:581','NCBIGene:836','NCBIGene:6777','NCBIGene:4790','NCBIGene:545']
 
     >>> result, result_parsed = TCT_neighborhood_finder.neighborhood_finder_multiple_inputs(input_identifiers,
