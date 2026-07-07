@@ -3,15 +3,24 @@ Introduction
 
 ## What is TCT?
 Translator Component Toolkit is a python library that allowing users to explore and use KGs in the Translator ecosystem.
-Users can check out the key function documentations here: https://ncatstranslator.github.io/Translator_component_toolkit/ 
+Users can check out the key function documentations here: [https://ncatstranslator.github.io/Translator_component_toolkit/](https://ncatstranslator.github.io/Translator_component_toolkit/) 
+
+[TCT Github repo](https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main)
 
 ## Key features for TCT
 Allowing users to select APIs, predicates according to the user's intention. <br>
 Parallel and fast querying of the selected APIs.<br>
 Providing reproducible results by setting constraints.<br>
-Allowing testing whether a user defined API follows a [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI) standard or not. <br>
 Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
 Connecting large language models to convert user's questions into TRAPI queries. <br>
+Find the identifier given a name using name resolver<br>
+Annotate a node using node annotator<br>
+Explore knowledge graphs in Translator<br>
+Find neighbors in the Translator KGs for a given node <br>
+Find paths between node A and node B in the Translator KG <br>
+Find a subnetwork given a list of nodes in the Translator KG <br>
+Connecting user's API with Translator API <br>
+
 
 ## How to use TCT
 
@@ -75,6 +84,11 @@ Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translato
 #### Network finder
 Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
 
+
+#### Connecting to a user's API
+API should be developed following the standard from [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI). <br>
+An example notebook for add a user's API can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Connecting_userAPI.ipynb).<br>
+**Note: It does not work if no user' API is established**<br>
 
 ### Visulize the results
 After each pipleline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.

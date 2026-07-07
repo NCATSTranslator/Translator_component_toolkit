@@ -14,6 +14,38 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
         predicates=None,
         constraints=None
         ):
+    """
+        format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.
+
+    Parameters
+    ----------
+    subject_ids : str
+        a curie id for the subject node
+    object_ids : str
+        a curie id for the object node
+    subject_categories : list
+        a list of categories for the subject node
+    object_categories : list
+        a list of categories for the object node
+    predicates : list
+        a list of predicates for the edge between subject and object nodes
+    constraints : list
+        a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list. 
+    Returns
+    -------
+    query_json_temp : dict
+        a query json for pathfinder pipeline
+    
+        Example
+        -------
+        query_json_temp = format_query_json_for_pathfinder_with_constraints(
+            subject_ids='NCBIGene:6774',
+            object_ids='NCBIGene:4170',
+            subject_categories=['biolink:Gene'],
+            object_categories=['biolink:Gene'],
+            predicates=['biolink:related_to'],
+            constraints=['biolink:Protein']
+    """
     if constraints is None or len(constraints) == 0:
         constraints_intermediate_category = None
     if len(constraints) == 1:
@@ -324,6 +356,9 @@ def pathfinder(input_node1_id:str, input_node2_id:str,
 
 # define a function that uses the query_json as an template and change the ids and categories of the nodes
 def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
+    '''
+    
+    '''
     query_json = {
         "message": {
             "query_graph": {
