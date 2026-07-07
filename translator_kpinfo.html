@@ -33,30 +33,8 @@
 
           <div class="body" role="main">
             
-  <section id="module-TCT.translator_kpinfo">
-<span id="tct-translator-kpinfo"></span><h1>TCT.translator_kpinfo<a class="headerlink" href="#module-TCT.translator_kpinfo" title="Link to this heading">¶</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_kpinfo.get_translator_kp_info">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_kpinfo.</span></span><span class="sig-name descname"><span class="pre">get_translator_kp_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/TCT/translator_kpinfo.html#get_translator_kp_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_kpinfo.get_translator_kp_info" title="Link to this definition">¶</a></dt>
-<dd><p>Get the SmartAPI Translator KP info from the smart-api.info API.
-Returns a DataFrame with the SmartAPI Translator KP info.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>smartapi_df</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>Dataframe containing information about the APIS [TODO]</p>
-</dd>
-<dt><strong>API_names</strong><span class="classifier">dict</span></dt><dd><p>dict of API names to URLs</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Translator_KP_info</span><span class="p">,</span> <span class="n">APInames</span> <span class="o">=</span> <span class="n">get_translator_kp_info</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">Translator_KP_info</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
-</pre></div>
-</div>
-</dd></dl>
-
+  <section id="tct-translator-kpinfo">
+<h1>TCT.translator_kpinfo<a class="headerlink" href="#tct-translator-kpinfo" title="Link to this heading">¶</a></h1>
 </section>
 
 
@@ -91,10 +69,7 @@ Returns a DataFrame with the SmartAPI Translator KP info.</p>
 <li class="toctree-l1"><a class="reference internal" href="components.html">Translator Components</a></li>
 <li class="toctree-l1"><a class="reference internal" href="name_resolver.html">TCT.name_resolver</a></li>
 <li class="toctree-l1"><a class="reference internal" href="node_normalizer.html">TCT.node_normalizer</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.translator_kpinfo</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_kpinfo.get_translator_kp_info"><code class="docutils literal notranslate"><span class="pre">get_translator_kp_info()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.translator_kpinfo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_metakg.html">TCT.translator_metakg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>

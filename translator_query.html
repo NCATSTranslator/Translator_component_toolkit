@@ -35,108 +35,6 @@
             
   <section id="tct-translator-query">
 <h1>TCT.translator_query<a class="headerlink" href="#tct-translator-query" title="Link to this heading">¶</a></h1>
-<span class="target" id="module-TCT.translator_query"></span><dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.build_attribute_constraint">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">build_attribute_constraint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_not</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#build_attribute_constraint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.build_attribute_constraint" title="Link to this definition">¶</a></dt>
-<dd><p>This creates an attribute constraint for a TRAPI query dict.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.format_query_json">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">format_query_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/translator_query.html#format_query_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.format_query_json" title="Link to this definition">¶</a></dt>
-<dd><p>Formats a query dict, with optional constraints.</p>
-<p>Example input:
-subject_ids = [“NCBIGene:3845”]
-object_ids = []
-subject_categories = [“biolink:Gene”]
-object_categories = [“biolink:Gene”]
-predicates = [“biolink:positively_correlated_with”, “biolink:physically_interacts_with”]
-attribute_constraints = [build_attribute_constraint(‘biolink:has_total’, ‘&gt;’, 2)]</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.get_translator_API_predicates">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">get_translator_API_predicates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/TCT/translator_query.html#get_translator_API_predicates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.get_translator_API_predicates" title="Link to this definition">¶</a></dt>
-<dd><p>Get the predicates supported by each API.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>API_names</strong><span class="classifier">dict[str, str]</span></dt><dd><p>dict of API names to URLs</p>
-</dd>
-<dt><strong>metaKG</strong><span class="classifier">pandas.DataFrame</span></dt><dd><p>This is a dataframe that represents the meta KG for the KPs in the APInames input -   columns include [TODO].</p>
-</dd>
-<dt><strong>API_predicates</strong><span class="classifier">dict[str, list]</span></dt><dd><p>A dictionary of API names and a list of their predicates.</p>
-</dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">API_names</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span> <span class="o">=</span> <span class="n">get_translator_API_predicates</span><span class="p">()</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.optimize_query_json">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">optimize_query_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_name_cur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#optimize_query_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.optimize_query_json" title="Link to this definition">¶</a></dt>
-<dd><p>Optimize the query JSON by removing predicates that are not supported by the selected APIs.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>query_json1</strong><span class="classifier">str</span></dt><dd><p>a query in TRAPI 1.5.0 format</p>
-</dd>
-<dt><strong>API_name_cur</strong><span class="classifier">str</span></dt><dd><p>the name of the API to query</p>
-</dd>
-<dt><strong>API_predicates</strong><span class="classifier">dict</span></dt><dd><p>a dictionary of API names and their predicates</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>A modified query JSON with only the predicates supported by the selected APIs.</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.parallel_api_query">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">parallel_api_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">select_APIs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#parallel_api_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.parallel_api_query" title="Link to this definition">¶</a></dt>
-<dd><p>Queries multiple APIs in parallel and merges the results into a single knowledge graph.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>URLS</strong></dt><dd><p>list of API URLs to query</p>
-</dd>
-<dt><strong>query_json</strong></dt><dd><p>the query JSON to be sent to each API</p>
-</dd>
-<dt><strong>max_workers</strong></dt><dd><p>number of parallel workers to use for querying</p>
-</dd>
-</dl>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><dl class="simple">
-<dt>Returns a merged knowledge graph from all successful API responses.</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">TCT</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">API_URLs</span><span class="p">,</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">API_URLs1</span><span class="p">))</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.translator_query.query_KP">
-<span class="sig-prename descclassname"><span class="pre">TCT.translator_query.</span></span><span class="sig-name descname"><span class="pre">query_KP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">API_name_cur</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query_json</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/translator_query.html#query_KP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.translator_query.query_KP" title="Link to this definition">¶</a></dt>
-<dd><p>Query an individual API with a TRAPI 1.5.0 query JSON,
-without modifying the original query_json.</p>
-</dd></dl>
-
 </section>
 
 
@@ -173,15 +71,7 @@ without modifying the original query_json.</p>
 <li class="toctree-l1"><a class="reference internal" href="node_normalizer.html">TCT.node_normalizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_kpinfo.html">TCT.translator_kpinfo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_metakg.html">TCT.translator_metakg</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.translator_query</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.build_attribute_constraint"><code class="docutils literal notranslate"><span class="pre">build_attribute_constraint()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.format_query_json"><code class="docutils literal notranslate"><span class="pre">format_query_json()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.get_translator_API_predicates"><code class="docutils literal notranslate"><span class="pre">get_translator_API_predicates()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.optimize_query_json"><code class="docutils literal notranslate"><span class="pre">optimize_query_json()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.parallel_api_query"><code class="docutils literal notranslate"><span class="pre">parallel_api_query()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.translator_query.query_KP"><code class="docutils literal notranslate"><span class="pre">query_KP()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="neighborhood.html">TCT.TCT_neighborhood_finder</a></li>

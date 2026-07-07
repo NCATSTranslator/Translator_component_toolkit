@@ -31,69 +31,8 @@
 
           <div class="body" role="main">
             
-  <section id="module-TCT.trapi">
-<span id="tct-trapi"></span><h1>TCT.trapi<a class="headerlink" href="#module-TCT.trapi" title="Link to this heading">¶</a></h1>
-<p>This is a wrapper around making calls to the Translator Reasoner API (TRAPI).</p>
-<p>API Documentation: <a class="reference external" href="https://github.com/NCATSTranslator/ReasonerAPI">https://github.com/NCATSTranslator/ReasonerAPI</a></p>
-<p>Additional API Documentation: <a class="reference external" href="https://github.com/NCATSTranslator/ReasonerAPI/blob/master/docs/reference.md">https://github.com/NCATSTranslator/ReasonerAPI/blob/master/docs/reference.md</a></p>
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.trapi.build_query">
-<span class="sig-prename descclassname"><span class="pre">TCT.trapi.</span></span><span class="sig-name descname"><span class="pre">build_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_json</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/trapi.html#build_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.trapi.build_query" title="Link to this definition">¶</a></dt>
-<dd><p>This constructs a query json for use with TRAPI. Queries are of the form [subject_ids]-[predicates]-[object_categories].
-The output for the query contains all the subject-predicate-object triples where the subject is in subject_ids,
-the object’s category is in object_categories, and the predicate for the edge is in predicates.</p>
-<p>For a description of the existing biolink categories and predicates, see <a class="reference external" href="https://biolink.github.io/biolink-model/">https://biolink.github.io/biolink-model/</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt>A dict (default) or json string if return_json=True</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<p>In this example, we want all genes that physically interact with gene 3845.
-&gt;&gt;&gt; build_query([‘NCBIGene:3845’], [‘biolink:Gene’], [‘biolink:physically_interacts_with’])
-“{‘message’: {‘query_graph’: {</p>
-<blockquote>
-<div><p>‘edges’: {‘e00’: {‘subject’: ‘n00’, ‘object’: ‘n01’, ‘predicates’:[‘biolink:physically_interacts_with]}},
-‘nodes’: {‘n00’: {‘ids’: [‘NCBIGene:3845’]}, ‘n01’: {‘categories’: [‘biolink’:Gene’]}}}}}”</p>
-</div></blockquote>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.trapi.parallel_query">
-<span class="sig-prename descclassname"><span class="pre">TCT.trapi.</span></span><span class="sig-name descname"><span class="pre">parallel_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/trapi.html#parallel_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.trapi.parallel_query" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.trapi.process_result">
-<span class="sig-prename descclassname"><span class="pre">TCT.trapi.</span></span><span class="sig-name descname"><span class="pre">process_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/trapi.html#process_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.trapi.process_result" title="Link to this definition">¶</a></dt>
-<dd><p>Processes a TRAPI query result, returning a table of edges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"></dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.trapi.query">
-<span class="sig-prename descclassname"><span class="pre">TCT.trapi.</span></span><span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/trapi.html#query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.trapi.query" title="Link to this definition">¶</a></dt>
-<dd><p>Queries a single TRAPI endpoint.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><dl class="simple">
-<dt>A dict representing a result.</dt><dd></dd>
-</dl>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">query_dict</span> <span class="o">=</span> <span class="n">build_query</span><span class="p">([</span><span class="s1">&#39;NCBIGene:3845&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;biolink:physically_interacts_with&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">query</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_dict</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-</pre></div>
-</div>
-</dd></dl>
-
+  <section id="tct-trapi">
+<h1>TCT.trapi<a class="headerlink" href="#tct-trapi" title="Link to this heading">¶</a></h1>
 </section>
 
 
