@@ -33,8 +33,132 @@
 
           <div class="body" role="main">
             
-  <section id="tct-name-resolver">
-<h1>TCT.name_resolver<a class="headerlink" href="#tct-name-resolver" title="Link to this heading">¶</a></h1>
+  <section id="module-TCT.name_resolver">
+<span id="tct-name-resolver"></span><h1>TCT.name_resolver<a class="headerlink" href="#module-TCT.name_resolver" title="Link to this heading">¶</a></h1>
+<p>This is a wrapper around the Name Resolver API.</p>
+<p>API docs: <a class="reference external" href="https://name-lookup.ci.transltr.io/docs">https://name-lookup.ci.transltr.io/docs</a></p>
+<dl class="py data">
+<dt class="sig sig-object py" id="TCT.name_resolver.URL">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">URL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://name-lookup.ci.transltr.io/'</span></em><a class="headerlink" href="#TCT.name_resolver.URL" title="Link to this definition">¶</a></dt>
+<dd><p>This is the root URL for the API.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.batch_lookup">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">batch_lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_top_response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_synonyms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/name_resolver.html#batch_lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.batch_lookup" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>bulk-lookup</cite> api endpoint. Given a list of query strings, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>strings</strong><span class="classifier">list[str]</span></dt><dd><p>List of query strings.</p>
+</dd>
+<dt><strong>size</strong><span class="classifier">int</span></dt><dd><p>Desired chunking size, default is 25.</p>
+</dd>
+<dt><strong>return_top_response</strong><span class="classifier">bool</span></dt><dd><p>If true, this returns only the top response per string. If false, this returns a list of all responses per string. Default: True</p>
+</dd>
+<dt><strong>return_synonyms</strong><span class="classifier">bool</span></dt><dd><p>If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>bulk-lookup</cite>.  Some possible arguments: <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_types=[“biolink:Disease”, “biolink:Gene”]</cite> indicates that all returned results should be diseases or genes. <cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Dict of string</strong><span class="classifier">TranslatorNode object if return_top_response is True, list of TranslatorNode objects if return_top_response is False</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">batch_lookup</span><span class="p">([</span><span class="s1">&#39;AML&#39;</span><span class="p">,</span> <span class="s1">&#39;CML&#39;</span><span class="p">])</span>
+<span class="go">{&#39;AML&#39;: TranslatorNode(curie=&#39;MONDO:0018874&#39;, label=&#39;acute myeloid leukemia&#39;,...),</span>
+<span class="go"> &#39;CML&#39;: TranslatorNode(curie=&#39;MONDO:0010809&#39;, label=&#39;familial chronic myelocytic leukemia-like syndrome&#39;,...)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.batch_synonyms">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">batch_synonyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/name_resolver.html#batch_synonyms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.batch_synonyms" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>synonyms</cite> API endpoint, using POST. Given a list of CURIEs, this returns a dict of CURIE:TranslatorNode, where each TranslatorNode contains all synonyms for the given CURIE.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>strings</strong><span class="classifier">list[str]</span></dt><dd><p>List of CURIEs.</p>
+</dd>
+<dt><strong>size</strong><span class="classifier">int</span></dt><dd><p>Desired chunking size, default is 50.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Dict of CURIE</strong><span class="classifier">TranslatorNode</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.lookup">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">lookup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_top_response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_synonyms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#lookup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.lookup" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>lookup</cite> api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query</strong><span class="classifier">str</span></dt><dd><p>Query string</p>
+</dd>
+<dt><strong>return_top_response</strong><span class="classifier">bool</span></dt><dd><p>If true, this returns only the top response. If false, this returns a list of all responses. Default: True</p>
+</dd>
+<dt><strong>return_synonyms</strong><span class="classifier">bool</span></dt><dd><p>If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</p>
+</dd>
+<dt><strong>limit</strong><span class="classifier">int</span></dt><dd><p>The number of results to return.</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>lookup</cite>. Some possible arguments: <cite>limit=20</cite> would limit the results to 20. <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_type=”biolink:Disease”</cite> indicates that all returned results should be diseases. <cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned. For more examples, see [this](<a class="reference external" href="https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get">https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get</a>).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>TranslatorNode object if return_top_response is True, list of TranslatorNode objects if return_top_response is False</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;AML&#39;</span><span class="p">)</span>
+<span class="go">TranslatorNode(curie=&#39;MONDO:0018874&#39;, label=&#39;acute myeloid leukemia&#39;, types=[&#39;biolink:Disease&#39;, &#39;biolink:DiseaseOrPhenotypicFeature&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;], synonyms=None, curie_synonyms=None)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;IFNG&#39;</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">&#39;NCBITaxon:9606&#39;</span><span class="p">)</span>
+<span class="go">TranslatorNode(curie=&#39;NCBIGene:3458&#39;, label=&#39;IFNG&#39;, types=[&#39;biolink:Gene&#39;, &#39;biolink:GeneOrGeneProduct&#39;, &#39;biolink:GenomicEntity&#39;, &#39;biolink:ChemicalEntityOrGeneOrGeneProduct&#39;, &#39;biolink:PhysicalEssence&#39;, &#39;biolink:OntologyClass&#39;, &#39;biolink:BiologicalEntity&#39;, &#39;biolink:ThingWithTaxon&#39;, &#39;biolink:NamedThing&#39;, &#39;biolink:Entity&#39;, &#39;biolink:PhysicalEssenceOrOccurrent&#39;, &#39;biolink:MacromolecularMachineMixin&#39;, &#39;biolink:Protein&#39;, &#39;biolink:GeneProductMixin&#39;, &#39;biolink:Polypeptide&#39;, &#39;biolink:ChemicalEntityOrProteinOrPolypeptide&#39;], synonyms=None, curie_synonyms=None, attributes=None, taxa=[&#39;NCBITaxon:9606&#39;])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">&#39;AML&#39;</span><span class="p">,</span> <span class="n">return_top_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s2">&quot;biolink:Disease&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.status">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.status" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the status of the Name Resolver API.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.name_resolver.synonyms">
+<span class="sig-prename descclassname"><span class="pre">TCT.name_resolver.</span></span><span class="sig-name descname"><span class="pre">synonyms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/name_resolver.html#synonyms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.name_resolver.synonyms" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around the <cite>synonyms</cite> api endpoint. Given a CURIE or a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>query</strong><span class="classifier">str|list</span></dt><dd><p>Query CURIE or list of CURIEs</p>
+</dd>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>synonyms</cite></p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Dict of CURIE id</strong><span class="classifier">TranslatorNode</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -67,7 +191,15 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="components.html">Translator Components</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.name_resolver</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.name_resolver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.URL"><code class="docutils literal notranslate"><span class="pre">URL</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.batch_lookup"><code class="docutils literal notranslate"><span class="pre">batch_lookup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.batch_synonyms"><code class="docutils literal notranslate"><span class="pre">batch_synonyms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.lookup"><code class="docutils literal notranslate"><span class="pre">lookup()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.status"><code class="docutils literal notranslate"><span class="pre">status()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.name_resolver.synonyms"><code class="docutils literal notranslate"><span class="pre">synonyms()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="node_normalizer.html">TCT.node_normalizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_kpinfo.html">TCT.translator_kpinfo</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_metakg.html">TCT.translator_metakg</a></li>
