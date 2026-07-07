@@ -222,7 +222,7 @@ def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_pred
         The ranked results based on primary infores.
 
     Examples
-    -------
+    --------
     >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder('MONDO:0008170', #Ovarian Cancer
                                                                                             node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
                                                                                             APInames = APInames,
@@ -318,11 +318,11 @@ def neighborhood_finder_multiple_inputs(input_nodes:list[str], node2_categories:
 
     Examples
     --------
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder('MONDO:0008170', #Ovarian Cancer
-                                                                                            node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)
+    >>> result, result_parsed = neighborhood_finder_multiple_inputs(['NCBIGene:6774', 'NCBIGene:4170', 'NCBIGene:4792'],
+                                                                    node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
+                                                                    APInames = APInames,
+                                                                    metaKG = metaKG,
+                                                                    API_predicates = API_predicates)
     """
     from . import node_normalizer
     from . import translator_query
