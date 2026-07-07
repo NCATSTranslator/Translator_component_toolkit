@@ -30,7 +30,7 @@ To install TCT as a python library:
 
 ```bash
 pip install TCT
-# TCT is in development, to get the most recent update, user can install it throught the github repo
+# TCT is in development, to get the most recent update, user can install it through the github repo
 ```
 
 **This the recommended approach for installation.**
@@ -90,8 +90,8 @@ API should be developed following the standard from [TRAPI](https://github.com/N
 An example notebook for add a user's API can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Connecting_userAPI.ipynb).<br>
 **Note: It does not work if no user' API is established**<br>
 
-### Visulize the results
-After each pipleline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.
+### Visualize the results
+After each pipeline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.
 
 ## Key Translator components
 Connecting to key Translator components can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/TranslatorComponentsIntroduction.md)
