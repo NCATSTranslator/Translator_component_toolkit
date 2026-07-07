@@ -169,7 +169,7 @@ def network_annotator(gene_list,
 
 def get_connected_graph(result_parsed, input_identifiers):
     """
-    This function is used to extract the connected graph from the returned graph based on neiborhood finder from multiple inputs. 
+    This function is used to extract the connected graph from the returned graph based on neighborhood finder from multiple inputs. 
     It will only include the input nodes and the nodes that are connected to the input nodes with degree greater than 1. 
 
 
