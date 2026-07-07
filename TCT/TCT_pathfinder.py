@@ -37,8 +37,8 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
     query_json_temp : dict
         a query json for pathfinder pipeline
     
-    Example
-    -------
+    Examples
+    --------
     >>> query_json_temp = format_query_json_for_pathfinder_with_constraints(
         subject_ids='NCBIGene:6774',
         object_ids='NCBIGene:4170',
