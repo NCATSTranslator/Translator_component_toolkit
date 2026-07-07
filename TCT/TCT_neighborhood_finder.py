@@ -195,41 +195,39 @@ def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_pred
 
     Parameters
     ----------
-    input_node (str)
+    input_node : str
         The input node - should be a CURIE id.
-    node2_categories (list)
+    node2_categories : list
         A list of intermediate categories to be used in the neighborhood finding process.
-    APInames (dict)
+    APInames : dict
         A dictionary containing the names of the APIs to be used.
-    metaKG (DataFrame)
+    metaKG : DataFrame
         The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates (dict)
+    API_predicates : dict
         A dictionary containing the predicates for each API.
-    input_node_category (list)
+    input_node_category : list
         Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
-    attribute_constraints (list)
+    attribute_constraints : list
         Optional. List of outputs of translator_query.build_attribute_constraint
 
     Returns
-    --------------
-    input_node_id (str)
+    -------
+    input_node_id : str
         The curie id of the input node.
-    result (dict)
+    result : dict
         The result of the query for the input node.
-    result_parsed (DataFrame)
+    result_parsed : DataFrame
         The parsed results for the input node.
-    result_ranked_by_primary_infores (DataFrame)
+    result_ranked_by_primary_infores : DataFrame
         The ranked results based on primary infores.
 
-    --------------
-    Example:
+    Examples
+    --------
     >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder('MONDO:0008170', #Ovarian Cancer
                                                                                             node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
                                                                                             APInames = APInames,
                                                                                             metaKG = metaKG,
                                                                                             API_predicates = API_predicates)
-    --------------
-
     """
     from . import node_normalizer
     from . import translator_query
@@ -291,23 +289,23 @@ def neighborhood_finder_multiple_inputs(input_nodes:list[str], node2_categories:
 
     Parameters
     ----------
-    input_nodes (list[str])
+    input_nodes : list[str]
         The input nodes - should be a list of CURIE ids.
-    node2_categories (list)
+    node2_categories : list
         A list of intermediate categories to be used in the neighborhood finding process.
-    APInames (dict)
+    APInames : dict
         A dictionary containing the names of the APIs to be used.
-    metaKG (DataFrame)
+    metaKG : DataFrame
         The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates (dict)
+    API_predicates : dict
         A dictionary containing the predicates for each API.
-    input_node_category (list)
+    input_node_category : list
         Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
-    attribute_constraints (list)
+    attribute_constraints : list
         Optional. List of outputs of translator_query.build_attribute_constraint
 
     Returns
-    --------------
+    -------
     input_node_id (str)
         The curie id of the input node.
     result (dict)
@@ -317,15 +315,14 @@ def neighborhood_finder_multiple_inputs(input_nodes:list[str], node2_categories:
     result_ranked_by_primary_infores (DataFrame)
         The ranked results based on primary infores.
 
-    --------------
-    Example:
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder('MONDO:0008170', #Ovarian Cancer
-                                                                                            node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)
-    --------------
 
+    Examples
+    --------
+    >>> result, result_parsed = neighborhood_finder_multiple_inputs(['NCBIGene:6774', 'NCBIGene:4170', 'NCBIGene:4792'],
+                                                                    node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
+                                                                    APInames = APInames,
+                                                                    metaKG = metaKG,
+                                                                    API_predicates = API_predicates)
     """
     from . import node_normalizer
     from . import translator_query
