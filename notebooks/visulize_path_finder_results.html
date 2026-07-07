@@ -277,6 +277,7 @@
         let querySubjectIds = [];
         let queryObjectIds = [];
         let nodeLabels = {};           // curie -> human-readable label
+        let nodeAnnotationCache = {};  // curie -> node annotator payload
         let jsonDataSlots = [null, null, null];   // raw parsed JSON for File 1, File 2, File 3
         let slotFileNames = ['', '', ''];           // display names for the three slots
         let currentQueryGraph = null;              // query_graph from the most recently loaded file
@@ -309,6 +310,115 @@
 
         function changeNodeFontSize(delta) {
             setNodeFontSize(currentNodeFontSize + delta);
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDetailValue(value) {
+            if (value === null || value === undefined) return '<span>None</span>';
+            if (typeof value === 'object') {
+                return `<pre>${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+            }
+            return `<span>${escapeHtml(value)}</span>`;
+        }
+
+        function buildDetailRowsFromObject(data, excludeKeys = []) {
+            const excluded = new Set(excludeKeys);
+            return Object.keys(data || {}).filter(key => !excluded.has(key)).map(key => {
+                const title = escapeHtml(key.replace(/_/g, ' '));
+                return `<div class="detail-row"><span class="detail-title">${title}:</span> ${formatDetailValue(data[key])}</div>`;
+            }).join('');
+        }
+
+        async function fetchNodeAnnotation(nodeId) {
+            if (Object.prototype.hasOwnProperty.call(nodeAnnotationCache, nodeId)) {
+                return nodeAnnotationCache[nodeId];
+            }
+
+            const response = await fetch('https://annotator.transltr.io/curie', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: [nodeId] })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            let annotation = result ? result[nodeId] : null;
+            if (Array.isArray(annotation) && annotation.length === 1) {
+                annotation = annotation[0];
+            }
+            if (!annotation || typeof annotation !== 'object') {
+                annotation = {};
+            }
+
+            nodeAnnotationCache[nodeId] = annotation;
+            return annotation;
+        }
+
+        async function renderNodeDetails(nodeId) {
+            const infoPanel = document.getElementById('info-panel');
+            const nodeName = nodeLabels[nodeId] || nodeId;
+            const nodeData = kgNodesMaster[nodeId] || {};
+            const escapedNodeId = nodeId.replace(/'/g, "\\'");
+
+            infoPanel.dataset.activeNodeId = nodeId;
+            infoPanel.innerHTML = `
+                <h3>Node Details</h3>
+                <div class="detail-row"><span class="detail-title">Name:</span> ${escapeHtml(nodeName)}</div>
+                <div class="detail-row"><span class="detail-title">ID:</span> ${escapeHtml(nodeId)}</div>
+                <div class="detail-row"><span class="detail-title">Annotation:</span> <span>Loading from Node Annotator...</span></div>
+                <div style="margin-top:10px;"><button type="button" onclick="hideNode('${escapedNodeId}')">Hide this node &amp; its edges</button></div>
+            `;
+
+            try {
+                const annotation = await fetchNodeAnnotation(nodeId);
+                if (infoPanel.dataset.activeNodeId !== nodeId) return;
+
+                let htmlContent = `<h3>Node Details</h3>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">Name:</span> ${escapeHtml(nodeName)}</div>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">ID:</span> ${escapeHtml(nodeId)}</div>`;
+
+                if (Object.keys(nodeData).length > 0) {
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Graph data:</span>${formatDetailValue(nodeData)}</div>`;
+                }
+
+                if (Object.keys(annotation).length > 0) {
+                    if (annotation.name && annotation.name !== nodeName) {
+                        htmlContent += `<div class="detail-row"><span class="detail-title">Annotator name:</span> ${escapeHtml(annotation.name)}</div>`;
+                    }
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Node annotator:</span><pre>${escapeHtml(JSON.stringify(annotation, null, 2))}</pre></div>`;
+                    htmlContent += buildDetailRowsFromObject(annotation, ['name']);
+                } else {
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Node annotator:</span> <span>No annotation returned.</span></div>`;
+                }
+
+                htmlContent += `<p><em>To view association details, click on the connecting lines (edges).</em></p>`;
+                htmlContent += `<div style="margin-top:10px;"><button type="button" onclick="hideNode('${escapedNodeId}')">Hide this node &amp; its edges</button></div>`;
+                infoPanel.innerHTML = htmlContent;
+            } catch (error) {
+                if (infoPanel.dataset.activeNodeId !== nodeId) return;
+
+                let htmlContent = `<h3>Node Details</h3>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">Name:</span> ${escapeHtml(nodeName)}</div>`;
+                htmlContent += `<div class="detail-row"><span class="detail-title">ID:</span> ${escapeHtml(nodeId)}</div>`;
+                if (Object.keys(nodeData).length > 0) {
+                    htmlContent += `<div class="detail-row"><span class="detail-title">Graph data:</span>${formatDetailValue(nodeData)}</div>`;
+                }
+                htmlContent += `<div class="detail-row"><span class="detail-title">Node annotator:</span> <span>Request failed: ${escapeHtml(error.message || 'Unknown error')}</span></div>`;
+                htmlContent += `<p><em>To view association details, click on the connecting lines (edges).</em></p>`;
+                htmlContent += `<div style="margin-top:10px;"><button type="button" onclick="hideNode('${escapedNodeId}')">Hide this node &amp; its edges</button></div>`;
+                infoPanel.innerHTML = htmlContent;
+            }
         }
 
         // Returns the background colour for a node, respecting the highlight set.
@@ -1063,6 +1173,7 @@
             // Resolve node labels from name-lookup API before rendering
             kgNodesMaster = kgData.nodes || {};
             nodeLabels = {};
+            nodeAnnotationCache = {};
             let allNodeIds = Object.keys(kgNodesMaster);
             if (allNodeIds.length === 0) {
                 Object.values(kgData.edges).forEach(e => {
@@ -1809,8 +1920,7 @@
 
             } else if (params.nodes.length > 0) {
                 const nodeId = params.nodes[0];
-                const nodeName = nodeLabels[nodeId] || nodeId;
-                infoPanel.innerHTML = `<h3>Node Details</h3><p><span class="detail-title">Name:</span> ${nodeName}</p><p><span class="detail-title">ID:</span> ${nodeId}</p><p><em>To view association details, click on the connecting lines (edges).</em></p><div style="margin-top:10px;"><button type="button" onclick="hideNode('${nodeId.replace(/'/g, "\\'")}')">Hide this node &amp; its edges</button></div>`;
+                renderNodeDetails(nodeId);
             } else {
                 infoPanel.innerHTML = `<p style="color: #666; font-style: italic;">Click on an edge (line) or node (box) in the graph above to view its detailed annotations here.</p>`;
             }

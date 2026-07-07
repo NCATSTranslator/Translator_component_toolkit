@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import ipycytoscape
 import networkx as nx
 import numpy as np
-import openai
+#import openai
 from . import name_resolver
 
 # plt.switch_backend('module://ipykernel.pylab.backend_inline')
@@ -43,10 +43,10 @@ __all__ = [
     'merge_by_ranking_index',
     'get_pair_annotation',
     'parse_pair_annotation',
-    'ask_chatGPT',
-    'ask_chatGPT4',
-    'query_chatGPT',
-    'query_chatGPT4',
+    #'ask_chatGPT',
+    #'ask_chatGPT4',
+    #'query_chatGPT',
+    #'query_chatGPT4',
     'load_json_template',
     'extract_json',
     'TRAPI_json_validation'
@@ -1744,145 +1744,8 @@ def query_KP_all(subject_ids, object_ids, subject_categories, object_categories,
                     result_dict[API_sele] = kg_output
     return(result_dict, result_concept)
 
-# to be removed
-def parse_result_old( API_keys_sele, API_keys_Not_include, predicates_forAnalysis,result_dic):
-    Temp_APIkey = []
-    Temp_subject_key = []
-    Temp_object_key = []
-    Temp_predicate_key = []
-    Temp_infores_key = []
-    API_keys_forAnalysis = []
-
-    ALL_APIs_in_result = list(result_dic.keys())
-    print(ALL_APIs_in_result)
-
-    if len(API_keys_sele) == 0:
-        API_keys_forAnalysis = ALL_APIs_in_result
-    else:
-        API_keys_forAnalysis = list(set(ALL_APIs_in_result).intersection(set(API_keys_sele)))
-
-    if len(API_keys_Not_include) != 0:
-        API_keys_forAnalysis = list(set(API_keys_forAnalysis) - set(API_keys_Not_include))
 
 
-    print(API_keys_forAnalysis)
-
-    for API_key in API_keys_forAnalysis:
-        cur_API_outputKeys = list(result_dic[API_key]['edges'].keys())
-        for i in range(0, len(cur_API_outputKeys)):
-            curr_key = i
-            curr_graph = (result_dic[API_key]['edges'][cur_API_outputKeys[curr_key]])
-            predicate = (curr_graph['predicate'])
-            if predicate != "biolink:subclass_of":
-                infores = (curr_graph['sources'][0]['resource_id'])
-                subject = (curr_graph['subject'])
-
-                if subject.startswith("CL:"):
-                    subject = "CL" + subject.split(":")[1]
-
-                object = (curr_graph['object'])
-                if object.startswith("CL:"):
-                    object = "CL" + object.split(":")[1]
-
-                #exclude subclass_of
-
-                Temp_APIkey.append(API_key)
-                Temp_subject_key.append(subject)
-                Temp_object_key.append(object)
-                Temp_predicate_key.append(predicate)
-                Temp_infores_key.append(infores)
-
-            #Temp_APIkey.append(API_key)
-            #Temp_subject_key.append(subject)
-            #Temp_object_key.append(object)
-            #Temp_predicate_key.append(predicate)
-            #Temp_infores_key.append(infores)
-
-    Temp_result_df = pd.DataFrame({'API': Temp_APIkey,
-                                   'Subject': Temp_subject_key,
-                                   "Object":Temp_object_key,
-                                   "Predicate":Temp_predicate_key,
-                                   "Infores":Temp_infores_key})
-
-    Temp_result_df.drop_duplicates(inplace=True)
-    Temp_result_df = Temp_result_df.loc[Temp_result_df['API'].isin(API_keys_forAnalysis)]
-
-    if len(predicates_forAnalysis) != 0:
-        Temp_result_df = Temp_result_df.loc[Temp_result_df['Predicate'].isin(predicates_forAnalysis)]
-    return(Temp_result_df)
-
-# to be removed
-def ranking_result_by_predicates_object(Temp_result_df):
-    object_val_list = Temp_result_df['Object'].value_counts().index.tolist()
-    object_val_value = Temp_result_df['Object'].value_counts().values.tolist()
-
-
-    dic_rank = {}
-    for i in range(0,len(object_val_list)):
-        dic_rank[object_val_list[i]] = object_val_value[i]
-
-
-    sorted_dic = sorted(dic_rank.items(), key=lambda x: x[1], reverse=True)
-    return(sorted_dic)
-
-# to be removed
-def ranking_result_by_predicates_subject(Temp_result_df):
-    subject_val_list = Temp_result_df['Subject'].value_counts().index.tolist()
-    subject_val_list = Temp_result_df['Subject'].value_counts().values.tolist()
-
-    dic_rank = {}
-    for i in range(0,len(subject_val_list)):
-        dic_rank[subject_val_list[i]] = subject_val_list[i]
-
-
-    sorted_dic = sorted(dic_rank.items(), key=lambda x: x[1], reverse=True)
-    return(sorted_dic)
-
-
-# to be removed
-def get_ranking_by_predicates(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['Predicate'])))
-
-    return(dic_ranking)
-
-# to be removed
-def get_ranking_by_infores(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['Infores'])))
-
-    return(dic_ranking)
-
-# to be removed
-def get_ranking_by_kp(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['API'])))
-
-    return(dic_ranking)
 
 # to be revised
 def connecting_two_dots_two_hops(sorted_dic1, sorted_dic):
@@ -2228,42 +2091,44 @@ def format_id(query_json_cur_clean):
         query_json_cur_clean['message']['query_graph']['nodes']['n1']['ids'] = input_node2_id
     return(query_json_cur_clean)
 
-def query_chatGPT(customized_input, model="gpt-3.5-turbo"):
-    message = [{"role": "user", "content": customized_input}]
-
-    response = openai.chat.completions.create(
-        model=model,
-        max_tokens=1000,
-        temperature=0.3,
-        messages=message,
-    )
-
-    # print(len(response.choices[0].message.content.split(" ")))
-    return response.choices[0].message.content
-
-def query_chatGPT4(customized_input):
-    return query_chatGPT(customized_input, "gpt-4")
+#def query_chatGPT(customized_input, model="gpt-3.5-turbo"):
+#    message = [{"role": "user", "content": customized_input}]
+#
+#    response = openai.chat.completions.create(
+#        model=model,
+#        max_tokens=1000,
+#        temperature=0.3,
+#        messages=message,
+#    )
+#
+#    # print(len(response.choices[0].message.content.split(" ")))
+#    return response.choices[0].message.content
 
 
-def ask_chatGPT(prompt_text):
-    response = query_chatGPT(prompt_text)
-    return response
+#def query_chatGPT4(customized_input):
+#    return query_chatGPT(customized_input, "gpt-4")
 
 
-def ask_chatGPT4(prompt_text):
-    response = query_chatGPT4(prompt_text)
-    return response
+#def ask_chatGPT(prompt_text):
+#    response = query_chatGPT(prompt_text)
+#    return response
 
-def find_similar_predicates(query_json_cur_clean, ALL_predicates):
-    current_predicates = query_json_cur_clean['message']['query_graph']['edges']['e1']['predicates']
-    output = ask_chatGPT4("The predicates in the KG are: " + ','.join(ALL_predicates) + ". The predicates in the current query are: " + ','.join(current_predicates) + ". What predicates are similar to the predicates in the current query?")
-    return(output)
 
-def find_similar_category(query_json_cur_clean, ALL_categories):
-    current_predicates1 = query_json_cur_clean['message']['query_graph']['nodes']['n0']['categories']
-    current_predicates2 = query_json_cur_clean['message']['query_graph']['nodes']['n1']['categories']
-    output = ask_chatGPT4("The categories in the KG are: " + ','.join(ALL_categories) + ". The category in the current query are: " + ','.join(current_predicates1 + current_predicates2) + ". What categories are similar to the categories in the current query?")
-    return(output)
+
+#def ask_chatGPT4(prompt_text):
+#    response = query_chatGPT4(prompt_text)
+#    return response
+
+#def find_similar_predicates(query_json_cur_clean, ALL_predicates):
+#    current_predicates = query_json_cur_clean['message']['query_graph']['edges']['e1']['predicates']
+#    output = ask_chatGPT4("The predicates in the KG are: " + ','.join(ALL_predicates) + ". The predicates in the current query are: " + ','.join(current_predicates) + ". What predicates are similar to the predicates in the current query?")
+#    return(output)
+
+#def find_similar_category(query_json_cur_clean, ALL_categories):
+#    current_predicates1 = query_json_cur_clean['message']['query_graph']['nodes']['n0']['categories']
+#    current_predicates2 = query_json_cur_clean['message']['query_graph']['nodes']['n1']['categories']
+#    output = ask_chatGPT4("The categories in the KG are: " + ','.join(ALL_categories) + ". The category in the current query are: " + ','.join(current_predicates1 + current_predicates2) + ". What categories are similar to the categories in the current query?")
+#    return(output)
 
 def load_translator_resources():
     """
@@ -2401,7 +2266,6 @@ def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, res
     display(pathgraph)
     return(forplot)
 
-
 def get_similar_category(query_json_cur_clean, KG_category):
     similar_category_text = find_similar_category(query_json_cur_clean, KG_category)
     words = similar_category_text.split(' ')
@@ -2445,396 +2309,3 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
     similar_predicate
     return similar_predicate
 
-
-# I've added this code so I could test ID_convert_to_preferred_name_nodeNormalizer()
-# without changing any of the rest of the code. Please delete it once you understand
-# the other changes I've made!
-if __name__ == "__main__":
-    # Check function on some identifier lists.
-    result1 = ID_convert_to_preferred_name_nodeNormalizer([])
-    if result1 != {}:
-        raise RuntimeError("ID_convert_to_preferred_name_nodeNormalizer([]) should equal []")
-
-    result2 = ID_convert_to_preferred_name_nodeNormalizer(['UBERON:0000201'])
-    if result2 != {'UBERON:0000201': 'endothelial blood brain barrier'}:
-        raise RuntimeError(f"Incorrect result: {result2}")
-
-    result3 = ID_convert_to_preferred_name_nodeNormalizer(['MESH:D005183', 'UBERON:0000201'])
-    if result3 != {
-        'UBERON:0000201': 'endothelial blood brain barrier',
-        'MESH:D005183': 'Failure to Thrive'
-    }:
-        raise RuntimeError(f"Incorrect result: {result3}")
-
-    result4 = ID_convert_to_preferred_name_nodeNormalizer(['CHEBI:45863', 'PUBCHEM.COMPOUND:31703'])
-    if result4 != {
-        'CHEBI:45863': 'Paclitaxel',
-        'PUBCHEM.COMPOUND:31703': 'Doxorubicin'
-    }:
-        raise RuntimeError(f"Incorrect result: {result4}")
-
-    result5 = ID_convert_to_preferred_name_nodeNormalizer([
-        'RXCUI:258355',
-        'PUBCHEM.COMPOUND:4261',
-        'PUBCHEM.COMPOUND:49850262',
-        'PUBCHEM.COMPOUND:50992434',
-        'PUBCHEM.COMPOUND:135539077',
-        'RXCUI:1430268',
-        'CHEBI:90942',
-        'CHEBI:110200',
-        'CHEBI:63996',
-        'CHEBI:6716',
-        'CHEBI:14222',
-        'PUBCHEM.COMPOUND:25141092',
-        'PUBCHEM.COMPOUND:36314',
-        'PUBCHEM.COMPOUND:31703',
-        'PUBCHEM.COMPOUND:3385',
-        'PUBCHEM.COMPOUND:126941',
-        'PUBCHEM.COMPOUND:135410875',
-        'PUBCHEM.COMPOUND:148124',
-        'PUBCHEM.COMPOUND:5311497',
-        'PUBCHEM.COMPOUND:107935',
-        'PUBCHEM.COMPOUND:387447',
-        'PUBCHEM.COMPOUND:518605',
-        'PUBCHEM.COMPOUND:5282165',
-        'PUBCHEM.COMPOUND:5591',
-        'PUBCHEM.COMPOUND:1322',
-        'PUBCHEM.COMPOUND:95170',
-        'PUBCHEM.COMPOUND:2286',
-        'PUBCHEM.COMPOUND:1242',
-        'PUBCHEM.COMPOUND:8461',
-        'PUBCHEM.COMPOUND:11813',
-        'PUBCHEM.COMPOUND:1530',
-        'PUBCHEM.COMPOUND:11831',
-        'PUBCHEM.COMPOUND:7577',
-        'PUBCHEM.COMPOUND:73864',
-        'PUBCHEM.COMPOUND:4521392',
-        'PUBCHEM.COMPOUND:47289',
-        'PUBCHEM.COMPOUND:1983',
-        'PUBCHEM.COMPOUND:12035',
-        'PUBCHEM.COMPOUND:449459',
-        'PUBCHEM.COMPOUND:186907',
-        'PUBCHEM.COMPOUND:449171',
-        'PUBCHEM.COMPOUND:7290',
-        'PUBCHEM.COMPOUND:2236',
-        'PUBCHEM.COMPOUND:5359596',
-        'PUBCHEM.COMPOUND:6918483',
-        'PUBCHEM.COMPOUND:23667548',
-        'PUBCHEM.COMPOUND:2256',
-        'PUBCHEM.COMPOUND:62306',
-        'PUBCHEM.COMPOUND:2336',
-        'PUBCHEM.COMPOUND:6623',
-        'PUBCHEM.COMPOUND:66166',
-        'PUBCHEM.COMPOUND:12111',
-        'PUBCHEM.COMPOUND:6626',
-        'PUBCHEM.COMPOUND:16682746',
-        'PUBCHEM.COMPOUND:5360373',
-        'PUBCHEM.COMPOUND:7961',
-        'PUBCHEM.COMPOUND:2478',
-        'PUBCHEM.COMPOUND:264',
-        'PUBCHEM.COMPOUND:23973',
-        'PUBCHEM.COMPOUND:2519',
-        'PUBCHEM.COMPOUND:5280453',
-        'PUBCHEM.COMPOUND:5943',
-        'PUBCHEM.COMPOUND:1203',
-        'PUBCHEM.COMPOUND:135411',
-        'PUBCHEM.COMPOUND:154413',
-        'PUBCHEM.COMPOUND:40470',
-        'PUBCHEM.COMPOUND:2730',
-        'PUBCHEM.COMPOUND:29131',
-        'PUBCHEM.COMPOUND:9171',
-        'PUBCHEM.COMPOUND:5702198',
-        'PUBCHEM.COMPOUND:2797',
-        'PUBCHEM.COMPOUND:24463',
-        'PUBCHEM.COMPOUND:323',
-        'PUBCHEM.COMPOUND:40585',
-        'PUBCHEM.COMPOUND:451668',
-        'PUBCHEM.COMPOUND:40024',
-        'PUBCHEM.COMPOUND:3017',
-        'PUBCHEM.COMPOUND:3026',
-        'PUBCHEM.COMPOUND:5371560',
-        'PUBCHEM.COMPOUND:969491',
-        'PUBCHEM.COMPOUND:8343',
-        'PUBCHEM.COMPOUND:5921',
-        'PUBCHEM.COMPOUND:448537',
-        'PUBCHEM.COMPOUND:6124',
-        'PUBCHEM.COMPOUND:8346',
-        'PUBCHEM.COMPOUND:5757',
-        'PUBCHEM.COMPOUND:702',
-        'PUBCHEM.COMPOUND:5991',
-        'PUBCHEM.COMPOUND:11',
-        'PUBCHEM.COMPOUND:3346',
-        'PUBCHEM.COMPOUND:3397',
-        'PUBCHEM.COMPOUND:135398658',
-        'PUBCHEM.COMPOUND:14101198',
-        'PUBCHEM.COMPOUND:104741',
-        'PUBCHEM.COMPOUND:8029',
-        'PUBCHEM.COMPOUND:60750',
-        'PUBCHEM.COMPOUND:5280961',
-        'PUBCHEM.COMPOUND:9898639',
-        'PUBCHEM.COMPOUND:637566',
-        'PUBCHEM.COMPOUND:3474',
-        'PUBCHEM.COMPOUND:23985',
-        'PUBCHEM.COMPOUND:3616',
-        'PUBCHEM.COMPOUND:42890',
-        'PUBCHEM.COMPOUND:3715',
-        'PUBCHEM.COMPOUND:6912226',
-        'PUBCHEM.COMPOUND:3779',
-        'PUBCHEM.COMPOUND:9812710',
-        'PUBCHEM.COMPOUND:46907787',
-        'PUBCHEM.COMPOUND:25195294',
-        'PUBCHEM.COMPOUND:896',
-        'PUBCHEM.COMPOUND:10836',
-        'PUBCHEM.COMPOUND:4098',
-        'PUBCHEM.COMPOUND:13709',
-        'PUBCHEM.COMPOUND:1349907',
-        'PUBCHEM.COMPOUND:1674',
-        'PUBCHEM.COMPOUND:4156',
-        'PUBCHEM.COMPOUND:7456',
-        'PUBCHEM.COMPOUND:6010',
-        'PUBCHEM.COMPOUND:8575',
-        'PUBCHEM.COMPOUND:4449',
-        'PUBCHEM.COMPOUND:4122',
-        'PUBCHEM.COMPOUND:442530',
-        'PUBCHEM.COMPOUND:9887053',
-        'PUBCHEM.COMPOUND:991',
-        'PUBCHEM.COMPOUND:854',
-        'PUBCHEM.COMPOUND:74483',
-        'PUBCHEM.COMPOUND:9554',
-        'PUBCHEM.COMPOUND:5794',
-        'PUBCHEM.COMPOUND:5694',
-        'PUBCHEM.COMPOUND:15032',
-        'PUBCHEM.COMPOUND:657298',
-        'PUBCHEM.COMPOUND:14942',
-        'PUBCHEM.COMPOUND:5280343',
-        'PUBCHEM.COMPOUND:5035',
-        'PUBCHEM.COMPOUND:6758',
-        'PUBCHEM.COMPOUND:5186',
-        'PUBCHEM.COMPOUND:1091',
-        'PUBCHEM.COMPOUND:133538',
-        'PUBCHEM.COMPOUND:7305',
-        'PUBCHEM.COMPOUND:5323',
-        'PUBCHEM.COMPOUND:5329102',
-        'PUBCHEM.COMPOUND:5284461',
-        'PUBCHEM.COMPOUND:24857286',
-        'PUBCHEM.COMPOUND:6410',
-        'PUBCHEM.COMPOUND:5995',
-        'PUBCHEM.COMPOUND:6618',
-        'PUBCHEM.COMPOUND:15625',
-        'PUBCHEM.COMPOUND:27924',
-        'PUBCHEM.COMPOUND:2723949',
-        'PUBCHEM.COMPOUND:26042',
-        'PUBCHEM.COMPOUND:60700',
-        'PUBCHEM.COMPOUND:444795',
-        'PUBCHEM.COMPOUND:6575',
-        'PUBCHEM.COMPOUND:5564',
-        'PUBCHEM.COMPOUND:11089',
-        'PUBCHEM.COMPOUND:65411',
-        'PUBCHEM.COMPOUND:23964',
-        'PUBCHEM.COMPOUND:3121',
-        'PUBCHEM.COMPOUND:14969',
-        'PUBCHEM.COMPOUND:39676',
-        'PUBCHEM.COMPOUND:2116',
-        'MESH:D014874',
-        'PUBCHEM.COMPOUND:23994',
-        'PUBCHEM.COMPOUND:11626560',
-        'PUBCHEM.COMPOUND:57379345',
-        'PUBCHEM.COMPOUND:5328940',
-        'PUBCHEM.COMPOUND:49846579',
-        'PUBCHEM.COMPOUND:25134326',
-        'PUBCHEM.COMPOUND:9829523',
-        'PUBCHEM.COMPOUND:25183872',
-        'PUBCHEM.COMPOUND:49806720',
-        'PUBCHEM.COMPOUND:71731823',
-        'PUBCHEM.COMPOUND:5311',
-        'PUBCHEM.COMPOUND:5281855',
-        'PUBCHEM.COMPOUND:5291',
-        'PUBCHEM.COMPOUND:135430309',
-        'PUBCHEM.COMPOUND:447077',
-        'PUBCHEM.COMPOUND:5284616',
-        'PUBCHEM.COMPOUND:11707110',
-        'PUBCHEM.COMPOUND:10184653',
-        'TTD.DRUG:D0Z1OR',
-        'UNII:334895S862',
-        'PUBCHEM.COMPOUND:176870',
-        'PUBCHEM.COMPOUND:6049',
-        'PUBCHEM.COMPOUND:440473',
-        'PUBCHEM.COMPOUND:175',
-        'PUBCHEM.COMPOUND:457193',
-        'PUBCHEM.COMPOUND:1548943',
-        'PUBCHEM.COMPOUND:36462',
-        'PUBCHEM.COMPOUND:5281672',
-        'PUBCHEM.COMPOUND:6057',
-        'PUBCHEM.COMPOUND:78165',
-        'PUBCHEM.COMPOUND:6518',
-        'PUBCHEM.COMPOUND:5360696',
-        'PUBCHEM.COMPOUND:6253',
-        'PUBCHEM.COMPOUND:30323',
-        'PUBCHEM.COMPOUND:2733526',
-        'PUBCHEM.COMPOUND:3108',
-        'PUBCHEM.COMPOUND:10366136',
-        'PUBCHEM.COMPOUND:3220',
-        'PUBCHEM.COMPOUND:7405',
-        'PUBCHEM.COMPOUND:656894',
-        'PUBCHEM.COMPOUND:10607',
-        'PUBCHEM.COMPOUND:135398748',
-        'PUBCHEM.COMPOUND:8771',
-        'PUBCHEM.COMPOUND:679',
-        'PUBCHEM.COMPOUND:6918638',
-        'PUBCHEM.COMPOUND:44259',
-        'PUBCHEM.COMPOUND:444732',
-        'PUBCHEM.COMPOUND:6029',
-        'PUBCHEM.COMPOUND:34755',
-        'PUBCHEM.COMPOUND:5284627',
-        'PUBCHEM.COMPOUND:5957',
-        'PUBCHEM.COMPOUND:2353',
-        'PUBCHEM.COMPOUND:72277',
-        'PUBCHEM.COMPOUND:46191454',
-        'PUBCHEM.COMPOUND:8988',
-        'PUBCHEM.COMPOUND:977',
-        'DRUGBANK:DB12182',
-        'PUBCHEM.COMPOUND:23725625',
-        'PUBCHEM.COMPOUND:4212',
-        'PUBCHEM.COMPOUND:91766',
-        'PUBCHEM.COMPOUND:65359',
-        'PUBCHEM.COMPOUND:441923',
-        'PUBCHEM.COMPOUND:445154',
-        'PUBCHEM.COMPOUND:65064',
-        'PUBCHEM.COMPOUND:11338033',
-        'PUBCHEM.COMPOUND:9444',
-        'PUBCHEM.COMPOUND:30751'
-    ])
-    if result5 != {
-        'RXCUI:258355': 'Rapamune', 'PUBCHEM.COMPOUND:4261': 'Entinostat', 'PUBCHEM.COMPOUND:49850262': 'Tubastatin A',
-        'PUBCHEM.COMPOUND:50992434': 'Trametinib dimethyl sulfoxide', 'PUBCHEM.COMPOUND:135539077': 'Luminespib',
-        'RXCUI:1430268': 'Gilotrif', 'CHEBI:90942': 'Ixazomib', 'CHEBI:110200': 'CHEBI:110200',
-        'CHEBI:63996': 'SKF 83959 hydrobromide', 'CHEBI:6716': 'Medroxyprogesterone acetate',
-        'CHEBI:14222': 'CHEBI:14222', 'PUBCHEM.COMPOUND:25141092': 'Entrectinib',
-        'PUBCHEM.COMPOUND:36314': 'Paclitaxel', 'PUBCHEM.COMPOUND:31703': 'Doxorubicin',
-        'PUBCHEM.COMPOUND:3385': 'Fluorouracil', 'PUBCHEM.COMPOUND:126941': 'Methotrexate',
-        'PUBCHEM.COMPOUND:135410875': 'Pemetrexed', 'PUBCHEM.COMPOUND:148124': 'Docetaxel',
-        'PUBCHEM.COMPOUND:5311497': 'Vinorelbine', 'PUBCHEM.COMPOUND:107935': 'Deguelin',
-        'PUBCHEM.COMPOUND:387447': 'Bortezomib',
-        'PUBCHEM.COMPOUND:518605': '2,4,6,8,9,10-Hexaoxa-1,3,5,7-tetraarsatricyclo[3.3.1.13,7]decane',
-        'PUBCHEM.COMPOUND:5282165': 'Josamycin', 'PUBCHEM.COMPOUND:5591': 'Troglitazone',
-        'PUBCHEM.COMPOUND:1322': '1,2-Dimethylhydrazine',
-        'PUBCHEM.COMPOUND:95170': "2,2',4,4'-Tetrabromodiphenyl ether",
-        'PUBCHEM.COMPOUND:2286': 'Bisphenol A diglycidyl ether',
-        'PUBCHEM.COMPOUND:1242': '2,3,4,5-Tetrahydro-7,8-dihydroxy-1-phenyl-1H-3-benzazepine',
-        'PUBCHEM.COMPOUND:8461': '2,4-Dinitrotoluene', 'PUBCHEM.COMPOUND:11813': '2,6-Dinitrotoluene',
-        'PUBCHEM.COMPOUND:1530': '2-Amino-1-methyl-6-phenylimidazo(4,5-b)pyridine',
-        'PUBCHEM.COMPOUND:11831': '2-Nitrofluorene', 'PUBCHEM.COMPOUND:7577': "4,4'-Methylenedianiline",
-        'PUBCHEM.COMPOUND:73864': 'Bisphenol AF',
-        'PUBCHEM.COMPOUND:4521392': '4-(4-(benzo[d][1,3]dioxol-5-yl)-5-(pyridin-2-yl)-1H-imidazol-2-yl)benzamide',
-        'PUBCHEM.COMPOUND:47289': '4-(N-Nitrosomethylamino)-1-(3-pyridyl)-1-butanone',
-        'PUBCHEM.COMPOUND:1983': 'Acetaminophen', 'PUBCHEM.COMPOUND:12035': 'Acetylcysteine',
-        'PUBCHEM.COMPOUND:449459': 'Afimoxifene', 'PUBCHEM.COMPOUND:186907': 'Aflatoxin B1',
-        'PUBCHEM.COMPOUND:449171': 'Alitretinoin', 'PUBCHEM.COMPOUND:7290': '3-Chloro-1,2-propanediol',
-        'PUBCHEM.COMPOUND:2236': 'Aristolochic acid', 'PUBCHEM.COMPOUND:5359596': 'Arsenic',
-        'PUBCHEM.COMPOUND:6918483': 'Artenimol', 'PUBCHEM.COMPOUND:23667548': 'Sodium Ascorbate',
-        'PUBCHEM.COMPOUND:2256': 'Atrazine', 'PUBCHEM.COMPOUND:62306': 'Benoxacor',
-        'PUBCHEM.COMPOUND:2336': 'Benzo[a]pyrene', 'PUBCHEM.COMPOUND:6623': 'Bisphenol A',
-        'PUBCHEM.COMPOUND:66166': 'Bisphenol B', 'PUBCHEM.COMPOUND:12111': "4,4'-Methylenediphenol",
-        'PUBCHEM.COMPOUND:6626': "4,4'-Sulfonyldiphenol", 'PUBCHEM.COMPOUND:16682746': 'Tributyltin oxide',
-        'PUBCHEM.COMPOUND:5360373': 'Bleomycin', 'PUBCHEM.COMPOUND:7961': 'Bromobenzene',
-        'PUBCHEM.COMPOUND:2478': 'Busulfan', 'PUBCHEM.COMPOUND:264': 'Butyric Acid',
-        'PUBCHEM.COMPOUND:23973': 'Cadmium', 'PUBCHEM.COMPOUND:2519': 'Caffeine',
-        'PUBCHEM.COMPOUND:5280453': 'Calcitriol', 'PUBCHEM.COMPOUND:5943': 'Carbon Tetrachloride',
-        'PUBCHEM.COMPOUND:1203': '2-(3,4-Dihydroxyphenyl)chroman-3,5,7-triol',
-        'PUBCHEM.COMPOUND:135411': '6-[3-(1-Adamantyl)-4-hydroxyphenyl]-2-naphthalenecarboxylic Acid',
-        'PUBCHEM.COMPOUND:154413': 'Centchroman', 'PUBCHEM.COMPOUND:40470': "2,2',3,3',4-Pentachlorobiphenyl",
-        'PUBCHEM.COMPOUND:2730': 'Chlorpyrifos', 'PUBCHEM.COMPOUND:29131': 'Chromium(6+)',
-        'PUBCHEM.COMPOUND:9171': 'Chrysene', 'PUBCHEM.COMPOUND:5702198': 'azane;dichloroplatinum',
-        'PUBCHEM.COMPOUND:2797': 'Clofibric acid', 'PUBCHEM.COMPOUND:24463': 'Copper sulfate pentahydrate',
-        'PUBCHEM.COMPOUND:323': 'Coumarin', 'PUBCHEM.COMPOUND:40585': 'Deltamethrin',
-        'PUBCHEM.COMPOUND:451668': 'Decitabine', 'PUBCHEM.COMPOUND:40024': 'Deoxynivalenol',
-        'PUBCHEM.COMPOUND:3017': 'Diazinon', 'PUBCHEM.COMPOUND:3026': 'Dibutyl Phthalate',
-        'PUBCHEM.COMPOUND:5371560': 'Dicrotophos', 'PUBCHEM.COMPOUND:969491': 'Dieldrin',
-        'PUBCHEM.COMPOUND:8343': 'Bis(2-ethylhexyl) phthalate', 'PUBCHEM.COMPOUND:5921': 'N-Nitrosodiethylamine',
-        'PUBCHEM.COMPOUND:448537': 'Diethylstilbestrol', 'PUBCHEM.COMPOUND:6124': 'N-Nitrosodimethylamine',
-        'PUBCHEM.COMPOUND:8346': 'Dioctyl phthalate', 'PUBCHEM.COMPOUND:5757': 'Estradiol',
-        'PUBCHEM.COMPOUND:702': 'Ethanol', 'PUBCHEM.COMPOUND:5991': 'Ethinyl estradiol',
-        'PUBCHEM.COMPOUND:11': '1,2-Dichloroethane', 'PUBCHEM.COMPOUND:3346': 'Fenthion',
-        'PUBCHEM.COMPOUND:3397': 'Flutamide', 'PUBCHEM.COMPOUND:135398658': 'Folic Acid',
-        'PUBCHEM.COMPOUND:14101198': '[(1R)-1-[(3S,6S,9S,12S,18R,21S,22R)-21-acetamido-18-benzyl-3-[(1R)-1-methoxyethyl]-4,9,10,12,16-pentamethyl-15-methylidene-2,5,8,11,14,17,20-heptaoxo-22-propan-2-yl-1,19-dioxa-4,7,10,13,16-pentazacyclodocos-6-yl]-2-methylpropyl] (2S,3R)-3-hydroxy-4-methyl-2-(propanoylamino)pentanoate',
-        'PUBCHEM.COMPOUND:104741': 'Fulvestrant', 'PUBCHEM.COMPOUND:8029': 'Furan',
-        'PUBCHEM.COMPOUND:60750': 'Gemcitabine', 'PUBCHEM.COMPOUND:5280961': 'Genistein',
-        'PUBCHEM.COMPOUND:9898639': 'Gentamicinsulfate salt', 'PUBCHEM.COMPOUND:637566': 'Geraniol',
-        'PUBCHEM.COMPOUND:3474': 'Glafenine', 'PUBCHEM.COMPOUND:23985': 'Gold',
-        'PUBCHEM.COMPOUND:3616': 'Hexamethylene bisacetamide', 'PUBCHEM.COMPOUND:42890': 'Idarubicin',
-        'PUBCHEM.COMPOUND:3715': 'Indomethacin', 'PUBCHEM.COMPOUND:6912226': 'Ionomycin',
-        'PUBCHEM.COMPOUND:3779': 'Isoproterenol',
-        'PUBCHEM.COMPOUND:9812710': 'Ivermectine 100 microg/mL in Acetonitrile',
-        'PUBCHEM.COMPOUND:46907787': '(S)-(+)-tert-Butyl 2-(4-(4-chlorophenyl)-2,3,9-trimethyl-6H-thieno(3,2-f)(1,2,4)triazolo(4,3-a)(1,4)diazepin-6-yl)acetate',
-        'PUBCHEM.COMPOUND:25195294': '4-(6-(4-(Piperazin-1-yl)phenyl)pyrazolo[1,5-a]pyrimidin-3-yl)quinoline',
-        'PUBCHEM.COMPOUND:896': 'Melatonin', 'PUBCHEM.COMPOUND:10836': 'Methamphetamine',
-        'PUBCHEM.COMPOUND:4098': 'Methapyrilene', 'PUBCHEM.COMPOUND:13709': 'Methidathion',
-        'PUBCHEM.COMPOUND:1349907': 'Methimazole', 'PUBCHEM.COMPOUND:1674': '3-Methylcholanthrene',
-        'PUBCHEM.COMPOUND:4156': 'Methyl methanesulfonate', 'PUBCHEM.COMPOUND:7456': 'Methylparaben',
-        'PUBCHEM.COMPOUND:6010': 'Methyltestosterone', 'PUBCHEM.COMPOUND:8575': 'Monobutyl phthalate',
-        'PUBCHEM.COMPOUND:4449': 'Nefazodone', 'PUBCHEM.COMPOUND:4122': 'Nocodazole',
-        'PUBCHEM.COMPOUND:442530': 'Ochratoxin A', 'PUBCHEM.COMPOUND:9887053': 'Oxaliplatin',
-        'PUBCHEM.COMPOUND:991': 'Parathion', 'PUBCHEM.COMPOUND:854': 'DL-Arabinose',
-        'PUBCHEM.COMPOUND:74483': 'Perfluorooctanesulfonic acid', 'PUBCHEM.COMPOUND:9554': 'Perfluorooctanoic acid',
-        'PUBCHEM.COMPOUND:5794': 'Piperonyl butoxide', 'PUBCHEM.COMPOUND:5694': 'Pirinixic acid',
-        'PUBCHEM.COMPOUND:15032': 'Pregnenolone carbonitrile', 'PUBCHEM.COMPOUND:657298': 'Propylthiouracil',
-        'PUBCHEM.COMPOUND:14942': 'Orthosilicic acid', 'PUBCHEM.COMPOUND:5280343': 'Quercetin',
-        'PUBCHEM.COMPOUND:5035': 'Raloxifene', 'PUBCHEM.COMPOUND:6758': 'Rotenone',
-        'PUBCHEM.COMPOUND:5186': 'Scriptaid', 'PUBCHEM.COMPOUND:1091': 'Selenious acid',
-        'PUBCHEM.COMPOUND:133538': '3-Methyl-6-chloro-2,3,4,5-tetrahydro-7,8-dihydroxy-1-(3-methylphenyl)-1H-3-benzazepine',
-        'PUBCHEM.COMPOUND:7305': 'Soman', 'PUBCHEM.COMPOUND:5323': 'Sulfadimethoxine',
-        'PUBCHEM.COMPOUND:5329102': 'Sunitinib', 'PUBCHEM.COMPOUND:5284461': 'T-2 Toxin',
-        'PUBCHEM.COMPOUND:24857286': 'Fasiglifam', 'PUBCHEM.COMPOUND:6410': 'tert-Butyl Hydroperoxide',
-        'PUBCHEM.COMPOUND:5995': 'Testosterone propionate', 'PUBCHEM.COMPOUND:6618': 'Tetrabromobisphenol A',
-        'PUBCHEM.COMPOUND:15625': '2,3,7,8-Tetrachlorodibenzo-P-dioxin',
-        'PUBCHEM.COMPOUND:27924': 'Phorbol 12-myristate 13-acetate', 'PUBCHEM.COMPOUND:2723949': 'Thioacetamide',
-        'PUBCHEM.COMPOUND:26042': 'Titanium Dioxide', 'PUBCHEM.COMPOUND:60700': 'Topotecan',
-        'PUBCHEM.COMPOUND:444795': 'Tretinoin', 'PUBCHEM.COMPOUND:6575': 'Trichloroethylene',
-        'PUBCHEM.COMPOUND:5564': 'Triclosan', 'PUBCHEM.COMPOUND:11089': 'Trimellitic anhydride',
-        'PUBCHEM.COMPOUND:65411': 'Triptonide', 'PUBCHEM.COMPOUND:23964': 'Tungsten',
-        'PUBCHEM.COMPOUND:3121': 'Valproic Acid', 'PUBCHEM.COMPOUND:14969': 'Vancomycin',
-        'PUBCHEM.COMPOUND:39676': 'Vinclozolin', 'PUBCHEM.COMPOUND:2116': 'DL-alpha-Tocopherol',
-        'MESH:D014874': 'MESH:D014874', 'PUBCHEM.COMPOUND:23994': 'Zinc', 'PUBCHEM.COMPOUND:11626560': 'Crizotinib',
-        'PUBCHEM.COMPOUND:57379345': 'Ceritinib', 'PUBCHEM.COMPOUND:5328940': 'Bosutinib',
-        'PUBCHEM.COMPOUND:49846579': 'Venetoclax',
-        'PUBCHEM.COMPOUND:25134326': 'N2-[2-Methoxy-4-[4-(4-methyl-1-piperazinyl)-1-piperidinyl]phenyl]-N4-[2-[(1-methylethyl)sulfonyl]phenyl]-1,3,5-triazine-2,4-diamine',
-        'PUBCHEM.COMPOUND:9829523': 'Midostaurin', 'PUBCHEM.COMPOUND:25183872': 'Ixazomib',
-        'PUBCHEM.COMPOUND:49806720': 'Alectinib', 'PUBCHEM.COMPOUND:71731823': 'Lorlatinib',
-        'PUBCHEM.COMPOUND:5311': 'Vorinostat', 'PUBCHEM.COMPOUND:5281855': 'Ellagic Acid',
-        'PUBCHEM.COMPOUND:5291': 'Imatinib', 'PUBCHEM.COMPOUND:135430309': '2-(4-methoxyphenyl)-1H-quinazolin-4-one',
-        'PUBCHEM.COMPOUND:447077': '6-(2,6-dichlorophenyl)-8-methyl-2-((3-(methylthio)phenyl)amino)pyrido[2,3-d]pyrimidin-7(8H)-one',
-        'PUBCHEM.COMPOUND:5284616': 'Sirolimus', 'PUBCHEM.COMPOUND:11707110': 'Trametinib',
-        'PUBCHEM.COMPOUND:10184653': 'Afatinib', 'TTD.DRUG:D0Z1OR': 'TTD.DRUG:D0Z1OR',
-        'UNII:334895S862': 'DOXYCYCLINE ANHYDROUS', 'PUBCHEM.COMPOUND:176870': 'Erlotinib',
-        'PUBCHEM.COMPOUND:6049': 'Edetic Acid', 'PUBCHEM.COMPOUND:440473': 'L-mimosine',
-        'PUBCHEM.COMPOUND:175': 'Acetate', 'PUBCHEM.COMPOUND:457193': 'Dactinomycin',
-        'PUBCHEM.COMPOUND:1548943': 'Capsaicin', 'PUBCHEM.COMPOUND:36462': 'Etoposide',
-        'PUBCHEM.COMPOUND:5281672': 'Myricetin', 'PUBCHEM.COMPOUND:6057': 'Tyrosine',
-        'PUBCHEM.COMPOUND:78165': '2-(N-Morpholino)-ethanesulfonic acid',
-        'PUBCHEM.COMPOUND:6518': 'Pentaerythritol tetranitrate', 'PUBCHEM.COMPOUND:5360696': 'Dextromethorphan',
-        'PUBCHEM.COMPOUND:6253': 'Cytarabine', 'PUBCHEM.COMPOUND:30323': 'Daunorubicin',
-        'PUBCHEM.COMPOUND:2733526': 'Tamoxifen', 'PUBCHEM.COMPOUND:3108': 'Dipyridamole',
-        'PUBCHEM.COMPOUND:10366136': 'Crenolanib', 'PUBCHEM.COMPOUND:3220': 'Emodin',
-        'PUBCHEM.COMPOUND:7405': 'L-Pyroglutamic acid',
-        'PUBCHEM.COMPOUND:656894': 'Isopropyl-beta-D-thiogalactopyranoside', 'PUBCHEM.COMPOUND:10607': 'Podofilox',
-        'PUBCHEM.COMPOUND:135398748': 'Penciclovir', 'PUBCHEM.COMPOUND:8771': 'Tetradecyl hydrogen sulfate (ester)',
-        'PUBCHEM.COMPOUND:679': 'Dimethyl Sulfoxide', 'PUBCHEM.COMPOUND:6918638': 'Belinostat',
-        'PUBCHEM.COMPOUND:44259': 'Staurosporine', 'PUBCHEM.COMPOUND:444732': 'trichostatin A',
-        'PUBCHEM.COMPOUND:6029': 'Uridine', 'PUBCHEM.COMPOUND:34755': 'S-adenosylmethionine',
-        'PUBCHEM.COMPOUND:5284627': 'Topiramate', 'PUBCHEM.COMPOUND:5957': "Adenosine-5'-triphosphate",
-        'PUBCHEM.COMPOUND:2353': 'Berberine', 'PUBCHEM.COMPOUND:72277': 'Epigallocatechin',
-        'PUBCHEM.COMPOUND:46191454': 'N-(6,6-dimethyl-5-(1-methylpiperidine-4-carbonyl)-1,4,5,6-tetrahydropyrrolo[3,4-c]pyrazol-3-yl)-3-methylbutanamide',
-        'PUBCHEM.COMPOUND:8988': 'D-proline', 'PUBCHEM.COMPOUND:977': 'Oxygen', 'DRUGBANK:DB12182': 'DRUGBANK:DB12182',
-        'PUBCHEM.COMPOUND:23725625': 'Olaparib', 'PUBCHEM.COMPOUND:4212': 'Mitoxantrone',
-        'PUBCHEM.COMPOUND:91766': 'Flufenoxuron', 'PUBCHEM.COMPOUND:65359': 'Oxiglutatione',
-        'PUBCHEM.COMPOUND:441923': 'Ginsenoside Rg1', 'PUBCHEM.COMPOUND:445154': 'Resveratrol',
-        'PUBCHEM.COMPOUND:65064': 'Epigallocatechin Gallate',
-        'PUBCHEM.COMPOUND:11338033': '4-(2,6-dichlorobenzamido)-N-(piperidin-4-yl)-1H-pyrazole-3-carboxamide',
-        'PUBCHEM.COMPOUND:9444': 'Azacitidine', 'PUBCHEM.COMPOUND:30751': 'Fludarabine phosphate'
-    }:
-        raise RuntimeError(f"Incorrect result: {result5}")
-
-    # Test get_curie() too while we're at it.
-    result6 = get_curie('BRCA1')
-    if result6 != 'NCBIGene:672':
-        raise RuntimeError(f"Searching 'BRCA1' on NameLookup does not return NCBIGene:672 as expected but {result6}.")

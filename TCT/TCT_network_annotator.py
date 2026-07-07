@@ -165,3 +165,69 @@ def network_annotator(gene_list,
             json.dump(merged, f, indent=2)
 
     return merged
+
+
+def get_connected_graph(result_parsed, input_identifiers):
+    result_parsed_copy = result_parsed.copy()
+    # count node degrees based on edge in the result_parsed['knowledge_graph']['edges'], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. 
+
+    result_parsed_copy = result_parsed.copy()
+    # count node degrees based on edge in the result_parsed['knowledge_graph']['edges'], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. 
+
+    dic_connected_nodes = {}
+    for key in result_parsed_copy['knowledge_graph']['edges']:
+
+        edge = result_parsed_copy['knowledge_graph']['edges'][key]
+        subject = edge['subject']
+        object = edge['object']
+
+        if subject not in dic_connected_nodes:
+            dic_connected_nodes[subject] = set()
+        if object not in dic_connected_nodes:
+            dic_connected_nodes[object] = set()
+        dic_connected_nodes[subject].add(object)
+        dic_connected_nodes[object].add(subject)
+
+    # count the degree of each node based on the dic_connected_nodes
+    node_degrees = {}
+    for node in dic_connected_nodes:
+        node_degrees[node] = len(dic_connected_nodes[node])
+
+
+    # select the nodes if the degree of the node is greater than 1 or the node is in the input_identifiers
+    selected_nodes = []
+    for node in node_degrees:
+        if node_degrees[node] > 1 or node in input_identifiers:
+            selected_nodes.append(node)
+
+    # get the edges if the edge connects to the selected nodes
+    selected_edges_id = []
+    selected_edges = {}
+    for key in result_parsed_copy['knowledge_graph']['edges']:
+        edge = result_parsed_copy['knowledge_graph']['edges'][key]
+        subject = edge['subject']
+        object = edge['object']
+        if subject in selected_nodes and object in selected_nodes:
+            selected_edges_id.append(key)
+            selected_edges[key] = edge
+
+    #remove the result_parsed['auxiliary_graphs'] if the selected_edges_id is in the result_parsed['auxiliary_graphs']
+    for key in list(result_parsed_copy['auxiliary_graphs'].keys()):
+        current_auxiliary_graph = result_parsed_copy['auxiliary_graphs'][key]
+        # if all current_auxiliary_graph was included  in selected_edges_id, then keep it, otherwise remove it
+        if len(current_auxiliary_graph) == len(set(current_auxiliary_graph).intersection(set(selected_edges_id))):
+            continue
+        else:
+            del result_parsed_copy['auxiliary_graphs'][key]
+
+    # remove the edges in result_parsed_copy['knowledge_graph']['edges'] that are not in selected_edges_id
+    for key in list(result_parsed_copy['knowledge_graph']['edges'].keys()):
+        if key not in selected_edges_id:
+            del result_parsed_copy['knowledge_graph']['edges'][key]
+
+    # remove the nodes in result_parsed_copy['knowledge_graph']['nodes'] that are not in selected_nodes
+    for key in list(result_parsed_copy['knowledge_graph']['nodes'].keys()):
+        if key not in selected_nodes:
+            del result_parsed_copy['knowledge_graph']['nodes'][key]
+    
+    return result_parsed_copy

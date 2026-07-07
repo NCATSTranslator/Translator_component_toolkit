@@ -21,6 +21,7 @@ To install TCT as a python library:
 
 ```bash
 pip install TCT
+# TCT is in development, to get the most recent update, user can install it throught the github repo
 ```
 
 **This the recommended approach for installation.**
@@ -30,30 +31,31 @@ pip install TCT
 
 The TCT is continuously updated, if you would like to use the latest functions, you can clone this repository and install it in development mode:
 
-**Using UV (recommended for development):**
-```bash
-git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git
-cd Translator_component_toolkit
-uv sync
-```
 
-**Using pip:**
+
+**Using pip: (recommended for development)**
 ```bash
 git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git
 cd Translator_component_toolkit
 pip install -e .
 ```
 
+**Using UV :**
+```bash
+git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git
+cd Translator_component_toolkit
+uv sync
+```
+
 #### Building and Deployment
+**Using pip:**
+- Build: `python -m build`
+- Install dependencies: `pip install -e .`
 
 **Using UV:**
 - Build: `uv build`
 - Install dependencies: `uv sync`
 - Run in UV environment: `uv run python your_script.py`
-
-**Using pip:**
-- Build: `python -m build`
-- Install dependencies: `pip install -e .`
 
 
 ### Please follow the example notebooks (four utilities) below to explore the Translator APIs.
@@ -71,7 +73,11 @@ Example notebook for **[NeighborhoodFinder](https://github.com/NCATSTranslator/T
 Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Path_finder.ipynb)**
 
 #### Network finder
-Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Network_finder.ipynb)**
+Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
+
+
+### Visulize the results
+After each pipleline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.
 
 ## Key Translator components
 Connecting to key Translator components can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/TranslatorComponentsIntroduction.md)
