@@ -14,6 +14,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TCT.TCT_network_annotator" href="network_annotator.html" />
     <link rel="prev" title="TCT.TCT_neighborhood_finder" href="neighborhood.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -38,6 +39,41 @@
 <dt class="sig sig-object py" id="TCT.TCT_pathfinder.build_query_graph">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">build_query_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#build_query_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.build_query_graph" title="Link to this definition">¶</a></dt>
 <dd><p>start_node_categories and end_node_categories are lists of categories.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.format_pathfinder_query">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_pathfinder_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_pathfinder_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_pathfinder_query" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_query_json_for_pathfinder_with_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_query_json_for_pathfinder_with_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints" title="Link to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>format user’s input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>subject_ids</strong><span class="classifier">str</span></dt><dd><p>a curie id for the subject node</p>
+</dd>
+<dt><strong>object_ids</strong><span class="classifier">str</span></dt><dd><p>a curie id for the object node</p>
+</dd>
+<dt><strong>subject_categories</strong><span class="classifier">list</span></dt><dd><p>a list of categories for the subject node</p>
+</dd>
+<dt><strong>object_categories</strong><span class="classifier">list</span></dt><dd><p>a list of categories for the object node</p>
+</dd>
+<dt><strong>predicates</strong><span class="classifier">list</span></dt><dd><p>a list of predicates for the edge between subject and object nodes</p>
+</dd>
+<dt><strong>constraints</strong><span class="classifier">list</span></dt><dd><p>a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list.</p>
+</dd>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd></dd>
+<dt><strong>query_json_temp</strong><span class="classifier">dict</span></dt><dd><p>a query json for pathfinder pipeline</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -102,11 +138,15 @@ scoring_method is how the node scores are generated, and could be ‘infores’ 
 <li class="toctree-l1"><a class="reference internal" href="neighborhood.html">TCT.TCT_neighborhood_finder</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TCT.TCT_pathfinder</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.build_query_graph"><code class="docutils literal notranslate"><span class="pre">build_query_graph()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.format_pathfinder_query"><code class="docutils literal notranslate"><span class="pre">format_pathfinder_query()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints"><code class="docutils literal notranslate"><span class="pre">format_query_json_for_pathfinder_with_constraints()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.generate_score_results"><code class="docutils literal notranslate"><span class="pre">generate_score_results()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.parse_results_for_pathfinder"><code class="docutils literal notranslate"><span class="pre">parse_results_for_pathfinder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.pathfinder"><code class="docutils literal notranslate"><span class="pre">pathfinder()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="network_annotator.html">TCT.TCT_network_annotator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_annotator.html">TCT.node_annotator</a></li>
 </ul>
 
 <div class="relations">
@@ -114,6 +154,7 @@ scoring_method is how the node scores are generated, and could be ‘infores’ 
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="neighborhood.html" title="previous chapter">TCT.TCT_neighborhood_finder</a></li>
+      <li>Next: <a href="network_annotator.html" title="next chapter">TCT.TCT_network_annotator</a></li>
   </ul></li>
 </ul>
 </div>
@@ -130,7 +171,7 @@ scoring_method is how the node scores are generated, and could be ‘infores’ 
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2025, Guangrong Qin, Yue Zhang.
+      &#169;2026, Guangrong Qin, Yue Zhang.
       
       |
       Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>

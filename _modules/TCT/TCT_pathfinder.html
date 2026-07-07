@@ -40,6 +40,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">sele_predicates_API</span>
 
+<div class="viewcode-block" id="format_query_json_for_pathfinder_with_constraints">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> 
                                      <span class="n">object_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">subject_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -47,6 +49,38 @@
         <span class="n">predicates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        format user&#39;s input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    subject_ids : str</span>
+<span class="sd">        a curie id for the subject node</span>
+<span class="sd">    object_ids : str</span>
+<span class="sd">        a curie id for the object node</span>
+<span class="sd">    subject_categories : list</span>
+<span class="sd">        a list of categories for the subject node</span>
+<span class="sd">    object_categories : list</span>
+<span class="sd">        a list of categories for the object node</span>
+<span class="sd">    predicates : list</span>
+<span class="sd">        a list of predicates for the edge between subject and object nodes</span>
+<span class="sd">    constraints : list</span>
+<span class="sd">        a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list. </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    query_json_temp : dict</span>
+<span class="sd">        a query json for pathfinder pipeline</span>
+<span class="sd">    </span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        query_json_temp = format_query_json_for_pathfinder_with_constraints(</span>
+<span class="sd">            subject_ids=&#39;NCBIGene:6774&#39;,</span>
+<span class="sd">            object_ids=&#39;NCBIGene:4170&#39;,</span>
+<span class="sd">            subject_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="sd">            object_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="sd">            predicates=[&#39;biolink:related_to&#39;],</span>
+<span class="sd">            constraints=[&#39;biolink:Protein&#39;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -96,7 +130,8 @@
         <span class="p">}</span>
         <span class="p">}</span>
   
-    <span class="k">return</span> <span class="n">q</span>
+    <span class="k">return</span> <span class="n">q</span></div>
+
 
 <div class="viewcode-block" id="build_query_graph">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT_pathfinder.build_query_graph">[docs]</a>
@@ -368,7 +403,12 @@
 
 
 <span class="c1"># define a function that uses the query_json as an template and change the ids and categories of the nodes</span>
+<div class="viewcode-block" id="format_pathfinder_query">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT_pathfinder.format_pathfinder_query">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">query_json</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
@@ -400,7 +440,8 @@
         <span class="p">},</span>
         <span class="s2">&quot;submitter&quot;</span><span class="p">:</span> <span class="s2">&quot;TCT&quot;</span><span class="p">,</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">query_json</span>
+    <span class="k">return</span> <span class="n">query_json</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
@@ -481,6 +522,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../TCT.html">TCT utility functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../neighborhood.html">TCT.TCT_neighborhood_finder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pathfinder.html">TCT.TCT_pathfinder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../network_annotator.html">TCT.TCT_network_annotator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../node_annotator.html">TCT.node_annotator</a></li>
 </ul>
 
 <div class="relations">
@@ -505,7 +548,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2025, Guangrong Qin, Yue Zhang.
+      &#169;2026, Guangrong Qin, Yue Zhang.
       
       |
       Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>

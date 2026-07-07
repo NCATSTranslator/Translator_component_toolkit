@@ -61,8 +61,11 @@ Connecting large language models to convert user’s questions into TRAPI querie
 <h2>How to use TCT<a class="headerlink" href="#how-to-use-tct" title="Link to this heading">¶</a></h2>
 <section id="install-requirements">
 <h3>Install Requirements<a class="headerlink" href="#install-requirements" title="Link to this heading">¶</a></h3>
-<p>To install TCT as a python library, you can install the library using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">TCT</span></code> from the command line. The current released version is TCT.0.1.1. This the recommended approach for installation.</p>
-<p>The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this repository, and then run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> from this folder.</p>
+<p>To install TCT as a python library, you can install the library using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">TCT</span></code> from the command line.</p>
+<p>The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this most recent github repository (https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main),
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/NCATSTranslator/Translator_component_toolkit.git</span></code>
+<code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Translator_component_toolkit</span></code>
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p>
 </section>
 <section id="please-follow-the-example-notebooks-four-utilities-below-to-explore-the-translator-apis">
 <h3>Please follow the example notebooks (four utilities) below to explore the Translator APIs.<a class="headerlink" href="#please-follow-the-example-notebooks-four-utilities-below-to-explore-the-translator-apis" title="Link to this heading">¶</a></h3>
@@ -70,27 +73,23 @@ Connecting large language models to convert user’s questions into TRAPI querie
 <h4>KG overview<a class="headerlink" href="#kg-overview" title="Link to this heading">¶</a></h4>
 <p>Explore different KGs <strong><a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/overview_of_KGs.ipynb">KG overview</a></strong></p>
 </section>
-<section id="connection-finder">
-<h4>Connection finder<a class="headerlink" href="#connection-finder" title="Link to this heading">¶</a></h4>
-<p>Example notebook for <strong><a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Connection_finder.ipynb">ConnectionFinder</a></strong></p>
+<section id="neighborhood-finder">
+<h4>Neighborhood finder<a class="headerlink" href="#neighborhood-finder" title="Link to this heading">¶</a></h4>
+<p>Example notebook for <strong><a class="reference external" href="https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder.ipynb">NeighborhoodFinder</a></strong></p>
 </section>
 <section id="path-finder">
 <h4>Path finder<a class="headerlink" href="#path-finder" title="Link to this heading">¶</a></h4>
-<p>Example notebook for <strong><a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Path_finder.ipynb">PathFinder</a></strong></p>
+<p>Example notebook for <strong><a class="reference external" href="https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Path_finder.ipynb">PathFinder</a></strong></p>
 </section>
 <section id="network-finder">
 <h4>Network finder<a class="headerlink" href="#network-finder" title="Link to this heading">¶</a></h4>
-<p>Example notebook for <strong><a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Network_finder.ipynb">NetworkFinder</a></strong></p>
-</section>
-<section id="translate-users-questions-into-trapi-queries">
-<h4>Translate users’ questions into TRAPI queries<a class="headerlink" href="#translate-users-questions-into-trapi-queries" title="Link to this heading">¶</a></h4>
-<p>Example notebook for translating users’ questions into TRAPI queries can be found <a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Question2Query_chatGPT.ipynb">here</a>.</p>
+<p>Example notebook for <strong><a class="reference external" href="https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb">NetworkFinder</a></strong></p>
 </section>
 <section id="connecting-to-a-user-s-api">
 <h4>Connecting to a user’s API<a class="headerlink" href="#connecting-to-a-user-s-api" title="Link to this heading">¶</a></h4>
 <p>API should be developed following the standard from <a class="reference external" href="https://github.com/NCATSTranslator/ReasonerAPI">TRAPI</a>. <br>
-An example notebook for add a user’s API can be found <a class="reference external" href="https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Connecting_userAPI.ipynb">here</a>.<br>
-<strong>Warning: It does not work if no user’ API is established</strong><br></p>
+An example notebook for add a user’s API can be found <a class="reference external" href="https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Connecting_userAPI.ipynb">here</a>.<br>
+<strong>Note: It does not work if no user’ API is established</strong><br></p>
 </section>
 </section>
 </section>
@@ -145,6 +144,8 @@ An example notebook for add a user’s API can be found <a class="reference exte
 <li class="toctree-l1"><a class="reference internal" href="TCT.html">TCT utility functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="neighborhood.html">TCT.TCT_neighborhood_finder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pathfinder.html">TCT.TCT_pathfinder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="network_annotator.html">TCT.TCT_network_annotator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_annotator.html">TCT.node_annotator</a></li>
 </ul>
 
 <div class="relations">
@@ -169,7 +170,7 @@ An example notebook for add a user’s API can be found <a class="reference exte
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &#169;2025, Guangrong Qin, Yue Zhang.
+      &#169;2026, Guangrong Qin, Yue Zhang.
       
       |
       Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.1.3</a>

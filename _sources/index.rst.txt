@@ -21,6 +21,8 @@ Welcome to Translator Component Toolkit's documentation!
    TCT
    neighborhood
    pathfinder
+   network_annotator
+   node_annotator
 
 Indices and tables
 ==================
