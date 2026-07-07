@@ -236,41 +236,39 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_node (str)</span>
+<span class="sd">    input_node : str</span>
 <span class="sd">        The input node - should be a CURIE id.</span>
-<span class="sd">    node2_categories (list)</span>
+<span class="sd">    node2_categories : list</span>
 <span class="sd">        A list of intermediate categories to be used in the neighborhood finding process.</span>
-<span class="sd">    APInames (dict)</span>
+<span class="sd">    APInames : dict</span>
 <span class="sd">        A dictionary containing the names of the APIs to be used.</span>
-<span class="sd">    metaKG (DataFrame)</span>
+<span class="sd">    metaKG : DataFrame</span>
 <span class="sd">        The metadata knowledge graph containing information about the APIs and their predicates.</span>
-<span class="sd">    API_predicates (dict)</span>
+<span class="sd">    API_predicates : dict</span>
 <span class="sd">        A dictionary containing the predicates for each API.</span>
-<span class="sd">    input_node_category (list)</span>
+<span class="sd">    input_node_category : list</span>
 <span class="sd">        Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
-<span class="sd">    attribute_constraints (list)</span>
+<span class="sd">    attribute_constraints : list</span>
 <span class="sd">        Optional. List of outputs of translator_query.build_attribute_constraint</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------------</span>
-<span class="sd">    input_node_id (str)</span>
+<span class="sd">    -------</span>
+<span class="sd">    input_node_id : str</span>
 <span class="sd">        The curie id of the input node.</span>
-<span class="sd">    result (dict)</span>
+<span class="sd">    result : dict</span>
 <span class="sd">        The result of the query for the input node.</span>
-<span class="sd">    result_parsed (DataFrame)</span>
+<span class="sd">    result_parsed : DataFrame</span>
 <span class="sd">        The parsed results for the input node.</span>
-<span class="sd">    result_ranked_by_primary_infores (DataFrame)</span>
+<span class="sd">    result_ranked_by_primary_infores : DataFrame</span>
 <span class="sd">        The ranked results based on primary infores.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Example:</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
 <span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
 <span class="sd">                                                                                            APInames = APInames,</span>
 <span class="sd">                                                                                            metaKG = metaKG,</span>
 <span class="sd">                                                                                            API_predicates = API_predicates)</span>
-<span class="sd">    --------------</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
@@ -335,23 +333,23 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_nodes (list[str])</span>
+<span class="sd">    input_nodes : list[str]</span>
 <span class="sd">        The input nodes - should be a list of CURIE ids.</span>
-<span class="sd">    node2_categories (list)</span>
+<span class="sd">    node2_categories : list</span>
 <span class="sd">        A list of intermediate categories to be used in the neighborhood finding process.</span>
-<span class="sd">    APInames (dict)</span>
+<span class="sd">    APInames : dict</span>
 <span class="sd">        A dictionary containing the names of the APIs to be used.</span>
-<span class="sd">    metaKG (DataFrame)</span>
+<span class="sd">    metaKG : DataFrame</span>
 <span class="sd">        The metadata knowledge graph containing information about the APIs and their predicates.</span>
-<span class="sd">    API_predicates (dict)</span>
+<span class="sd">    API_predicates : dict</span>
 <span class="sd">        A dictionary containing the predicates for each API.</span>
-<span class="sd">    input_node_category (list)</span>
+<span class="sd">    input_node_category : list</span>
 <span class="sd">        Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
-<span class="sd">    attribute_constraints (list)</span>
+<span class="sd">    attribute_constraints : list</span>
 <span class="sd">        Optional. List of outputs of translator_query.build_attribute_constraint</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------------</span>
+<span class="sd">    -------</span>
 <span class="sd">    input_node_id (str)</span>
 <span class="sd">        The curie id of the input node.</span>
 <span class="sd">    result (dict)</span>
@@ -361,15 +359,14 @@
 <span class="sd">    result_ranked_by_primary_infores (DataFrame)</span>
 <span class="sd">        The ranked results based on primary infores.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
-<span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
-<span class="sd">                                                                                            APInames = APInames,</span>
-<span class="sd">                                                                                            metaKG = metaKG,</span>
-<span class="sd">                                                                                            API_predicates = API_predicates)</span>
-<span class="sd">    --------------</span>
 
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; result, result_parsed = neighborhood_finder_multiple_inputs([&#39;NCBIGene:6774&#39;, &#39;NCBIGene:4170&#39;, &#39;NCBIGene:4792&#39;],</span>
+<span class="sd">                                                                    node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
+<span class="sd">                                                                    APInames = APInames,</span>
+<span class="sd">                                                                    metaKG = metaKG,</span>
+<span class="sd">                                                                    API_predicates = API_predicates)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>

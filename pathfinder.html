@@ -67,13 +67,25 @@
 </dd>
 <dt><strong>constraints</strong><span class="classifier">list</span></dt><dd><p>a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list.</p>
 </dd>
-<dt><strong>Returns</strong></dt><dd></dd>
-<dt><strong>——-</strong></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>query_json_temp</strong><span class="classifier">dict</span></dt><dd><p>a query json for pathfinder pipeline</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">query_json_temp</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
+<span class="go">    subject_ids=&#39;NCBIGene:6774&#39;,</span>
+<span class="go">    object_ids=&#39;NCBIGene:4170&#39;,</span>
+<span class="go">    subject_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="go">    object_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="go">    predicates=[&#39;biolink:related_to&#39;],</span>
+<span class="go">    constraints=[&#39;biolink:Protein&#39;])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">

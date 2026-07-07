@@ -66,20 +66,21 @@
 <span class="sd">        a list of predicates for the edge between subject and object nodes</span>
 <span class="sd">    constraints : list</span>
 <span class="sd">        a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list. </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    query_json_temp : dict</span>
 <span class="sd">        a query json for pathfinder pipeline</span>
 <span class="sd">    </span>
-<span class="sd">        Example</span>
-<span class="sd">        -------</span>
-<span class="sd">        query_json_temp = format_query_json_for_pathfinder_with_constraints(</span>
-<span class="sd">            subject_ids=&#39;NCBIGene:6774&#39;,</span>
-<span class="sd">            object_ids=&#39;NCBIGene:4170&#39;,</span>
-<span class="sd">            subject_categories=[&#39;biolink:Gene&#39;],</span>
-<span class="sd">            object_categories=[&#39;biolink:Gene&#39;],</span>
-<span class="sd">            predicates=[&#39;biolink:related_to&#39;],</span>
-<span class="sd">            constraints=[&#39;biolink:Protein&#39;]</span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; query_json_temp = format_query_json_for_pathfinder_with_constraints(</span>
+<span class="sd">        subject_ids=&#39;NCBIGene:6774&#39;,</span>
+<span class="sd">        object_ids=&#39;NCBIGene:4170&#39;,</span>
+<span class="sd">        subject_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="sd">        object_categories=[&#39;biolink:Gene&#39;],</span>
+<span class="sd">        predicates=[&#39;biolink:related_to&#39;],</span>
+<span class="sd">        constraints=[&#39;biolink:Protein&#39;])</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="kc">None</span>
