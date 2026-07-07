@@ -31,20 +31,21 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
         a list of predicates for the edge between subject and object nodes
     constraints : list
         a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list. 
+
     Returns
     -------
     query_json_temp : dict
         a query json for pathfinder pipeline
     
-        Example
-        -------
-        query_json_temp = format_query_json_for_pathfinder_with_constraints(
-            subject_ids='NCBIGene:6774',
-            object_ids='NCBIGene:4170',
-            subject_categories=['biolink:Gene'],
-            object_categories=['biolink:Gene'],
-            predicates=['biolink:related_to'],
-            constraints=['biolink:Protein']
+    Example
+    -------
+    >>> query_json_temp = format_query_json_for_pathfinder_with_constraints(
+        subject_ids='NCBIGene:6774',
+        object_ids='NCBIGene:4170',
+        subject_categories=['biolink:Gene'],
+        object_categories=['biolink:Gene'],
+        predicates=['biolink:related_to'],
+        constraints=['biolink:Protein'])
     """
     if constraints is None or len(constraints) == 0:
         constraints_intermediate_category = None

@@ -175,36 +175,33 @@ def get_connected_graph(result_parsed, input_identifiers):
 
     Parameters
     ----------
-    result_parsed (dict)
+    result_parsed : dict
         The parsed results for results from TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().
-    input_identifiers (list)
+    input_identifiers : list
         A list of input node identifiers, which are also input for TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().
 
     Returns
-    --------------
-    result_parsed (dict)
+    -------
+    result_parsed : dict
         The connected graph extracted from the parsed results.
 
-    --------------
-    Example:
-    >>>
-    input_identifiers = ['NCBIGene:6774', 'NCBIGene:4170','NCBIGene:4792','NCBIGene:4288','NCBIGene:596','NCBIGene:581','NCBIGene:836','NCBIGene:6777','NCBIGene:4790','NCBIGene:545']
+    Example
+    -------
+    >>> input_identifiers = ['NCBIGene:6774', 'NCBIGene:4170','NCBIGene:4792','NCBIGene:4288','NCBIGene:596','NCBIGene:581','NCBIGene:836','NCBIGene:6777','NCBIGene:4790','NCBIGene:545']
 
-    result, result_parsed = TCT_neighborhood_finder.neighborhood_finder_multiple_inputs(input_identifiers,
+    >>> result, result_parsed = TCT_neighborhood_finder.neighborhood_finder_multiple_inputs(input_identifiers,
                                                                                             node2_categories = ['biolink:Gene','biolink:Protein'],
                                                                                             APInames = APInames,
                                                                                             metaKG = metaKG,
                                                                                             API_predicates = API_predicates)   
 
-    result = TCT_network_annotator.get_connected_graph(result_parsed, input_identifiers)
-    import datetime
-    import json
-    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    with open('./PathFinder_testing_results/'+'TCT_neighborhood_finder_result_'+'_'+timestamp+'.json', 'w') as f:
-        json.dump(result, f)
-    # visualize the result using the TCT visualization tool (https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html). 
-    --------------
-
+    >>> result = TCT_network_annotator.get_connected_graph(result_parsed, input_identifiers)
+    >>> import datetime
+    >>> import json
+    >>> timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    >>> with open('./PathFinder_testing_results/'+'TCT_neighborhood_finder_result_'+'_'+timestamp+'.json', 'w') as f:
+    >>>     json.dump(result, f)
+    >>> # visualize the result using the TCT visualization tool (https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html). 
     """
         
     result_parsed_copy = result_parsed.copy()
