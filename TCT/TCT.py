@@ -3,7 +3,6 @@ import json
 import pandas as pd
 import  seaborn as sns
 import matplotlib.pyplot as plt
-import ipycytoscape
 import networkx as nx
 import numpy as np
 #import openai
@@ -1875,6 +1874,7 @@ def plot_graph_by_predicates(for_plot):
 
                     ]
 
+    import ipycytoscape
     undirected = ipycytoscape.CytoscapeWidget()
     undirected.graph.add_graph_from_networkx(graph)
     undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
@@ -1923,6 +1923,7 @@ def plot_graph_by_infores(for_plot):
 
                         ]
 
+    import ipycytoscape
     undirected = ipycytoscape.CytoscapeWidget()
     undirected.graph.add_graph_from_networkx(graph)
     undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
@@ -1971,6 +1972,7 @@ def plot_graph_by_API(for_plot):
 
                         ]
 
+    import ipycytoscape
     undirected = ipycytoscape.CytoscapeWidget()
     undirected.graph.add_graph_from_networkx(graph)
     undirected.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
@@ -2258,6 +2260,7 @@ def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, res
                         }},
 
                     ]
+    import ipycytoscape
     pathgraph = ipycytoscape.CytoscapeWidget()
     pathgraph.graph.add_graph_from_networkx(graph)
     pathgraph.set_layout(title='Path', nodeSpacing=80, edgeLengthVal=50, )
