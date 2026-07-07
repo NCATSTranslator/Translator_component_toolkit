@@ -15,6 +15,7 @@ setup(
         'numpy',
         'openai',
         'PyYAML',
+        'copy',
     ],
     entry_points={
         'console_scripts': [
