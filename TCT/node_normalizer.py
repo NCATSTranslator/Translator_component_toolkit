@@ -10,7 +10,7 @@ import requests
 from .translator_node import TranslatorNode
 
 
-URL = 'https://nodenorm.ci.transltr.io/'
+URL = 'https://nodenorm.transltr.io/'
 
 def status():
     """
