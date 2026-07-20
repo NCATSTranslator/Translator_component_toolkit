@@ -35,12 +35,6 @@ from TCT.TCT import (
     select_result_to_analysis,
     Gene_id_converter,
     query_KP_all,
-    parse_result_old,
-    ranking_result_by_predicates_object,
-    ranking_result_by_predicates_subject,
-    get_ranking_by_predicates,
-    get_ranking_by_infores,
-    get_ranking_by_kp,
     connecting_two_dots_two_hops,
     find_path_by_two_ends,
     get_SmartAPI_Translator_KP_info,
@@ -893,91 +887,6 @@ class TestDeprecatedQueryKPAll:  # DEPRECATED
         )
         assert isinstance(result_dict, dict)
         assert isinstance(result_concept, dict)
-
-
-class TestDeprecatedParseResultOld:  # DEPRECATED
-    def test_basic(self):
-        result_dic = {
-            "API1": {
-                "edges": {
-                    "e1": {
-                        "predicate": "biolink:interacts_with",
-                        "sources": [{"resource_id": "infores:kp1"}],
-                        "subject": "NCBIGene:3845",
-                        "object": "CHEBI:15377",
-                    }
-                }
-            }
-        }
-        df = parse_result_old([], [], [], result_dic)
-        assert isinstance(df, pd.DataFrame)
-        assert "API" in df.columns
-        assert "Subject" in df.columns
-
-
-class TestDeprecatedRankingByPredicatesObject:  # DEPRECATED
-    def test_basic(self):
-        df = pd.DataFrame({
-            "Object": ["A", "A", "B"],
-            "Subject": ["X", "Y", "X"],
-            "Predicate": ["p1", "p2", "p3"],
-        })
-        sorted_dic = ranking_result_by_predicates_object(df)
-        assert isinstance(sorted_dic, list)
-        # "A" appears 2 times, "B" 1 time
-        assert sorted_dic[0][0] == "A"
-        assert sorted_dic[0][1] == 2
-
-
-class TestDeprecatedRankingByPredicatesSubject:  # DEPRECATED
-    def test_basic(self):
-        df = pd.DataFrame({
-            "Subject": ["X", "X", "Y"],
-            "Object": ["A", "B", "A"],
-            "Predicate": ["p1", "p2", "p3"],
-        })
-        sorted_dic = ranking_result_by_predicates_subject(df)
-        assert isinstance(sorted_dic, list)
-
-
-class TestDeprecatedGetRankingByPredicates:  # DEPRECATED
-    def test_basic(self):
-        df = pd.DataFrame({
-            "Object": ["A", "A", "B", "B", "B"],
-            "Subject": ["X", "Y", "X", "Y", "Z"],
-            "Predicate": ["p1", "p2", "p3", "p4", "p5"],
-            "Infores": ["i1", "i2", "i3", "i4", "i5"],
-        })
-        sorted_dic = ranking_result_by_predicates_object(df)
-        dic = get_ranking_by_predicates(sorted_dic, df, 3)
-        assert isinstance(dic, dict)
-
-
-class TestDeprecatedGetRankingByInfores:  # DEPRECATED
-    def test_basic(self):
-        df = pd.DataFrame({
-            "Object": ["A", "A", "B", "B", "B"],
-            "Subject": ["X", "Y", "X", "Y", "Z"],
-            "Predicate": ["p1", "p2", "p3", "p4", "p5"],
-            "Infores": ["i1", "i2", "i3", "i4", "i5"],
-        })
-        sorted_dic = ranking_result_by_predicates_object(df)
-        dic = get_ranking_by_infores(sorted_dic, df, 3)
-        assert isinstance(dic, dict)
-
-
-class TestDeprecatedGetRankingByKP:  # DEPRECATED
-    def test_basic(self):
-        df = pd.DataFrame({
-            "Object": ["A", "A", "B", "B", "B"],
-            "Subject": ["X", "Y", "X", "Y", "Z"],
-            "Predicate": ["p1", "p2", "p3", "p4", "p5"],
-            "Infores": ["i1", "i2", "i3", "i4", "i5"],
-            "API": ["api1", "api2", "api1", "api2", "api3"],
-        })
-        sorted_dic = ranking_result_by_predicates_object(df)
-        dic = get_ranking_by_kp(sorted_dic, df, 3)
-        assert isinstance(dic, dict)
 
 
 # ---------------------------------------------------------------------------

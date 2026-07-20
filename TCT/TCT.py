@@ -1175,145 +1175,8 @@ def query_KP_all(subject_ids, object_ids, subject_categories, object_categories,
                     result_dict[API_sele] = kg_output
     return(result_dict, result_concept)
 
-# to be removed
-def parse_result_old( API_keys_sele, API_keys_Not_include, predicates_forAnalysis,result_dic):
-    Temp_APIkey = []
-    Temp_subject_key = []
-    Temp_object_key = []
-    Temp_predicate_key = []
-    Temp_infores_key = []
-    API_keys_forAnalysis = []
-
-    ALL_APIs_in_result = list(result_dic.keys())
-    print(ALL_APIs_in_result)
-
-    if len(API_keys_sele) == 0:
-        API_keys_forAnalysis = ALL_APIs_in_result
-    else:
-        API_keys_forAnalysis = list(set(ALL_APIs_in_result).intersection(set(API_keys_sele)))
-
-    if len(API_keys_Not_include) != 0:
-        API_keys_forAnalysis = list(set(API_keys_forAnalysis) - set(API_keys_Not_include))
 
 
-    print(API_keys_forAnalysis)
-
-    for API_key in API_keys_forAnalysis:
-        cur_API_outputKeys = list(result_dic[API_key]['edges'].keys())
-        for i in range(0, len(cur_API_outputKeys)):
-            curr_key = i
-            curr_graph = (result_dic[API_key]['edges'][cur_API_outputKeys[curr_key]])
-            predicate = (curr_graph['predicate'])
-            if predicate != "biolink:subclass_of":
-                infores = (curr_graph['sources'][0]['resource_id'])
-                subject = (curr_graph['subject'])
-
-                if subject.startswith("CL:"):
-                    subject = "CL" + subject.split(":")[1]
-
-                object = (curr_graph['object'])
-                if object.startswith("CL:"):
-                    object = "CL" + object.split(":")[1]
-
-                #exclude subclass_of
-
-                Temp_APIkey.append(API_key)
-                Temp_subject_key.append(subject)
-                Temp_object_key.append(object)
-                Temp_predicate_key.append(predicate)
-                Temp_infores_key.append(infores)
-
-            #Temp_APIkey.append(API_key)
-            #Temp_subject_key.append(subject)
-            #Temp_object_key.append(object)
-            #Temp_predicate_key.append(predicate)
-            #Temp_infores_key.append(infores)
-
-    Temp_result_df = pd.DataFrame({'API': Temp_APIkey,
-                                   'Subject': Temp_subject_key,
-                                   "Object":Temp_object_key,
-                                   "Predicate":Temp_predicate_key,
-                                   "Infores":Temp_infores_key})
-
-    Temp_result_df.drop_duplicates(inplace=True)
-    Temp_result_df = Temp_result_df.loc[Temp_result_df['API'].isin(API_keys_forAnalysis)]
-
-    if len(predicates_forAnalysis) != 0:
-        Temp_result_df = Temp_result_df.loc[Temp_result_df['Predicate'].isin(predicates_forAnalysis)]
-    return(Temp_result_df)
-
-# to be removed
-def ranking_result_by_predicates_object(Temp_result_df):
-    object_val_list = Temp_result_df['Object'].value_counts().index.tolist()
-    object_val_value = Temp_result_df['Object'].value_counts().values.tolist()
-
-
-    dic_rank = {}
-    for i in range(0,len(object_val_list)):
-        dic_rank[object_val_list[i]] = object_val_value[i]
-
-
-    sorted_dic = sorted(dic_rank.items(), key=lambda x: x[1], reverse=True)
-    return(sorted_dic)
-
-# to be removed
-def ranking_result_by_predicates_subject(Temp_result_df):
-    subject_val_list = Temp_result_df['Subject'].value_counts().index.tolist()
-    subject_val_list = Temp_result_df['Subject'].value_counts().values.tolist()
-
-    dic_rank = {}
-    for i in range(0,len(subject_val_list)):
-        dic_rank[subject_val_list[i]] = subject_val_list[i]
-
-
-    sorted_dic = sorted(dic_rank.items(), key=lambda x: x[1], reverse=True)
-    return(sorted_dic)
-
-
-# to be removed
-def get_ranking_by_predicates(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['Predicate'])))
-
-    return(dic_ranking)
-
-# to be removed
-def get_ranking_by_infores(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['Infores'])))
-
-    return(dic_ranking)
-
-# to be removed
-def get_ranking_by_kp(sorted_dic, Temp_result_df, Top):
-    #item_ranking = []
-    dic_ranking = {}
-
-    if Top > len(sorted_dic):
-        Top = len(sorted_dic)
-
-    for i in range(1,Top):
-        #item_ranking.append(sorted_dic[i][0])
-        sele_result = sorted_dic[i][0]
-        dic_ranking[sorted_dic[i][0]] = list(set(list(pd.concat([Temp_result_df.loc[Temp_result_df['Object'].isin([sele_result])], Temp_result_df.loc[Temp_result_df['Subject'].isin([sele_result])]], axis=0)['API'])))
-
-    return(dic_ranking)
 
 # to be revised
 def connecting_two_dots_two_hops(sorted_dic1, sorted_dic):
@@ -1572,7 +1435,6 @@ def load_translator_resources():
     """
     from .translator_resources import TranslatorResources
     return TranslatorResources.load()
-
 
 
 

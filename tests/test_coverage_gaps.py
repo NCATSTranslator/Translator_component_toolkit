@@ -30,7 +30,6 @@ from TCT.TCT import (
     parse_network_result,
     rank_by_primary_infores,
     rank_by_primary_infores_input_as_list,
-    parse_result_old,
     query_KP_all,
     visulize_path,
     TRAPI_json_validation,
@@ -359,72 +358,6 @@ class TestDeprecatedParseResultOldBranches:
         )
         assert isinstance(result_dict, dict)
         mock_sele_pred.assert_called_once()
-
-    def test_parse_result_old_with_api_selection_and_cl_prefix(self):
-        """Lines 1572, 1575, 1591, 1595, 1621: API selection, CL: prefix, predicate filter."""
-        result_dic = {
-            "API1": {
-                "edges": {
-                    "e1": {
-                        "predicate": "biolink:interacts_with",
-                        "sources": [{"resource_id": "infores:kp1"}],
-                        "subject": "CL:0000001",
-                        "object": "CL:0000002",
-                    },
-                    "e2": {
-                        "predicate": "biolink:subclass_of",
-                        "sources": [{"resource_id": "infores:kp2"}],
-                        "subject": "A",
-                        "object": "B",
-                    },
-                }
-            },
-            "API2": {
-                "edges": {
-                    "e3": {
-                        "predicate": "biolink:treats",
-                        "sources": [{"resource_id": "infores:kp3"}],
-                        "subject": "X",
-                        "object": "Y",
-                    },
-                }
-            },
-        }
-        # Test with API_keys_sele (line 1572) and API_keys_Not_include (line 1575)
-        df = parse_result_old(["API1", "API2"], ["API2"], ["biolink:interacts_with"], result_dic)
-        assert isinstance(df, pd.DataFrame)
-        # Only API1 should remain (API2 excluded)
-        if len(df) > 0:
-            assert all(df["API"] == "API1")
-            # CL: subjects/objects should have colon removed
-            subjects = df["Subject"].tolist()
-            for s in subjects:
-                if s.startswith("CL"):
-                    assert ":" not in s
-
-    def test_parse_result_old_predicate_filter(self):
-        """Line 1621: predicate filter applied."""
-        result_dic = {
-            "API1": {
-                "edges": {
-                    "e1": {
-                        "predicate": "biolink:interacts_with",
-                        "sources": [{"resource_id": "infores:kp1"}],
-                        "subject": "A",
-                        "object": "B",
-                    },
-                    "e2": {
-                        "predicate": "biolink:treats",
-                        "sources": [{"resource_id": "infores:kp2"}],
-                        "subject": "C",
-                        "object": "D",
-                    },
-                }
-            }
-        }
-        df = parse_result_old([], [], ["biolink:treats"], result_dic)
-        assert len(df) == 1
-        assert df.iloc[0]["Predicate"] == "biolink:treats"
 
 
 class TestGetCurieEdgeCases:

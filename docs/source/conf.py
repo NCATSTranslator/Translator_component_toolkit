@@ -8,7 +8,7 @@
 
 
 project = 'Translator Component Toolkit'
-copyright = '2025, Guangrong Qin, Yue Zhang'
+copyright = '2026, Guangrong Qin, Yue Zhang'
 author = 'Guangrong Qin, Yue Zhang'
 release = '0.1'
 

@@ -12,12 +12,48 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
         subject_categories=None,
         object_categories=None,
         predicates=None,
-        constraints=None,
+        constraints=None
         ):
+    """
+        format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.
+
+    Parameters
+    ----------
+    subject_ids : str
+        a curie id for the subject node
+    object_ids : str
+        a curie id for the object node
+    subject_categories : list
+        a list of categories for the subject node
+    object_categories : list
+        a list of categories for the object node
+    predicates : list
+        a list of predicates for the edge between subject and object nodes
+    constraints : list
+        a list of intermediate categories for the pathfinder pipeline, currently only one intermediate category is allowed in the constraints list. 
+
+    Returns
+    -------
+    query_json_temp : dict
+        a query json for pathfinder pipeline
+    
+    Examples
+    --------
+    >>> query_json_temp = format_query_json_for_pathfinder_with_constraints(
+        subject_ids='NCBIGene:6774',
+        object_ids='NCBIGene:4170',
+        subject_categories=['biolink:Gene'],
+        object_categories=['biolink:Gene'],
+        predicates=['biolink:related_to'],
+        constraints=['biolink:Protein'])
+    """
     if constraints is None or len(constraints) == 0:
         constraints_intermediate_category = None
-    else:
+    elif len(constraints) == 1:
         constraints_intermediate_category = constraints
+    else:
+        constraints_intermediate_category = [constraints[0]]
+        print("Warning: for ARAGORN or ARAX pathfinder pipeline, it is only allowed to have only one intermediate category in the constraints list. If there are multiple intermediate categories, the query will return an error. Therefore, we will only use one intermediate category in  the constraints list. ")
     q =  {
         "message": {
             "query_graph": {
@@ -35,15 +71,15 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
             },
             "paths": {
                 "p0": {
-                "subject": "n0",
-                "object": "n1",
-                "predicates": [
-                    "biolink:related_to"
-                ],
-                "constraints": [
-                    {
-                    "intermediate_categories": constraints_intermediate_category
-                    }
+                    "subject": "n0",
+                    "object": "n1",
+                    #"predicates": [
+                    #    "biolink:related_to"
+                    #],
+                    "constraints": [
+                        {
+                            "intermediate_categories": constraints_intermediate_category
+                        }
                 ]
                 }
             }
@@ -55,7 +91,7 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
             "kp_timeout": "30",
             "prune_threshold": "50",
             "max_pathfinder_paths": "500",
-            "max_path_length": "4"
+            "max_path_length": 4
         }
         }
   
@@ -81,9 +117,7 @@ def build_query_graph(start_node_id, end_node_id, start_node_categories=None, en
                 "sn": {
                     "categories": start_node_categories,
                     "constraints": [],
-                    "ids": [
-                        start_node_id
-                    ],
+                    "ids": [start_node_id] if isinstance(start_node_id, str) else start_node_id,
                     "is_set": False,
                     "option_group_id": None,
                     "set_id": None,
@@ -322,6 +356,9 @@ def pathfinder(input_node1_id:str, input_node2_id:str,
 
 # define a function that uses the query_json as an template and change the ids and categories of the nodes
 def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
+    '''
+    
+    '''
     query_json = {
         "message": {
             "query_graph": {
@@ -344,25 +381,36 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
                     }
                 },
                 "paths": {
-                    "p0": {
+                    "qpath": {
                         "subject": "SN",
                         "object": "ON"
                     }
                 }
             }
-        }
+        },
+        "submitter": "TCT",
     }
     return query_json
 
+
 def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category):
     aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
+    #aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' new ci endpoint
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
+
 def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
     aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
-    query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, node1_category, node2_category, constraints)
+    #aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
+    query_current = format_query_json_for_pathfinder_with_constraints(
+        subject_ids=node1_id,
+        object_ids=node2_id,
+        subject_categories=node1_category,
+        object_categories=node2_category,
+        constraints=constraints
+    )
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
@@ -374,6 +422,12 @@ def query_arax_pathfinder(node1_id, node1_category, node2_id, node2_category):
 
 def query_arax_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
     ARAX_endpoint = 'https://arax.ci.transltr.io/api/arax/v1.4/query'
-    query_current = format_query_json_for_pathfinder_with_constraints(node1_id, node2_id, node1_category, node2_category, constraints)
+    query_current = format_query_json_for_pathfinder_with_constraints(
+        subject_ids=node1_id,
+        object_ids=node2_id,
+        subject_categories=node1_category,
+        object_categories=node2_category,
+        constraints=constraints
+    )
     response = requests.post(ARAX_endpoint, json=query_current)
     return response

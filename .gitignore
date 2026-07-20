@@ -27,3 +27,6 @@ CLAUDE.md
 
 temp
 notebooks/PathFinder_testing_results/
+notebooks/Test/
+dist/
+notebooks/PathFinder_results/

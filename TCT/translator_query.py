@@ -96,8 +96,8 @@ def format_query_json(subject_ids:list[str],
                 "edges": {
                     "e00": {
                     #"e1": {
-                        "subject": "n01",
-                        "object": "n00",
+                        "subject": "n00",
+                        "object": "n01",
                         "predicates": predicates
                         }
                     },
@@ -111,7 +111,9 @@ def format_query_json(subject_ids:list[str],
                         "categories":[] # required
                         }}
                 }
-            }
+            },
+       
+        "submitter": "TCT"
         }
 
     if attribute_constraints is not None and len(attribute_constraints) > 0:
@@ -124,7 +126,7 @@ def format_query_json(subject_ids:list[str],
         query_json_temp["message"]["query_graph"]["nodes"]["n01"]["ids"] = object_ids
 
     if subject_categories is not None and len(subject_categories) > 0:
-        query_json_temp["message"]["query_graph"]["nodes"]["n01"]["categories"] = subject_categories
+        query_json_temp["message"]["query_graph"]["nodes"]["n00"]["categories"] = subject_categories
 
     if object_categories is not None and len(object_categories) > 0:
         query_json_temp["message"]["query_graph"]["nodes"]["n01"]["categories"] = object_categories
@@ -183,7 +185,7 @@ def query_KP(API_name_cur, query_json, resources=None, *, APInames=None, API_pre
         Container with ``api_names`` and ``api_predicates``.
     """
     resources = _resolve_query_resources(resources, APInames=APInames, API_predicates=API_predicates)
-    API_url_cur = resources.api_names[API_name_cur]
+    API_url_cur = resources.api_names[API_name_cur].strip('/')
     # deep‐copy so we never touch the caller’s data
     query_copy = deepcopy(query_json)
     # optimize on our private copy
