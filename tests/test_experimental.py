@@ -263,6 +263,58 @@ def test_neighborhood_finder_single_input_queries_and_wraps_output(monkeypatch):
     assert query_graph["edges"]["e00"]["predicates"] == ["biolink:treats"]
 
 
+def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypatch):
+    queries = []
+
+    monkeypatch.setattr(
+        experimental,
+        "_resolve_nodes",
+        lambda values, **kwargs: [
+            _node("MONDO:0004979", "asthma", ["biolink:Disease"])
+        ],
+    )
+    monkeypatch.setattr(
+        experimental,
+        "sele_predicates_API",
+        lambda source, target, meta_kg, api_names: (
+            ["biolink:treats"],
+            ["fake-api"],
+            ["https://example.org/query"],
+        ),
+    )
+
+    def fake_parallel(query_json, select_APIs, APInames, API_predicates, max_workers):
+        queries.append(query_json)
+        return {}
+
+    monkeypatch.setattr(
+        experimental.translator_query, "parallel_api_query", fake_parallel
+    )
+    monkeypatch.setattr(
+        experimental,
+        "parse_results_for_neighborhood_finder",
+        lambda *args, **kwargs: _raw_output(),
+    )
+    constraints = [
+        {
+            "id": "biolink:knowledge_level",
+            "operator": "==",
+            "value": "prediction",
+        }
+    ]
+
+    experimental.neighborhood_finder(
+        "asthma",
+        ["Drug"],
+        resources=_resources(),
+        attribute_constraints=constraints,
+    )
+
+    edges = queries[0]["message"]["query_graph"]["edges"]
+    assert edges["e00"]["attribute_constraints"] == constraints
+    assert "attribute_constraints" not in edges
+
+
 def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
     parser_calls = []
 
