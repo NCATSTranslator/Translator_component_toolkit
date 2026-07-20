@@ -126,7 +126,7 @@ def test_resolve_node_raises_for_unknown_curie(monkeypatch):
     )
 
     with pytest.raises(LookupError, match="Could not normalize CURIE"):
-        experimental._resolve_node("DOESNOT:EXIST")
+        experimental._resolve_node("MISSING:CURIE")
 
 
 def test_get_resources_uses_complete_resources_and_partial_overrides(monkeypatch):
