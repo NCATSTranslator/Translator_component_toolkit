@@ -2,7 +2,7 @@
 
 # Install development dependencies
 install:
-	uv sync --dev
+	uv sync --all-extras --dev
 
 # Run tests with coverage
 test:
