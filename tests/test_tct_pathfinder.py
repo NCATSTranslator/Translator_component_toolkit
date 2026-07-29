@@ -217,7 +217,7 @@ def test_format_pathfinder_query():
 
 
 @pytest.mark.parametrize("fn,expected_host", [
-    ("query_aragorn_pathfinder", "shepherd.renci.org"),
+    ("query_aragorn_pathfinder", "shepherd.ci.transltr.io"),
     ("query_arax_pathfinder", "arax.ci.transltr.io"),
 ])
 def test_endpoint_wrappers(fn, expected_host):
@@ -230,7 +230,7 @@ def test_endpoint_wrappers(fn, expected_host):
 
 
 @pytest.mark.parametrize("fn,expected_host", [
-    ("query_aragorn_pathfinder_with_constraints", "shepherd.renci.org"),
+    ("query_aragorn_pathfinder_with_constraints", "shepherd.ci.transltr.io"),
     ("query_arax_pathfinder_with_constraints", "arax.ci.transltr.io"),
 ])
 def test_endpoint_wrappers_with_constraints(fn, expected_host):
