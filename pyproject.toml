@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "TCT"
-version = "0.2.0"
+version = "0.3.0"
 description = "Translator Component Toolkit"
 readme = "README.md"
 license = {text = "MIT"}
@@ -27,16 +27,16 @@ dependencies = [
     "seaborn",
     "matplotlib",
     "ipycytoscape",
-    "networkx",
     "numpy",
     "openai",
     "ipykernel",
     "fastmcp>=2.12.2",
     "click>=8.2.1",
-    'networkx',
-    'igraph',
-    'pyvis',
-    'zstandard',
+    "networkx",
+    "igraph",
+    "pyvis",
+    "scipy",
+    "zstandard",
 ]
 
 [project.scripts]
@@ -54,6 +54,9 @@ dev = [
     "ruff>=0.1.0",
     "codespell>=2.2.0",
     "mypy>=1.14.1",
+    "nbconvert>=7.0.0",
+    "ipykernel>=6.0.0",
+    "notebook>=7.5.4",
 ]
 
 [tool.uv.sources]
@@ -63,15 +66,26 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = [
+    "network: marks tests as requiring network access (live API calls)",
+]
 addopts = [
     "--cov=TCT",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=0",
+    "--cov-fail-under=95",
     "--tb=short",
     "-v"
 ]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+]
+
+[tool.coverage.run]
+omit = []
 
 [tool.ruff]
 exclude = ["notebooks/"]

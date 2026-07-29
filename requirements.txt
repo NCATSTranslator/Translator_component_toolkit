@@ -11,3 +11,4 @@ PyYAML
 ipywidgets
 zstandard
 igraph
+scipy

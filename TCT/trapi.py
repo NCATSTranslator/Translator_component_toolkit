@@ -6,8 +6,84 @@ API Documentation: https://github.com/NCATSTranslator/ReasonerAPI
 Additional API Documentation: https://github.com/NCATSTranslator/ReasonerAPI/blob/master/docs/reference.md
 """
 import json
+from dataclasses import dataclass
 
 import requests
+
+
+@dataclass
+class HopSpec:
+    """Specification for one hop (edge) in a multi-hop TRAPI query chain."""
+
+    predicates: list[str] | None = None
+    object_categories: list[str] | None = None
+    object_ids: list[str] | None = None
+
+
+def _build_node_spec(
+    ids: list[str] | None = None,
+    categories: list[str] | None = None,
+) -> dict:
+    """Build a TRAPI node specification, omitting empty keys."""
+    spec = {}
+    if ids is not None:
+        spec["ids"] = ids
+    if categories is not None:
+        spec["categories"] = categories
+    return spec
+
+
+def build_multi_hop_query(
+    subject_ids: list[str] | None = None,
+    subject_categories: list[str] | None = None,
+    hops: list[HopSpec] | None = None,
+    return_json: bool = True,
+) -> str | dict:
+    """Build a multi-hop TRAPI query graph from a chain of HopSpec objects.
+
+    Parameters
+    ----------
+    subject_ids
+        CURIE IDs for the starting node (n00).
+    subject_categories
+        Categories for the starting node (n00).
+    hops
+        List of HopSpec objects, each defining one edge in the chain.
+    return_json
+        If True, return a JSON string; otherwise return a dict.
+
+    Returns
+    -------
+    str or dict
+        A TRAPI query message.
+    """
+    if not hops:
+        raise ValueError("At least one HopSpec is required in 'hops'.")
+    if subject_ids is None and subject_categories is None:
+        raise ValueError(
+            "At least one of 'subject_ids' or 'subject_categories' is required."
+        )
+
+    nodes = {f"n{0:02d}": _build_node_spec(ids=subject_ids, categories=subject_categories)}
+    edges = {}
+
+    for i, hop in enumerate(hops):
+        src = f"n{i:02d}"
+        tgt = f"n{i + 1:02d}"
+
+        edge: dict = {"subject": src, "object": tgt}
+        if hop.predicates is not None:
+            edge["predicates"] = hop.predicates
+
+        nodes[tgt] = _build_node_spec(ids=hop.object_ids, categories=hop.object_categories)
+        edges[f"e{i:02d}"] = edge
+
+    query_dict = {"message": {"query_graph": {"edges": edges, "nodes": nodes}}}
+
+    if return_json:
+        return json.dumps(query_dict)
+    return query_dict
+
 
 # TODO: incorporate object ids into the method.
 def build_query(subject_ids:list[str],
@@ -79,7 +155,7 @@ def build_query(subject_ids:list[str],
         return query_dict
 
 
-def process_result(result:dict):
+def process_result(result:dict):  # pragma: no cover
     """
     Processes a TRAPI query result, returning a table of edges.
 
@@ -115,13 +191,14 @@ def query(url:str, query:dict):
     >>> response = query(url, query_dict)
     >>> print(response)
     """
+    # example: 1. get APIs, 2. get APIs that have the target object and subject types, and the target predicates. 3. build the query and run the query.
     if isinstance(query, str):
         raise TypeError(
             "query must be a dict, not a JSON string. "
             "Use build_query(...) without return_json=True, "
             "or pass json.loads(query) instead."
         )
-    response = requests.post(url, json=query)
+    response = requests.post(url, json=query, timeout=60)
     if response.status_code == 200:
         # TODO
         result = response.json().get("message", {})
@@ -135,6 +212,6 @@ def query(url:str, query:dict):
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
 
 
-def parallel_query(url_list:list[str]):
+def parallel_query(url_list:list[str]):  # pragma: no cover
     """
     """

@@ -49,9 +49,8 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
     """
     if constraints is None or len(constraints) == 0:
         constraints_intermediate_category = None
-    if len(constraints) == 1:
+    elif len(constraints) == 1:
         constraints_intermediate_category = constraints
-    
     else:
         constraints_intermediate_category = [constraints[0]]
         print("Warning: for ARAGORN or ARAX pathfinder pipeline, it is only allowed to have only one intermediate category in the constraints list. If there are multiple intermediate categories, the query will return an error. Therefore, we will only use one intermediate category in  the constraints list. ")

@@ -12,14 +12,24 @@ __pycache__
 *.png
 .pypirc
 
+notebooks/*.html
+notebooks/*.csv
+
 .idea/
 .coverage/
 htmlcov/
 coverage.xml
 .coverage
 
+# Claude code
+.claude/
+CLAUDE.md
+
 temp
 notebooks/PathFinder_testing_results/
 notebooks/Test/
 dist/
 notebooks/PathFinder_results/
+
+# Sphinx build output
+docs/build/

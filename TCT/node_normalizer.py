@@ -135,6 +135,54 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     return name_map
 
 
+def get_preferred_names_and_categories(id_list: list[str], batch_limit=500, **kwargs) -> tuple[dict[str, str], dict[str, list[str] | None]]:
+    """
+    Resolve CURIEs to preferred names AND biolink categories in one NodeNorm pass.
+
+    Mirrors :func:`get_preferred_names` but reads both the preferred ``label`` and the
+    biolink ``types`` list from the same batched POST, avoiding a second round-trip.
+
+    Parameters
+    ----------
+    id_list : list
+        CURIEs to resolve.
+    batch_limit : int
+        How many IDs to send per request. Default: 500.
+    **kwargs
+        Other arguments to `get_normalized_nodes` (e.g. `conflate`, `drug_chemical_conflate`).
+
+    Returns
+    -------
+    tuple
+        ``(name_map, category_map)`` where ``name_map`` maps CURIE to preferred name
+        (falling back to the CURIE) and ``category_map`` maps CURIE to its biolink type
+        list (``None`` when NodeNorm has no types for it).
+    """
+    name_map = {}
+    category_map = {}
+    unmapped_ids = []
+    for index in range(0, len(id_list), batch_limit):
+        id_sublist = id_list[index:index + batch_limit]
+        normalized_nodes = get_normalized_nodes(id_sublist, mode='post', **kwargs)
+        if isinstance(normalized_nodes, TranslatorNode):
+            normalized_nodes = {normalized_nodes.curie: normalized_nodes}
+        for curie in id_sublist:
+            if curie not in normalized_nodes or normalized_nodes[curie] is None:
+                unmapped_ids.append(curie)
+                name_map[curie] = curie
+                category_map[curie] = None
+            else:
+                node = normalized_nodes[curie]
+                label = node.label
+                if label is None:
+                    label = curie
+                name_map[curie] = label
+                category_map[curie] = node.categories
+    if len(unmapped_ids) > 0:
+        print("NodeNorm does not know about these identifiers: " + ",".join(unmapped_ids))
+    return name_map, category_map
+
+
 def ID_convert_to_preferred_name_nodeNormalizer(id_list):
     '''
     Convert a list of CURIEs to their preferred names using NodeNorm.
@@ -145,51 +193,14 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list):
     Example:
         dic_id_map = ID_convert_to_preferred_name_nodeNormalizer(["NCBIGene:1234", "NCBIGene:5678"])
     '''
-    dic_id_map = {}
-    unrecoglized_ids = []
-    recoglized_ids = []
-    # To convert a CURIE to a preferred name, you don't need NameLookup at all -- NodeNorm can
-    # do this by itself!
-    NODENORM_BASE_URL = "https://nodenorm.transltr.io"  # Adjust this if you need NodeNorm TEST, CI or DEV.
-    NODENORM_BATCH_LIMIT = 900                          # Adjust this if you start getting errors from NodeNorm.
-    NODENORM_GENE_PROTEIN_CONFLATION = True             # Change to False if you don't want gene/protein conflation.
-    NODENORM_DRUG_CHEMICAL_CONFLATION = False           # Change to True if you want drug/chemical conflation.
+    return get_preferred_names(id_list)
 
-    # split id_list into batches of at most NODENORM_BATCH_LIMIT entries
-    for index in range(0, len(id_list), NODENORM_BATCH_LIMIT):
-        id_sublist = id_list[index:index + NODENORM_BATCH_LIMIT]
 
-        # print(f"id_sublist: {id_sublist}")
+def convert_ids_to_preferred_names(id_list: list[str]) -> list[str]:
+    """Return preferred names for CURIEs, falling back to original ID.
 
-        # Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get
-        response = requests.post(NODENORM_BASE_URL + '/get_normalized_nodes', json={
-            "curies": id_sublist,
-            "description": False,   # Change to True if you want descriptions from any identifiers we know about.
-            "conflate": NODENORM_GENE_PROTEIN_CONFLATION,
-            "drug_chemical_conflate": NODENORM_DRUG_CHEMICAL_CONFLATION,
-        })
-        if not response.ok:
-            raise RuntimeError("Error: NodeNorm request failed with status code " + str(response.status_code))
-
-        results = response.json()
-        for curie in id_sublist:
-            if curie in results and results[curie]:
-                identifier = results[curie].get('id', {})
-                if 'identifier' in identifier and identifier['identifier'] != curie:
-                    recoglized_ids.append(curie)
-                    #print(f"NodeNorm normalized {curie} to {identifier['identifier']} " +
-                    #      f"with gene-protein conflation {NODENORM_GENE_PROTEIN_CONFLATION} and " +
-                    #      f"with drug-chemical conflation {NODENORM_DRUG_CHEMICAL_CONFLATION}.")
-                label = identifier.get('label')
-                dic_id_map[curie] = label
-                if not label:
-                    print(curie + ": no preferred name")
-                    dic_id_map[curie] = curie
-            else:
-                unrecoglized_ids.append(curie)
-
-                dic_id_map[curie] = curie
-    if len(unrecoglized_ids) > 0:
-        print("NodeNorm does not know about these identifiers: " + ",".join(unrecoglized_ids))
-
-    return dic_id_map
+    This is a convenience wrapper around ``get_preferred_names`` that returns
+    a list in the same order as the input rather than a dict.
+    """
+    name_map = get_preferred_names(id_list)
+    return [name_map.get(curie, curie) for curie in id_list]
