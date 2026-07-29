@@ -76,12 +76,15 @@ EXAMPLE_QUERIES = [
 def test_nodenorm_status():
     """
     Test that NodeNorm can return status information.
+
+    Note: unlike NameRes, the NodeNorm ``/status`` endpoint does not report a
+    ``babel_version`` (that compendia metadata lives on the NameRes status), so
+    we only assert the fields NodeNorm actually exposes: ``status`` and the
+    underlying database counts.
     """
     status = TCT.node_normalizer.status()
 
     assert status['status'] == 'running'
-    assert status['babel_version'] != ''
-    assert status['babel_version_url'] != ''
     assert status['databases']['eq_id_to_id_db']['count'] > 650_000_000
 
 
