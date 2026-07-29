@@ -2,6 +2,12 @@ import pytest
 import TCT
 
 # Some example queries for these tests.
+#
+# NOTE: the expected `curie`/`label`/`biolink_type` values below are pinned to
+# the Translator NodeNorm service, which is backed by the NCATSTranslator/Babel
+# compendia. When Babel ships a new compendia release, preferred CURIEs, labels
+# (including casing) and categories can shift, so these expectations may need a
+# periodic refresh.
 EXAMPLE_QUERIES = [
     {
         'query': 'MESH:D003924',
@@ -13,9 +19,9 @@ EXAMPLE_QUERIES = [
     },
     {
         'query': 'UMLS:C0004096',
-        'curie': 'MONDO:0004979',
+        'curie': 'MONDO:0100470',
         'label_with_geneprotein_conflation': 'Asthma',
-        'label': 'asthma',
+        'label': 'Asthma',
         'biolink_type': 'biolink:Disease',
         'drug_chemical_conflate': True,
         'conflate': True,
@@ -31,10 +37,10 @@ EXAMPLE_QUERIES = [
     },
     {
         'query': 'DRUGBANK:DB00083',
-        'curie': 'UMLS:C0006050',
+        'curie': 'DRUGBANK:DB00083',
         'label_with_geneprotein_conflation': 'Botulinum toxin type A',
-        'label': 'Dysport',
-        'biolink_type': 'biolink:Protein',
+        'label': 'Botulinum toxin type A',
+        'biolink_type': 'biolink:ChemicalEntity',
         'drug_chemical_conflate': True,
         'conflate': True,
     },
