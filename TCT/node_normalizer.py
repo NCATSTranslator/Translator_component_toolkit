@@ -135,6 +135,54 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     return name_map
 
 
+def get_preferred_names_and_categories(id_list: list[str], batch_limit=500, **kwargs) -> tuple[dict[str, str], dict[str, list[str] | None]]:
+    """
+    Resolve CURIEs to preferred names AND biolink categories in one NodeNorm pass.
+
+    Mirrors :func:`get_preferred_names` but reads both the preferred ``label`` and the
+    biolink ``types`` list from the same batched POST, avoiding a second round-trip.
+
+    Parameters
+    ----------
+    id_list : list
+        CURIEs to resolve.
+    batch_limit : int
+        How many IDs to send per request. Default: 500.
+    **kwargs
+        Other arguments to `get_normalized_nodes` (e.g. `conflate`, `drug_chemical_conflate`).
+
+    Returns
+    -------
+    tuple
+        ``(name_map, category_map)`` where ``name_map`` maps CURIE to preferred name
+        (falling back to the CURIE) and ``category_map`` maps CURIE to its biolink type
+        list (``None`` when NodeNorm has no types for it).
+    """
+    name_map = {}
+    category_map = {}
+    unmapped_ids = []
+    for index in range(0, len(id_list), batch_limit):
+        id_sublist = id_list[index:index + batch_limit]
+        normalized_nodes = get_normalized_nodes(id_sublist, mode='post', **kwargs)
+        if isinstance(normalized_nodes, TranslatorNode):
+            normalized_nodes = {normalized_nodes.curie: normalized_nodes}
+        for curie in id_sublist:
+            if curie not in normalized_nodes or normalized_nodes[curie] is None:
+                unmapped_ids.append(curie)
+                name_map[curie] = curie
+                category_map[curie] = None
+            else:
+                node = normalized_nodes[curie]
+                label = node.label
+                if label is None:
+                    label = curie
+                name_map[curie] = label
+                category_map[curie] = node.categories
+    if len(unmapped_ids) > 0:
+        print("NodeNorm does not know about these identifiers: " + ",".join(unmapped_ids))
+    return name_map, category_map
+
+
 def ID_convert_to_preferred_name_nodeNormalizer(id_list):
     '''
     Convert a list of CURIEs to their preferred names using NodeNorm.

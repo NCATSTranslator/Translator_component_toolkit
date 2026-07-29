@@ -96,6 +96,12 @@ def test_translator_node_categories_property():
     assert n.categories == ["biolink:Disease", "biolink:Gene"]
 
 
+def test_translator_node_name_property():
+    n = TranslatorNode("MONDO:0005148", label="type 2 diabetes mellitus")
+    assert n.name == "type 2 diabetes mellitus"
+    assert n.name == n.label
+
+
 def test_translator_node_from_dict_missing_curie():
     with pytest.raises(ValueError, match="curie"):
         TranslatorNode.from_dict({"label": "test"})
@@ -134,6 +140,25 @@ class TestNodeNormalizerErrorPaths:
         import TCT.node_normalizer as nn
         result = nn.get_preferred_names(["ID:1"])
         assert result["ID:1"] == "ID:1"
+
+    @patch("TCT.node_normalizer.get_normalized_nodes")
+    def test_get_preferred_names_and_categories(self, mock_norm):
+        """Combined resolver returns both name and category maps in one pass."""
+        mock_norm.return_value = {
+            "NCBIGene:3845": TranslatorNode("NCBIGene:3845", label="KRAS", types=["biolink:Gene"]),
+            "NOLABEL:1": TranslatorNode("NOLABEL:1", label=None, types=["biolink:NamedThing"]),
+            "BAD:1": None,
+        }
+        import TCT.node_normalizer as nn
+        names, categories = nn.get_preferred_names_and_categories(
+            ["NCBIGene:3845", "NOLABEL:1", "BAD:1"]
+        )
+        assert names == {"NCBIGene:3845": "KRAS", "NOLABEL:1": "NOLABEL:1", "BAD:1": "BAD:1"}
+        assert categories == {
+            "NCBIGene:3845": ["biolink:Gene"],
+            "NOLABEL:1": ["biolink:NamedThing"],
+            "BAD:1": None,
+        }
 
     @patch("TCT.node_normalizer.requests.post")
     def test_id_convert_non_200_raises(self, mock_post):

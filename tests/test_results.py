@@ -43,19 +43,28 @@ class TestKnowledgeGraph:
         assert edge4_data["primary_sources"] == ["infores:kp4"]
         assert edge4_data["aggregator_sources"] == []
 
-    @patch("TCT.node_normalizer.get_preferred_names")
-    def test_to_networkx_resolve_names(self, mock_names, sample_kg_result):
-        mock_names.return_value = {
-            "NCBIGene:3845": "KRAS",
-            "CHEBI:15377": "Water",
-            "MONDO:0005148": "type 2 diabetes mellitus",
-        }
+    @patch("TCT.node_normalizer.get_preferred_names_and_categories")
+    def test_to_networkx_resolve_names(self, mock_resolve, sample_kg_result):
+        mock_resolve.return_value = (
+            {
+                "NCBIGene:3845": "KRAS",
+                "CHEBI:15377": "Water",
+                "MONDO:0005148": "type 2 diabetes mellitus",
+            },
+            {
+                "NCBIGene:3845": ["biolink:Gene"],
+                "CHEBI:15377": ["biolink:SmallMolecule"],
+                "MONDO:0005148": ["biolink:Disease"],
+            },
+        )
         kg = KnowledgeGraph(edges=sample_kg_result)
         G = kg.to_networkx(resolve_names=True)
 
         assert G.nodes["NCBIGene:3845"]["label"] == "KRAS"
         assert G.nodes["CHEBI:15377"]["label"] == "Water"
-        mock_names.assert_called_once()
+        assert G.nodes["NCBIGene:3845"]["categories"] == ["biolink:Gene"]
+        assert G.nodes["CHEBI:15377"]["categories"] == ["biolink:SmallMolecule"]
+        mock_resolve.assert_called_once()
 
     def test_to_networkx_empty(self):
         kg = KnowledgeGraph(edges={})
@@ -222,6 +231,18 @@ class TestNeighborhoodResult:
         assert isinstance(G, nx.MultiDiGraph)
         assert G.number_of_nodes() == 3
         assert G.number_of_edges() == 4
+
+    def test_to_networkx_forwards_include_attributes(self, sample_kg_result_with_attributes):
+        kg = KnowledgeGraph(edges=sample_kg_result_with_attributes)
+        result = NeighborhoodResult(
+            input_node_id="NCBIGene:3845",
+            knowledge_graph=kg,
+            parsed=kg.parse(),
+            ranked=pd.DataFrame(),
+        )
+        G = result.to_networkx(include_attributes=True)
+        edge_data = G.edges["NCBIGene:3845", "CHEBI:15377", "edge_top_level_pubs"]
+        assert edge_data["publications"] == ["PMID:123", "PMID:456"]
 
     def test_fields(self, sample_kg_result):
         kg = KnowledgeGraph(edges=sample_kg_result)

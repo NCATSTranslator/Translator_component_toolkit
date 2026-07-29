@@ -1,4 +1,6 @@
 # ruff: noqa: F403, F405
+__version__ = "0.3.0"
+
 from .TCT import *
 
 from .translator_node import TranslatorNode as TranslatorNode

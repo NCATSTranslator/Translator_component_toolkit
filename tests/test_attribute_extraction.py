@@ -79,6 +79,19 @@ class TestExtractPublications:
         attrs = [{"attribute_type_id": "biolink:some_other_type", "value": "foo"}]
         assert extract_publications(attrs) == []
 
+    def test_bare_int_pmid_normalized(self):
+        attrs = [{"attribute_type_id": "biolink:publications", "value": 12345}]
+        assert extract_publications(attrs) == ["PMID:12345"]
+
+    def test_bare_digit_string_pmid_normalized(self):
+        attrs = [{"attribute_type_id": "biolink:publications", "value": ["12345", "PMID:1"]}]
+        assert extract_publications(attrs) == ["PMID:12345", "PMID:1"]
+
+    def test_non_pmid_values_unchanged(self):
+        attrs = [{"attribute_type_id": "biolink:publications",
+                  "value": ["PMC123", "http://example.com/x"]}]
+        assert extract_publications(attrs) == ["PMC123", "http://example.com/x"]
+
 
 # ---------------------------------------------------------------------------
 # extract_supporting_text tests

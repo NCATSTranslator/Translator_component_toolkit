@@ -10,7 +10,7 @@
 project = 'Translator Component Toolkit'
 copyright = '2026, Guangrong Qin, Yue Zhang'
 author = 'Guangrong Qin, Yue Zhang'
-release = '0.1'
+release = '0.3.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

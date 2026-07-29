@@ -30,3 +30,6 @@ notebooks/PathFinder_testing_results/
 notebooks/Test/
 dist/
 notebooks/PathFinder_results/
+
+# Sphinx build output
+docs/build/

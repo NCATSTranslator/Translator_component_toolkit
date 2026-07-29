@@ -652,7 +652,7 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
     return ranked_result
 
 def Neighborhood_finder(input_node, node2_categories, resources=None, input_node_category=None,
-                        *, APInames=None, metaKG=None, API_predicates=None):
+                        *, APInames=None, metaKG=None, API_predicates=None, verbose=False):
     """
     This function is used to find the neighborhood of a given input node with intermediate categories.
 
@@ -684,7 +684,10 @@ def Neighborhood_finder(input_node, node2_categories, resources=None, input_node
     input_node_id = input_node
     # Step 1: Resolve the input node to get its curie id and categories
     input_node_info = node_normalizer.get_normalized_nodes(input_node_id)
-    print(input_node_id)
+    if input_node_info is None or input_node_info.types is None:
+        raise ValueError(f"Could not normalize input node: {input_node_id}")
+    if verbose:
+        print(input_node_id)
 
     if len(input_node_category) == 0:
         input_node_category = input_node_info.types
@@ -734,7 +737,7 @@ def Neiborhood_finder(*args, **kwargs):
 
 def Path_finder(input_node1, input_node2, intermediate_categories, resources=None,
                 input_node1_category=None, input_node2_category=None,
-                *, APInames=None, metaKG=None, API_predicates=None):
+                *, APInames=None, metaKG=None, API_predicates=None, verbose=False):
     """
     This function is used to find paths between two input nodes with intermediate categories.
 
@@ -766,9 +769,12 @@ def Path_finder(input_node1, input_node2, intermediate_categories, resources=Non
     from . import translator_query
     input_node1_id = input_node1
     input_node2_id = input_node2
-    print(input_node1_id)
+    if verbose:
+        print(input_node1_id)
     normalized_node_dict = node_normalizer.get_normalized_nodes([input_node1_id, input_node2_id])
     input_node1_info = normalized_node_dict[input_node1]
+    if input_node1_info is None or input_node1_info.types is None:
+        raise ValueError(f"Could not normalize input node: {input_node1_id}")
     input_node1_list = [input_node1_id]
     if len(input_node1_category) == 0:
         input_node1_category = input_node1_info.types
@@ -778,7 +784,10 @@ def Path_finder(input_node1, input_node2, intermediate_categories, resources=Non
             input_node1_category = input_node1_info.types
 
     input_node2_info = normalized_node_dict[input_node2_id]
-    print(input_node2_id)
+    if input_node2_info is None or input_node2_info.types is None:
+        raise ValueError(f"Could not normalize input node: {input_node2_id}")
+    if verbose:
+        print(input_node2_id)
     input_node2_list = [input_node2_id]
 
     if len(input_node2_category) == 0:
@@ -825,7 +834,8 @@ def Path_finder(input_node1, input_node2, intermediate_categories, resources=Non
     result_ranked_by_primary_infores2 = result_parsed2.rank(input_node2_id)
 
     possible_paths = len(set(result_ranked_by_primary_infores1['output_node']).intersection(set(result_ranked_by_primary_infores2['output_node'])))
-    print("Number of possible paths: ", possible_paths)
+    if verbose:
+        print("Number of possible paths: ", possible_paths)
 
     paths = merge_ranking_by_number_of_infores(result_ranked_by_primary_infores1, result_ranked_by_primary_infores2,
                                             top_n = 30,

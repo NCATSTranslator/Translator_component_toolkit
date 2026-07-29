@@ -1,4 +1,4 @@
-"""SOLID result classes with built-in graph conversion for TCT query results."""
+"""Result classes with built-in graph conversion for TCT query results."""
 
 from __future__ import annotations
 
@@ -101,8 +101,9 @@ class KnowledgeGraph:
         if resolve_names and len(G.nodes()) > 0:
             from . import node_normalizer
 
-            name_map = node_normalizer.get_preferred_names(list(G.nodes()))
+            name_map, category_map = node_normalizer.get_preferred_names_and_categories(list(G.nodes()))
             nx.set_node_attributes(G, name_map, "label")
+            nx.set_node_attributes(G, category_map, "categories")
 
         return G
 
@@ -254,8 +255,9 @@ class ParsedKnowledgeGraph:
         if resolve_names and len(G.nodes()) > 0:
             from . import node_normalizer
 
-            name_map = node_normalizer.get_preferred_names(list(G.nodes()))
+            name_map, category_map = node_normalizer.get_preferred_names_and_categories(list(G.nodes()))
             nx.set_node_attributes(G, name_map, "label")
+            nx.set_node_attributes(G, category_map, "categories")
 
         return G
 
@@ -313,9 +315,11 @@ class NeighborhoodResult:
     parsed: ParsedKnowledgeGraph
     ranked: pd.DataFrame
 
-    def to_networkx(self, resolve_names: bool = False) -> nx.MultiDiGraph:
+    def to_networkx(self, resolve_names: bool = False, include_attributes: bool = False) -> nx.MultiDiGraph:
         """Delegates to knowledge_graph.to_networkx()."""
-        return self.knowledge_graph.to_networkx(resolve_names=resolve_names)
+        return self.knowledge_graph.to_networkx(
+            resolve_names=resolve_names, include_attributes=include_attributes
+        )
 
     def __iter__(self):
         import warnings
@@ -350,10 +354,14 @@ class PathResult:
     ranked1: pd.DataFrame
     ranked2: pd.DataFrame
 
-    def to_networkx(self, resolve_names: bool = False) -> nx.MultiDiGraph:
+    def to_networkx(self, resolve_names: bool = False, include_attributes: bool = False) -> nx.MultiDiGraph:
         """Merges both knowledge graphs via nx.compose()."""
-        g1 = self.knowledge_graph1.to_networkx(resolve_names=resolve_names)
-        g2 = self.knowledge_graph2.to_networkx(resolve_names=resolve_names)
+        g1 = self.knowledge_graph1.to_networkx(
+            resolve_names=resolve_names, include_attributes=include_attributes
+        )
+        g2 = self.knowledge_graph2.to_networkx(
+            resolve_names=resolve_names, include_attributes=include_attributes
+        )
         return nx.compose(g1, g2)
 
     def __iter__(self):

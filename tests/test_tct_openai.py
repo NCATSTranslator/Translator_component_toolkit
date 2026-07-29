@@ -334,6 +334,46 @@ class TestNeiborhoodFinder:
         assert isinstance(result.knowledge_graph, KnowledgeGraph)
         assert isinstance(result.ranked, pd.DataFrame)
 
+    def test_raises_valueerror_on_unnormalizable_node(self, sample_resources):
+        mock_node_normalizer = MagicMock()
+        mock_node_normalizer.get_normalized_nodes.return_value = None
+        with patch.dict(sys.modules, {"TCT.node_normalizer": mock_node_normalizer}):
+            with pytest.raises(ValueError, match="Could not normalize input node: BAD:1"):
+                tct.Neighborhood_finder(
+                    input_node="BAD:1",
+                    node2_categories=["biolink:SmallMolecule"],
+                    resources=sample_resources,
+                )
+
+    def test_verbose_controls_stdout(self, sample_resources, sample_kg_result, capsys):
+        mock_node = MagicMock()
+        mock_node.curie = "NCBIGene:3845"
+        mock_node.types = ["biolink:Gene"]
+        mock_node_normalizer = MagicMock()
+        mock_node_normalizer.get_normalized_nodes.return_value = mock_node
+
+        from TCT.results import KnowledgeGraph
+        mock_translator_query = MagicMock()
+        mock_translator_query.parallel_api_query.return_value = KnowledgeGraph(edges=sample_kg_result)
+
+        def run(verbose):
+            with patch.dict(sys.modules, {
+                "TCT.node_normalizer": mock_node_normalizer,
+                "TCT.translator_query": mock_translator_query,
+            }), patch("TCT.node_normalizer.convert_ids_to_preferred_names",
+                       return_value=["Water", "Water", "Type 2 Diabetes"]):
+                tct.Neighborhood_finder(
+                    input_node="NCBIGene:3845",
+                    node2_categories=["biolink:SmallMolecule"],
+                    resources=sample_resources,
+                    verbose=verbose,
+                )
+
+        run(verbose=False)
+        assert "NCBIGene:3845" not in capsys.readouterr().out
+        run(verbose=True)
+        assert "NCBIGene:3845" in capsys.readouterr().out
+
 
 # ---------------------------------------------------------------------------
 # 11. Path_finder
@@ -413,6 +453,25 @@ class TestPathFinder:
         assert isinstance(result.ranked1, pd.DataFrame)
         assert isinstance(result.ranked2, pd.DataFrame)
         assert isinstance(result.paths, pd.DataFrame)
+
+    def test_raises_valueerror_on_unnormalizable_node(self, sample_resources):
+        mock_node1 = MagicMock()
+        mock_node1.curie = "NCBIGene:3845"
+        mock_node1.types = ["biolink:Gene"]
+        mock_node_normalizer = MagicMock()
+        # second node fails to normalize
+        mock_node_normalizer.get_normalized_nodes.return_value = {
+            "NCBIGene:3845": mock_node1,
+            "BAD:1": None,
+        }
+        with patch.dict(sys.modules, {"TCT.node_normalizer": mock_node_normalizer}):
+            with pytest.raises(ValueError, match="Could not normalize input node: BAD:1"):
+                tct.Path_finder(
+                    input_node1="NCBIGene:3845",
+                    input_node2="BAD:1",
+                    intermediate_categories=["biolink:SmallMolecule"],
+                    resources=sample_resources,
+                )
 
 
 # ---------------------------------------------------------------------------

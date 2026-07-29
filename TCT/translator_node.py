@@ -71,6 +71,11 @@ class TranslatorNode:
     def categories(self):
         return self.types
 
+    @property
+    def name(self):
+        """name is an alias for the human-readable label."""
+        return self.label
+
     @classmethod
     def from_dict(cls, data_dict:dict, return_synonyms=False):
         """Creates a TranslatorNode object from a data dict."""

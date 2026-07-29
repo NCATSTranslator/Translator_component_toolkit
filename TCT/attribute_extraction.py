@@ -15,6 +15,21 @@ def _collect(target: list, value) -> None:
         target.append(value)
 
 
+def _normalize_pmid(value):
+    """Coerce a bare PubMed id (int or all-digit string) to CURIE form ``PMID:<n>``.
+
+    Anything already in CURIE form (``PMID:``, ``PMC...``), a URL, or otherwise
+    non-numeric is returned unchanged.
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return f"PMID:{value}"
+    if isinstance(value, str) and value.isdigit():
+        return f"PMID:{value}"
+    return value
+
+
 def _iter_nested_attributes(attributes: list[dict], depth: int = 0):
     """Yield attributes, recursing into has_supporting_study_result."""
     for attr in attributes:
@@ -37,7 +52,7 @@ def extract_publications(attributes: list[dict]) -> list[str]:
     for attr in _iter_nested_attributes(attributes):
         if attr.get("attribute_type_id") == "biolink:publications":
             _collect(pubs, attr.get("value"))
-    return pubs
+    return [_normalize_pmid(p) for p in pubs]
 
 
 def extract_supporting_text(attributes: list[dict]) -> list[str]:
