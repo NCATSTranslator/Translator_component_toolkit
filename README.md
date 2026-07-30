@@ -19,6 +19,7 @@ Explore knowledge graphs in Translator<br>
 Find neighbors in the Translator KGs for a given node <br>
 Find paths between node A and node B in the Translator KG <br>
 Find a subnetwork given a list of nodes in the Translator KG <br>
+Experimental developer-friendly wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results <br>
 Connecting user's API with Translator API <br>
 
 
@@ -83,6 +84,11 @@ Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translato
 
 #### Network finder
 Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
+
+#### Experimental API tutorial
+Quick-start notebook for the experimental developer-friendly finder wrappers: **[Experimental API tutorial](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Experimental_API_tutorial.ipynb)**
+
+Use the detailed NeighborhoodFinder, PathFinder, NetworkFinder, KG overview, and visualization notebooks above when you need more fine-grained endpoint selection, predicate control, raw query construction, parser workflows, or visualization setup.
 
 
 #### Connecting to a user's API
