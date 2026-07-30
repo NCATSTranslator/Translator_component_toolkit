@@ -31,12 +31,16 @@ dependencies = [
     "numpy",
     "openai",
     "ipykernel",
-    "fastmcp>=2.12.2",
-    "click>=8.2.1",
     'networkx',
     'igraph',
     'pyvis',
     'zstandard',
+]
+
+[project.optional-dependencies]
+mcp = [
+    "fastmcp>=2.12.2",
+    "click>=8.2.1",
 ]
 
 [project.scripts]

@@ -1,5 +1,10 @@
 """Simple tests for TCT MCP Server functionality."""
 
+import pytest
+
+# Skip this module entirely when the optional MCP extra (fastmcp) is not installed.
+pytest.importorskip("fastmcp")
+
 from TCT.server import mcp
 
 
