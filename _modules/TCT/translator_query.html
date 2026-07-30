@@ -152,7 +152,7 @@
         <span class="p">}</span>
 
     <span class="k">if</span> <span class="n">attribute_constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">attribute_constraints</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">query_json_temp</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="s1">&#39;attribute_constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_constraints</span>
+        <span class="n">query_json_temp</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">][</span><span class="s1">&#39;query_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="s1">&#39;e00&#39;</span><span class="p">][</span><span class="s1">&#39;attribute_constraints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute_constraints</span>
 
     <span class="k">if</span> <span class="n">subject_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">query_json_temp</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">][</span><span class="s2">&quot;query_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">][</span><span class="s2">&quot;n00&quot;</span><span class="p">][</span><span class="s2">&quot;ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subject_ids</span>
@@ -280,9 +280,8 @@
                 <span class="n">data</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
                 <span class="k">if</span> <span class="s1">&#39;knowledge_graph&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
                     <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">no_results_returned</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-                <span class="c1">#print(&#39;%r generated an exception: %s&#39; % (url, exc))</span>
     
     <span class="n">included_KP_ID</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)):</span>
