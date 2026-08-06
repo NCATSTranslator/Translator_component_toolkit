@@ -3,9 +3,6 @@ import requests
 
 from collections import Counter
 
-from . import node_normalizer
-from . import translator_query
-from .TCT import sele_predicates_API
 
 def format_query_json_for_pathfinder_with_constraints(subject_ids, 
                                      object_ids=None,
@@ -295,64 +292,6 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
                 if nn is not None:
                     output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
     return output
-
-
-def pathfinder(input_node1_id:str, input_node2_id:str,
-        intermediate_categories:list, APInames, metaKG, API_predicates,
-        scoring_method='infores'):
-    """
-    Returns a Pathfinder output for the given pair of nodes. scoring_method could be 'infores' or 'edges'.
-    """
-    # get categories for input nodes
-    normalized_node_dict = node_normalizer.get_normalized_nodes([input_node1_id, input_node2_id])
-    input_node1_info = normalized_node_dict[input_node1_id]
-    input_node1_list = [input_node1_id]
-    input_node1_category = input_node1_info.types
-
-    input_node2_info = normalized_node_dict[input_node2_id]
-    print(input_node2_id)
-    input_node2_list = [input_node2_id]
-
-    input_node2_category = input_node2_info.types
-
-    # Select predicates and APIs based on the intermediate categories
-    sele_predicates1, sele_APIs1, API_URLs1 = sele_predicates_API(input_node1_category,
-                                                                  intermediate_categories,
-                                                                  metaKG, APInames)
-    sele_predicates2, sele_APIs2, API_URLs2 = sele_predicates_API(intermediate_categories,
-                                                                  input_node2_category,
-                                                                  metaKG, APInames)
-    query_json1 = translator_query.format_query_json(input_node1_list,  # a list of identifiers for input node1
-                                    [],  # id list for the intermediate node, it can be empty list if only want to query node1
-                                    input_node1_category,  # a list of categories of input node1
-                                    intermediate_categories,  # a list of categories of the intermediate node
-                                    sele_predicates1) # a list of predicates
-
-    # for the second hop, we want the predicates to be...
-    query_json2 = translator_query.format_query_json([], 
-                                    input_node2_list,  
-                                    intermediate_categories,  # a list of categories of input node2
-                                    input_node2_category,  # a list of categories of the intermediate node
-                                    sele_predicates2) # a list of predicates
-
-    result1 = translator_query.parallel_api_query(query_json=query_json1,
-                             select_APIs = sele_APIs1,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
-                             max_workers=len(sele_APIs1))
-    result2 = translator_query.parallel_api_query(query_json=query_json2,
-                                select_APIs = sele_APIs2,
-                                APInames=APInames,
-                                API_predicates=API_predicates,
-                                max_workers=len(sele_APIs2))
-    output = parse_results_for_pathfinder(input_node1_id, input_node2_id, result1, result2,
-            start_node_categories=input_node1_category,
-            end_node_categories=input_node2_category,
-            scoring_method=scoring_method,
-            get_node_info=True)
-
-    return result1, result2, output
-
 
 
 # define a function that uses the query_json as an template and change the ids and categories of the nodes
