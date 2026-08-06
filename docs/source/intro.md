@@ -10,6 +10,7 @@ Parallel and fast querying of the selected APIs.<br>
 Providing reproducible results by setting constraints.<br>
 Allowing testing whether a user defined API follows a [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI) standard or not. <br>
 Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
+Developer-friendly `pathfinder` and `neighborhood_finder` wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results (`from TCT import pathfinder, neighborhood_finder`). <br>
 Connecting large language models to convert user's questions into TRAPI queries. <br>
 
 ### Contributing
