@@ -172,7 +172,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
     queries = []
 
     monkeypatch.setattr(
-        tct_main,
+        tct_pathfinder,
         "_resolve_node",
         lambda value, **kwargs: _node(
             value if ":" in value else f"CURIE:{value}",
@@ -181,7 +181,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
         ),
     )
     monkeypatch.setattr(
-        tct_main,
+        tct_pathfinder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:related_to"],
@@ -195,7 +195,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
         return {f"edge-{len(queries)}": {"subject": "s", "object": "o"}}
 
     monkeypatch.setattr(
-        tct_main.translator_query, "parallel_api_query", fake_parallel
+        tct_pathfinder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
         tct_pathfinder,
@@ -229,14 +229,14 @@ def test_neighborhood_finder_single_input_queries_and_wraps_output(monkeypatch):
     queries = []
 
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:0004979", "asthma", ["biolink:Disease"])
         ],
     )
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:treats"],
@@ -250,7 +250,7 @@ def test_neighborhood_finder_single_input_queries_and_wraps_output(monkeypatch):
         return {"edge-1": {"subject": "MONDO:0004979", "object": "CHEBI:1"}}
 
     monkeypatch.setattr(
-        tct_main.translator_query, "parallel_api_query", fake_parallel
+        tct_neighborhood_finder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
         tct_neighborhood_finder,
@@ -276,14 +276,14 @@ def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypa
     queries = []
 
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:0004979", "asthma", ["biolink:Disease"])
         ],
     )
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:treats"],
@@ -297,7 +297,7 @@ def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypa
         return {}
 
     monkeypatch.setattr(
-        tct_main.translator_query, "parallel_api_query", fake_parallel
+        tct_neighborhood_finder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
         tct_neighborhood_finder,
@@ -328,7 +328,7 @@ def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
     parser_calls = []
 
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:1", "one", ["biolink:Disease"]),
@@ -336,12 +336,12 @@ def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        tct_main,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: ([], ["fake-api"], []),
     )
     monkeypatch.setattr(
-        tct_main.translator_query,
+        tct_neighborhood_finder.translator_query,
         "parallel_api_query",
         lambda **kwargs: {},
     )

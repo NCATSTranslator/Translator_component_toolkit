@@ -60,8 +60,6 @@ __all__ = [
 ]
 
 
-
-
 def TCT_help(func):
     print(func.__doc__)
 
@@ -100,7 +98,6 @@ def get_SmartAPI_Translator_KP_info():
     """
     Get the SmartAPI Translator KP info from the smart-api.info API.
     Returns a DataFrame with the SmartAPI Translator KP info.
-
 
 
     Examples
@@ -440,10 +437,6 @@ def list_Translator_APIs():
     return(APInames)
 
 
-
-
-
-
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def select_API(sub_list,obj_list, metaKG):
     '''
@@ -477,7 +470,6 @@ def select_API(sub_list,obj_list, metaKG):
     df2 = metaKG.loc[(metaKG['Subject'].isin(new_obj_list)) & (metaKG['Object'].isin(new_sub_list))]
     df = pd.concat([df1,df2])
     return(list(set(df['API'].values)))
-
 
 
 # used. Dec 5, 2023  (Example_query_one_hop_with_category.ipynb)
@@ -701,7 +693,6 @@ def visulization_one_hop_ranking_input_as_list(result_ranked_by_primary_infores,
                 primary_infore_by_nodes[predict].append(0)
 
 
-
         cur_predicates = result_parsed[new_id]['predicate']
         for predict in predicates_list:
             if predict in cur_predicates:
@@ -818,7 +809,6 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
                     primary_infore_by_nodes[predict].append(0)
 
 
-
             cur_predicates = result_parsed[new_id]['predicate']
             for predict in predicates_list:
                 if predict in cur_predicates:
@@ -895,7 +885,6 @@ def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
         plt.show()
     # save the figure
     #plt.savefig(output_png, bbox_inches='tight', dpi=300)
-
 
 
 def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
@@ -1218,273 +1207,6 @@ def clear_translator_resource_cache() -> None:
     _DEFAULT_TRANSLATOR_RESOURCES = None
 
 
-def pathfinder(
-    start: NodeInput,
-    end: NodeInput,
-    intermediate_categories: CategoryList,
-    *,
-    start_categories: Optional[CategoryList] = None,
-    end_categories: Optional[CategoryList] = None,
-    api_names: Optional[dict[str, str]] = None,
-    meta_kg: Optional[pd.DataFrame] = None,
-    api_predicates: Optional[dict[str, list[str]]] = None,
-    resources: Optional[TranslatorResources] = None,
-    scoring_method: str = "infores",
-    name_resolver_kwargs: Optional[dict[str, Any]] = None,
-    node_normalizer_kwargs: Optional[dict[str, Any]] = None,
-) -> FinderResult:
-    """
-    Find paths between two biomedical concepts using Translator KPs.
-
-    Parameters
-    ----------
-    start : str
-        Start node as either a CURIE (for example, ``"MONDO:0004979"``) or a
-        human-readable string (for example, ``"asthma"``).
-    end : str
-        End node as either a CURIE or human-readable string.
-    intermediate_categories : list[str]
-        Allowed categories for intermediate path nodes. Values may be short
-        names like ``"Gene"`` or full Biolink names like ``"biolink:Gene"``.
-    start_categories : list[str], optional
-        Category override for the start node. If omitted, categories are
-        inferred from Node Normalizer.
-    end_categories : list[str], optional
-        Category override for the end node. If omitted, categories are inferred
-        from Node Normalizer.
-    resources : TranslatorResources, optional
-        Preloaded Translator resources. If omitted, the module-level singleton
-        is loaded on first use and reused.
-    api_names, meta_kg, api_predicates : optional
-        Advanced partial overrides for the Translator resources used by the
-        pathfinder implementation.
-    scoring_method : str
-        Scoring method passed to the legacy parser. Current values are
-        ``"infores"`` and ``"edges"``.
-    name_resolver_kwargs : dict, optional
-        Extra keyword arguments for ``name_resolver.lookup``.
-    node_normalizer_kwargs : dict, optional
-        Extra keyword arguments for ``node_normalizer.get_normalized_nodes``.
-
-    Returns
-    -------
-    FinderResult
-        Convenience wrapper containing resolved input nodes, the parsed
-        knowledge graph, results, auxiliary graphs, and the raw TRAPI-style
-        output dictionary.
-
-    Examples
-    --------
-    >>> from TCT import pathfinder
-    >>> result = pathfinder("asthma", "albuterol", ["Gene"])
-    >>> result.resolved_nodes["start"].curie
-    'MONDO:0004979'
-    """
-    from .TCT_pathfinder import parse_results_for_pathfinder
-
-    start_node = _resolve_node(
-        start,
-        name_resolver_kwargs=name_resolver_kwargs,
-        node_normalizer_kwargs=node_normalizer_kwargs,
-    )
-    end_node = _resolve_node(
-        end,
-        name_resolver_kwargs=name_resolver_kwargs,
-        node_normalizer_kwargs=node_normalizer_kwargs,
-    )
-    intermediate_categories = _normalize_categories(intermediate_categories) or []
-    start_categories = _normalize_categories(start_categories) or start_node.categories
-    end_categories = _normalize_categories(end_categories) or end_node.categories
-    resolved_resources = _get_resources(
-        resources=resources,
-        api_names=api_names,
-        meta_kg=meta_kg,
-        api_predicates=api_predicates,
-    )
-
-    predicates1, apis1, _ = sele_predicates_API(
-        start_categories,
-        intermediate_categories,
-        resolved_resources.meta_kg,
-        resolved_resources.api_names,
-    )
-    predicates2, apis2, _ = sele_predicates_API(
-        intermediate_categories,
-        end_categories,
-        resolved_resources.meta_kg,
-        resolved_resources.api_names,
-    )
-    query1 = translator_query.format_query_json(
-        [start_node.curie],
-        [],
-        start_categories,
-        intermediate_categories,
-        predicates1,
-    )
-    query2 = translator_query.format_query_json(
-        [],
-        [end_node.curie],
-        intermediate_categories,
-        end_categories,
-        predicates2,
-    )
-    result1 = translator_query.parallel_api_query(
-        query_json=query1,
-        select_APIs=apis1,
-        APInames=resolved_resources.api_names,
-        API_predicates=resolved_resources.api_predicates,
-        max_workers=max(1, len(apis1)),
-    )
-    result2 = translator_query.parallel_api_query(
-        query_json=query2,
-        select_APIs=apis2,
-        APInames=resolved_resources.api_names,
-        API_predicates=resolved_resources.api_predicates,
-        max_workers=max(1, len(apis2)),
-    )
-    raw_output = parse_results_for_pathfinder(
-        start_node.curie,
-        end_node.curie,
-        result1,
-        result2,
-        start_node_categories=start_categories,
-        end_node_categories=end_categories,
-        scoring_method=scoring_method,
-        get_node_info=True,
-    )
-    return _build_finder_result(
-        raw_output,
-        resolved_nodes={"start": start_node, "end": end_node},
-    )
-
-
-def neighborhood_finder(
-    node: Union[NodeInput, list[NodeInput]],
-    neighbor_categories: CategoryList,
-    *,
-    node_categories: Optional[CategoryList] = None,
-    api_names: Optional[dict[str, str]] = None,
-    meta_kg: Optional[pd.DataFrame] = None,
-    api_predicates: Optional[dict[str, list[str]]] = None,
-    resources: Optional[TranslatorResources] = None,
-    predicates_subset: Optional[list[str]] = None,
-    attribute_constraints: Optional[list[dict[str, Any]]] = None,
-    name_resolver_kwargs: Optional[dict[str, Any]] = None,
-    node_normalizer_kwargs: Optional[dict[str, Any]] = None,
-) -> FinderResult:
-    """
-    Find one-hop neighbors for one or more biomedical concepts.
-
-    Parameters
-    ----------
-    node : str or list[str]
-        Source node or nodes. Each value may be a CURIE or human-readable
-        string. Human-readable strings are resolved with Name Resolver and then
-        normalized with Node Normalizer.
-    neighbor_categories : list[str]
-        Desired neighbor categories. Values may be short names like ``"Drug"``
-        or full Biolink names like ``"biolink:Drug"``.
-    node_categories : list[str], optional
-        Category override for source nodes. If omitted, categories are inferred
-        from the first normalized source node.
-    resources : TranslatorResources, optional
-        Preloaded Translator resources. If omitted, the module-level singleton
-        is loaded on first use and reused.
-    api_names, meta_kg, api_predicates : optional
-        Advanced partial overrides for the Translator resources used by the
-        neighborhood implementation.
-    predicates_subset : list[str], optional
-        Optional predicate filter applied after MetaKG predicate selection.
-    attribute_constraints : list[dict], optional
-        TRAPI attribute constraints passed through to query construction.
-    name_resolver_kwargs : dict, optional
-        Extra keyword arguments for ``name_resolver.lookup``.
-    node_normalizer_kwargs : dict, optional
-        Extra keyword arguments for ``node_normalizer.get_normalized_nodes``.
-
-    Returns
-    -------
-    FinderResult
-        Convenience wrapper containing resolved input nodes, parsed neighborhood
-        knowledge graph, results, auxiliary graphs, and raw TRAPI-style output.
-
-    Examples
-    --------
-    >>> from TCT import neighborhood_finder
-    >>> result = neighborhood_finder("asthma", ["SmallMolecule", "Drug"])
-    >>> result.knowledge_graph["nodes"]
-    {...}
-    """
-    from .TCT_neighborhood_finder import (
-        parse_results_for_neighborhood_finder,
-        parse_results_for_neighborhood_finder_multiple_inputs,
-    )
-
-    resolved_nodes = _resolve_nodes(
-        node,
-        name_resolver_kwargs=name_resolver_kwargs,
-        node_normalizer_kwargs=node_normalizer_kwargs,
-    )
-    source_categories = (
-        _normalize_categories(node_categories) or resolved_nodes[0].categories
-    )
-    neighbor_categories = _normalize_categories(neighbor_categories) or []
-    resolved_resources = _get_resources(
-        resources=resources,
-        api_names=api_names,
-        meta_kg=meta_kg,
-        api_predicates=api_predicates,
-    )
-
-    predicates, apis, _ = sele_predicates_API(
-        source_categories,
-        neighbor_categories,
-        resolved_resources.meta_kg,
-        resolved_resources.api_names,
-    )
-    if predicates_subset is not None:
-        predicates = list(set(predicates).intersection(predicates_subset))
-    if len(predicates) == 0:
-        predicates = ["biolink:related_to"]
-
-    input_curies = [resolved_node.curie for resolved_node in resolved_nodes]
-    query = translator_query.format_query_json(
-        subject_ids=input_curies,
-        object_ids=None,
-        subject_categories=None,
-        object_categories=neighbor_categories,
-        predicates=predicates,
-        attribute_constraints=attribute_constraints,
-    )
-    raw_edges = translator_query.parallel_api_query(
-        query_json=query,
-        select_APIs=apis,
-        APInames=resolved_resources.api_names,
-        API_predicates=resolved_resources.api_predicates,
-        max_workers=max(1, len(apis)),
-    )
-    if isinstance(node, str):
-        raw_output = parse_results_for_neighborhood_finder(
-            input_curies[0],
-            raw_edges,
-            source_categories,
-            neighbor_categories,
-        )
-        result_nodes = {"node": resolved_nodes[0]}
-    else:
-        raw_output = parse_results_for_neighborhood_finder_multiple_inputs(
-            input_curies,
-            raw_edges,
-            source_categories,
-            neighbor_categories,
-        )
-        result_nodes = {
-            f"node_{index}": resolved_node
-            for index, resolved_node in enumerate(resolved_nodes)
-        }
-    return _build_finder_result(raw_output, resolved_nodes=result_nodes)
-
-
 def _normalize_category(category: str) -> str:
     """
     Convert a category into a Biolink-prefixed category string.
@@ -1783,7 +1505,6 @@ def parse_network_result(result, input_node1_list):
             dic_nodes[object] = [subject]
 
 
-
     dic_remain_nodes = {}
 
     dic_with_input_nodes = {}
@@ -1803,8 +1524,6 @@ def parse_network_result(result, input_node1_list):
 
     for i in dic_with_input_nodes:
         dic_with_input_nodes[i] = list(set(dic_with_input_nodes[i]))
-
-
 
 
     for i in dic_with_input_nodes:
@@ -1883,7 +1602,6 @@ def rank_by_primary_infores_input_as_list(result_parsed, input_nodes):
     return(rank_df_ranked)
 
 
-
 # parse results to a dictionary. Dec 5, 2023
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def rank_by_primary_infores(result_parsed, input_node):
@@ -1929,10 +1647,8 @@ def rank_by_primary_infores(result_parsed, input_node):
     rank_df['unique_predicates'] = unique_predicates
 
 
-
     rank_df_ranked = rank_df.sort_values(by=['Num_of_primary_infores'], ascending=False)
     return(rank_df_ranked)
-
 
 
 # used. Dec 5, 2023 (Example_query_rank_the_path.ipynb)
@@ -1991,7 +1707,6 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
     return result_xy_sorted
 
 
-
 def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
                                        result_ranked_by_primary_infores1,
                                        plot=True,
@@ -2023,7 +1738,6 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
     result_xy = pd.DataFrame.from_dict(dic_xy, orient='index', columns=['score'])
     result_xy['output_node'] = result_xy.index
     # convert the output_node to preferred name
-
 
 
     #result_xy["output_node_name"] = new_colnames
@@ -2161,8 +1875,6 @@ def query_KP_all(subject_ids, object_ids, subject_categories, object_categories,
     return(result_dict, result_concept)
 
 
-
-
 # to be revised
 def connecting_two_dots_two_hops(sorted_dic1, sorted_dic):
     intermediate = []
@@ -2250,7 +1962,6 @@ def select_result_to_analysis(sele_genes,Temp_result_df1, Temp_result_df2 ):
                             Temp_result_df2.loc[Temp_result_df2['Object'].isin(sele_genes)]], axis=0)
 
     return(for_plot)
-
 
 
 def plot_graph_by_predicates(for_plot):
@@ -2533,7 +2244,6 @@ def format_id(query_json_cur_clean):
 #    return response
 
 
-
 #def ask_chatGPT4(prompt_text):
 #    response = query_chatGPT4(prompt_text)
 #    return response
@@ -2728,4 +2438,15 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 
     similar_predicate
     return similar_predicate
+
+
+# ---------------------------------------------------------------------------
+# Developer-friendly finder entry points live in their submodules and are
+# re-exported here as the top-level package API (``from TCT import pathfinder``).
+# Imported after the shared helpers above are defined so the submodules can
+# pull sele_predicates_API and these helpers from this module without a
+# circular import.
+# ---------------------------------------------------------------------------
+from .TCT_pathfinder import pathfinder  # noqa: E402
+from .TCT_neighborhood_finder import _neighborhood_finder as neighborhood_finder  # noqa: E402
 

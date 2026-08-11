@@ -1,7 +1,24 @@
 # TCT Pathfinder...
 import requests
 
+import pandas as pd
 from collections import Counter
+
+from typing import Any, Optional
+
+from . import translator_query
+from .TCT import (
+    CategoryList,
+    FinderResult,
+    NodeInput,
+    TranslatorResources,
+    _build_finder_result,
+    _get_resources,
+    _normalize_categories,
+    _resolve_node,
+    sele_predicates_API,
+)
+
 
 
 def format_query_json_for_pathfinder_with_constraints(subject_ids, 
@@ -371,3 +388,141 @@ def query_arax_pathfinder_with_constraints(node1_id, node1_category, node2_id, n
     )
     response = requests.post(ARAX_endpoint, json=query_current)
     return response
+
+
+def pathfinder(
+    start: NodeInput,
+    end: NodeInput,
+    intermediate_categories: CategoryList,
+    *,
+    start_categories: Optional[CategoryList] = None,
+    end_categories: Optional[CategoryList] = None,
+    api_names: Optional[dict[str, str]] = None,
+    meta_kg: Optional[pd.DataFrame] = None,
+    api_predicates: Optional[dict[str, list[str]]] = None,
+    resources: Optional[TranslatorResources] = None,
+    scoring_method: str = "infores",
+    name_resolver_kwargs: Optional[dict[str, Any]] = None,
+    node_normalizer_kwargs: Optional[dict[str, Any]] = None,
+) -> FinderResult:
+    """
+    Find paths between two biomedical concepts using Translator KPs.
+
+    Parameters
+    ----------
+    start : str
+        Start node as either a CURIE (for example, ``"MONDO:0004979"``) or a
+        human-readable string (for example, ``"asthma"``).
+    end : str
+        End node as either a CURIE or human-readable string.
+    intermediate_categories : list[str]
+        Allowed categories for intermediate path nodes. Values may be short
+        names like ``"Gene"`` or full Biolink names like ``"biolink:Gene"``.
+    start_categories : list[str], optional
+        Category override for the start node. If omitted, categories are
+        inferred from Node Normalizer.
+    end_categories : list[str], optional
+        Category override for the end node. If omitted, categories are inferred
+        from Node Normalizer.
+    resources : TranslatorResources, optional
+        Preloaded Translator resources. If omitted, the module-level singleton
+        is loaded on first use and reused.
+    api_names, meta_kg, api_predicates : optional
+        Advanced partial overrides for the Translator resources used by the
+        pathfinder implementation.
+    scoring_method : str
+        Scoring method passed to the legacy parser. Current values are
+        ``"infores"`` and ``"edges"``.
+    name_resolver_kwargs : dict, optional
+        Extra keyword arguments for ``name_resolver.lookup``.
+    node_normalizer_kwargs : dict, optional
+        Extra keyword arguments for ``node_normalizer.get_normalized_nodes``.
+
+    Returns
+    -------
+    FinderResult
+        Convenience wrapper containing resolved input nodes, the parsed
+        knowledge graph, results, auxiliary graphs, and the raw TRAPI-style
+        output dictionary.
+
+    Examples
+    --------
+    >>> from TCT import pathfinder
+    >>> result = pathfinder("asthma", "albuterol", ["Gene"])
+    >>> result.resolved_nodes["start"].curie
+    'MONDO:0004979'
+    """
+    start_node = _resolve_node(
+        start,
+        name_resolver_kwargs=name_resolver_kwargs,
+        node_normalizer_kwargs=node_normalizer_kwargs,
+    )
+    end_node = _resolve_node(
+        end,
+        name_resolver_kwargs=name_resolver_kwargs,
+        node_normalizer_kwargs=node_normalizer_kwargs,
+    )
+    intermediate_categories = _normalize_categories(intermediate_categories) or []
+    start_categories = _normalize_categories(start_categories) or start_node.categories
+    end_categories = _normalize_categories(end_categories) or end_node.categories
+    resolved_resources = _get_resources(
+        resources=resources,
+        api_names=api_names,
+        meta_kg=meta_kg,
+        api_predicates=api_predicates,
+    )
+
+    predicates1, apis1, _ = sele_predicates_API(
+        start_categories,
+        intermediate_categories,
+        resolved_resources.meta_kg,
+        resolved_resources.api_names,
+    )
+    predicates2, apis2, _ = sele_predicates_API(
+        intermediate_categories,
+        end_categories,
+        resolved_resources.meta_kg,
+        resolved_resources.api_names,
+    )
+    query1 = translator_query.format_query_json(
+        [start_node.curie],
+        [],
+        start_categories,
+        intermediate_categories,
+        predicates1,
+    )
+    query2 = translator_query.format_query_json(
+        [],
+        [end_node.curie],
+        intermediate_categories,
+        end_categories,
+        predicates2,
+    )
+    result1 = translator_query.parallel_api_query(
+        query_json=query1,
+        select_APIs=apis1,
+        APInames=resolved_resources.api_names,
+        API_predicates=resolved_resources.api_predicates,
+        max_workers=max(1, len(apis1)),
+    )
+    result2 = translator_query.parallel_api_query(
+        query_json=query2,
+        select_APIs=apis2,
+        APInames=resolved_resources.api_names,
+        API_predicates=resolved_resources.api_predicates,
+        max_workers=max(1, len(apis2)),
+    )
+    raw_output = parse_results_for_pathfinder(
+        start_node.curie,
+        end_node.curie,
+        result1,
+        result2,
+        start_node_categories=start_categories,
+        end_node_categories=end_categories,
+        scoring_method=scoring_method,
+        get_node_info=True,
+    )
+    return _build_finder_result(
+        raw_output,
+        resolved_nodes={"start": start_node, "end": end_node},
+    )
