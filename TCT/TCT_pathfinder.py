@@ -395,16 +395,16 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
 
 
 def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category):
-    aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
-    #aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' new ci endpoint
+    #aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint
+    aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
 
 def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
-    aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query'
-    #aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
+    #aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint
+    aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
     query_current = format_query_json_for_pathfinder_with_constraints(
         subject_ids=node1_id,
         object_ids=node2_id,
