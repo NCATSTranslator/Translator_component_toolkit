@@ -111,7 +111,7 @@ def format_query_json(subject_ids:list[str],
         }
 
     if attribute_constraints is not None and len(attribute_constraints) > 0:
-        query_json_temp['message']['query_graph']['edges']['attribute_constraints'] = attribute_constraints
+        query_json_temp['message']['query_graph']['edges']['e00']['attribute_constraints'] = attribute_constraints
 
     if subject_ids is not None and len(subject_ids) > 0:
         query_json_temp["message"]["query_graph"]["nodes"]["n00"]["ids"] = subject_ids
@@ -230,9 +230,8 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
                 data = future.result()
                 if 'knowledge_graph' in data:
                     result.append(data)
-            except Exception as exc:
+            except Exception:
                 no_results_returned.append(url)
-                #print('%r generated an exception: %s' % (url, exc))
     
     included_KP_ID = []
     for i in range(0,len(result)):

@@ -23,3 +23,11 @@ notebooks/PathFinder_testing_results/
 notebooks/Test/
 dist/
 notebooks/PathFinder_results/
+
+# opencode artifacts
+/.opencode/
+/AGENTS.md
+/.logs/
+
+# agent-of-empires artifacts
+/.agent-of-empires/
