@@ -22,16 +22,12 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "requests",
-    "jsons",
     "pandas",
     "seaborn",
     "matplotlib",
     "ipycytoscape",
     "networkx",
     "numpy",
-    "openai",
-    "ipykernel",
-    'networkx',
     'igraph',
     'pyvis',
     'zstandard',
@@ -40,7 +36,6 @@ dependencies = [
 [project.optional-dependencies]
 mcp = [
     "fastmcp>=2.12.2",
-    "click>=8.2.1",
 ]
 
 [project.scripts]
