@@ -24,18 +24,20 @@ dependencies = [
     "requests",
     "jsons",
     "pandas",
-    "seaborn",
-    "matplotlib",
     "ipycytoscape",
     "networkx",
     "numpy",
     "openai",
     "ipykernel",
-    'networkx',
-    'igraph',
-    'pyvis',
-    'zstandard',
+    "igraph",
+    "zstandard",
 ]
+
+[project.extras.vision]
+"""Visualization dependencies."""
+pyvis = "pyvis"
+matplotlib = "matplotlib"
+seaborn = "seaborn"
 
 [project.optional-dependencies]
 mcp = [
