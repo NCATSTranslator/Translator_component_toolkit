@@ -2448,5 +2448,5 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 # circular import.
 # ---------------------------------------------------------------------------
 from .TCT_pathfinder import pathfinder  # noqa: E402
-from .TCT_neighborhood_finder import _neighborhood_finder as neighborhood_finder  # noqa: E402
+from .TCT_neighborhood_finder import neighborhood_finder  # noqa: E402
 

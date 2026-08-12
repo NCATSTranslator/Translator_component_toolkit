@@ -1,10 +1,6 @@
 from collections import Counter
 
 import pandas as pd
-from .TCT import sele_predicates_API, parse_KG, rank_by_primary_infores
-from .TCT_pathfinder import generate_score_results, build_query_graph
-from .translator_query import format_query_json
-
 from typing import Any, Optional, Union
 
 from . import translator_query
@@ -17,7 +13,9 @@ from .TCT import (
     _get_resources,
     _normalize_categories,
     _resolve_nodes,
+    sele_predicates_API,
 )
+from .TCT_pathfinder import generate_score_results, build_query_graph
 
 def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
         start_node_categories=None, end_node_categories=None,
@@ -201,192 +199,7 @@ def parse_results_for_neighborhood_finder_multiple_inputs(start_node_ids:list[st
                     output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
     return output
 
-def neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates,
-        input_node_category = [],
-        predicates_subset=None,
-        attribute_constraints=None):
-    """
-    This function is used to find the neighborhood of a given input node with intermediate categories.
-
-    Parameters
-    ----------
-    input_node : str
-        The input node - should be a CURIE id.
-    node2_categories : list
-        A list of intermediate categories to be used in the neighborhood finding process.
-    APInames : dict
-        A dictionary containing the names of the APIs to be used.
-    metaKG : DataFrame
-        The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates : dict
-        A dictionary containing the predicates for each API.
-    input_node_category : list
-        Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
-    attribute_constraints : list
-        Optional. List of outputs of translator_query.build_attribute_constraint
-
-    Returns
-    -------
-    input_node_id : str
-        The curie id of the input node.
-    result : dict
-        The result of the query for the input node.
-    result_parsed : DataFrame
-        The parsed results for the input node.
-    result_ranked_by_primary_infores : DataFrame
-        The ranked results based on primary infores.
-
-    Examples
-    --------
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder('MONDO:0008170', #Ovarian Cancer
-                                                                                            node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)
-    """
-    from . import node_normalizer
-    from . import translator_query
-
-    input_node_id = input_node
-    # Step 1: Resolve the input node to get its curie id and categories
-    input_node_info = node_normalizer.get_normalized_nodes(input_node_id)
-    print(input_node_id)
-
-    if len(input_node_category) == 0:
-        input_node_category = input_node_info.types
-    else:
-        input_node_category = list(set(input_node_category).intersection(set(input_node_info.types)))
-        if len(input_node_category) == 0:
-            input_node_category = input_node_info.types
-
-    # Step 2: Select predicates and APIs based on the intermediate categories
-    sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node_category,
-                                                                node2_categories,
-                                                                metaKG, APInames)
-
-    if len(sele_predicates) ==0:
-        sele_predicates = ["biolink:related_to"]
-        
-    # Step 3: Format the query JSON for the input node
-    #query_json = format_query_json([input_node_id], 
-    #                               None,
-    #                               None,
-    #                               node2_categories,
-    #                               sele_predicates,
-    #                               attribute_constraints=attribute_constraints)
-    query_json = format_query_json(subject_ids = [input_node_id],
-        object_ids = None,
-        subject_categories = None,
-        object_categories = node2_categories,
-        predicates = sele_predicates,
-        attribute_constraints = None,
-        )
-    # Step 4: Query the APIs in parallel
-    result = translator_query.parallel_api_query(query_json=query_json,
-                             select_APIs= sele_APIs,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
-                             max_workers=len(sele_APIs))
-    result_parsed = parse_KG(result)
-        # Step 7: Ranking the results. This ranking method is based on the number of unique
-        # primary infores. It can only be used to rank the results with one defined node.
-    result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed, input_node_id)   # input_node1_id is the curie id of the
-    parsed_results = parse_results_for_neighborhood_finder(input_node_id, result, input_node_category, node2_categories)
-    return input_node_id, result, parsed_results, result_ranked_by_primary_infores1
-
-
-def neighborhood_finder_multiple_inputs(input_nodes:list[str], node2_categories:list[str], APInames, metaKG, API_predicates,
-        input_node_category = [],
-        predicates_subset=None,
-        attribute_constraints=None):
-    """
-    This function is used to find the neighborhood of a given input node with intermediate categories.
-
-    Parameters
-    ----------
-    input_nodes : list[str]
-        The input nodes - should be a list of CURIE ids.
-    node2_categories : list
-        A list of intermediate categories to be used in the neighborhood finding process.
-    APInames : dict
-        A dictionary containing the names of the APIs to be used.
-    metaKG : DataFrame
-        The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates : dict
-        A dictionary containing the predicates for each API.
-    input_node_category : list
-        Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
-    attribute_constraints : list
-        Optional. List of outputs of translator_query.build_attribute_constraint
-
-    Returns
-    -------
-    input_node_id (str)
-        The curie id of the input node.
-    result (dict)
-        The result of the query for the input node.
-    result_parsed (DataFrame)
-        The parsed results for the input node.
-    result_ranked_by_primary_infores (DataFrame)
-        The ranked results based on primary infores.
-
-
-    Examples
-    --------
-    >>> result, result_parsed = neighborhood_finder_multiple_inputs(['NCBIGene:6774', 'NCBIGene:4170', 'NCBIGene:4792'],
-                                                                    node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                    APInames = APInames,
-                                                                    metaKG = metaKG,
-                                                                    API_predicates = API_predicates)
-    """
-    from . import node_normalizer
-    from . import translator_query
-
-    # Step 1: Resolve the input nodes to get its curie id and categories
-    input_nodes_info = node_normalizer.get_normalized_nodes(input_nodes)
-    print(input_nodes)
-
-    if len(input_node_category) == 0:
-        input_node_category = input_nodes_info[input_nodes[0]].types
-    else:
-        input_node_info = input_nodes_info[input_nodes[0]]
-        input_node_category = list(set(input_node_category).intersection(set(input_node_info.types)))
-        if len(input_node_category) == 0:
-            input_node_category = input_node_info.types
-
-    # Step 2: Select predicates and APIs based on the intermediate categories
-    sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node_category,
-                                                                node2_categories,
-                                                                metaKG, APInames)
-
-    if len(sele_predicates) ==0:
-        sele_predicates = ["biolink:related_to"]
-        
-    # Step 3: Format the query JSON for the input node
-    #query_json = format_query_json([input_node_id], 
-    #                               None,
-    #                               None,
-    #                               node2_categories,
-    #                               sele_predicates,
-    #                               attribute_constraints=attribute_constraints)
-    query_json = format_query_json(subject_ids = input_nodes,
-        object_ids = None,
-        subject_categories = None,
-        object_categories = node2_categories,
-        predicates = sele_predicates,
-        attribute_constraints = attribute_constraints,
-        )
-    # Step 4: Query the APIs in parallel
-    result = translator_query.parallel_api_query(query_json=query_json,
-                             select_APIs= sele_APIs,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
-                             max_workers=len(sele_APIs))
-    parsed_results = parse_results_for_neighborhood_finder_multiple_inputs(input_nodes, result, input_node_category, node2_categories)
-    return result, parsed_results
-
-
-def _neighborhood_finder(
+def neighborhood_finder(
     node: Union[NodeInput, list[NodeInput]],
     neighbor_categories: CategoryList,
     *,
