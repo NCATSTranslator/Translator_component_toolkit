@@ -23,7 +23,17 @@ Guangrong Qin, guangrong.qin@isbscience.org
 ## How to use TCT
 ### Install Requirements
 
-To install TCT as a python library, you can install the library using `pip install TCT` from the command line. 
+To install the minimal TCT package, run:
+
+```bash
+pip install TCT
+```
+
+Visualization support is optional. Install it with the `vision` extra when you need the plotting and graph-rendering utilities:
+
+```bash
+pip install "TCT[vision]"
+```
 
 The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this most recent github repository (https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main), 
 `git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git`

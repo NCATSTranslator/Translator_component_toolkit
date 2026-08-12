@@ -30,8 +30,13 @@ pip install TCT
 # TCT is in development, to get the most recent update, user can install it through the github repo
 ```
 
-**This the recommended approach for installation.**
+**This is the recommended approach for a minimal installation.**
 
+Visualization support is optional. Install it with the `vision` extra when you need the plotting and graph-rendering utilities:
+
+```bash
+pip install "TCT[vision]"
+```
 
 #### Development Installation
 
@@ -51,6 +56,12 @@ pip install -e .
 git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git
 cd Translator_component_toolkit
 uv sync
+```
+
+To include visualization support in the UV environment:
+
+```bash
+uv sync --extra vision
 ```
 
 #### Building and Deployment

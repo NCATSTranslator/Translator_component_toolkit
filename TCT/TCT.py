@@ -4,16 +4,11 @@ from typing import Any, Optional, TypeAlias, Union
 import requests
 import json
 import pandas as pd
-import  seaborn as sns
-import matplotlib.pyplot as plt
-import networkx as nx
 import numpy as np
 #import openai
 from . import name_resolver, node_normalizer, translator_query
 
 # plt.switch_backend('module://ipykernel.pylab.backend_inline')
-
-from IPython.display import display
 
 __all__ = [
     'TCT_help',
@@ -851,6 +846,9 @@ def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
                                  fontsize = 6,
                                  title_fontsize = 10,
                                  output_png="NE_heatmap.png"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     #matplotlib.use('Agg')
 
     #title = "Ranking of one-hop nodes by primary infores"
@@ -891,7 +889,8 @@ def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
                                  fontsize = 6,
                                  title_fontsize = 10,
                                  output_png="NE_heatmap.png"):
-
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
     title = "Ranking of one-hop nodes by primary infores"
     ylab = "infores"
@@ -1658,7 +1657,8 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
                            title_fontsize = 12,
                            fontsize = 12,
                            ):
-
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
     dic_rank1 = {}
     for i in range(0, result_ranked_by_primary_infores.shape[0]):
@@ -1774,6 +1774,9 @@ def plot_path_bar(x,
                     fontsize = 8,
                     title_fontsize = 10,
                     output_png="NE_heatmap.png"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     #matplotlib.use('Agg')
 
     # title = "Bridging nodes"  # Unused variable
@@ -1965,6 +1968,9 @@ def select_result_to_analysis(sele_genes,Temp_result_df1, Temp_result_df2 ):
 
 
 def plot_graph_by_predicates(for_plot):
+    import networkx as nx
+    from IPython.display import display
+
     graph = nx.from_pandas_edgelist(for_plot,
                                 source='Subject',
                                 target='Object',
@@ -2013,6 +2019,8 @@ def plot_graph_by_predicates(for_plot):
 
 
 def plot_graph_by_infores(for_plot):
+    import networkx as nx
+    from IPython.display import display
 
     graph = nx.from_pandas_edgelist(for_plot,
                                     source='Subject',
@@ -2062,6 +2070,8 @@ def plot_graph_by_infores(for_plot):
 
 
 def plot_graph_by_API(for_plot):
+    import networkx as nx
+    from IPython.display import display
 
     graph = nx.from_pandas_edgelist(for_plot,
                                     source='Subject',
@@ -2273,6 +2283,9 @@ def load_translator_resources():
 
 
 def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, result2):
+    import networkx as nx
+    from IPython.display import display
+
     forplot_subject = []
     forplot_object = []
     forplot_predicate = []
