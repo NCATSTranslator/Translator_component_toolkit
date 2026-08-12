@@ -12,6 +12,7 @@ Allowing testing whether a user defined API follows a [TRAPI](https://github.com
 Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
 Developer-friendly `pathfinder` and `neighborhood_finder` wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results (`from TCT import pathfinder, neighborhood_finder`). <br>
 Connecting large language models to convert user's questions into TRAPI queries. <br>
+*Note: Visualization capabilities (pyvis, matplotlib, seaborn) can be installed via the `vision` extra using `pip install TCT[vision]`*
 
 ### Contributing
 TCT is a tool that helps to explore knowledge graphs developed in the Biomedical Data Translator Consortium. Consortium members and external contributors are encouraged to submit issues and pull requests. 
