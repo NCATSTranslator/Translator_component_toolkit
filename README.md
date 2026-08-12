@@ -11,11 +11,16 @@ Users can check out the key function documentations here: [https://ncatstranslat
 Allowing users to select APIs, predicates according to the user's intention. <br>
 Parallel and fast querying of the selected APIs.<br>
 Providing reproducible results by setting constraints.<br>
-Facilitating exploration of knowledge graphs from both Translator ecosystem and user-defined APIs.<br>
-Connecting LLMs to translate queries into TRAPI.<br>
-Node identifier resolution, annotation, and neighborhood/path analysis tools.<br>
-Developer-friendly API wrappers for Traitspace/CURIE resolution, caching, and result parsing.<br>
-User API integration support.<br>
+Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
+Connecting large language models to convert user's questions into TRAPI queries. <br>
+Find the identifier given a name using name resolver<br>
+Annotate a node using node annotator<br>
+Explore knowledge graphs in Translator<br>
+Find neighbors in the Translator KGs for a given node <br>
+Find paths between node A and node B in the Translator KG <br>
+Find a subnetwork given a list of nodes in the Translator KG <br>
+Developer-friendly wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results <br>
+Connecting user's API with Translator API <br>
 *Note: Visualization capabilities (pyvis, matplotlib, seaborn) can be installed separately via the `vision` extra.*
 
 
