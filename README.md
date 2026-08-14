@@ -98,7 +98,7 @@ Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translato
 Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
 
 #### Developer-friendly finder APIs
-The finder notebooks above include quick-start sections using the developer-friendly `pathfinder` and `neighborhood_finder` APIs, now part of TCT's main API surface (`from TCT import pathfinder, neighborhood_finder`).
+The finder notebooks above include quick-start sections using the developer-friendly `pathfinder` and `neighborhood_finder` APIs, now part of TCT's main API surface (`from TCT import query_TCT_pathfinder, neighborhood_finder`).
 
 Use the detailed NeighborhoodFinder, PathFinder, NetworkFinder, KG overview, and visualization notebooks when you need more fine-grained endpoint selection, predicate control, raw query construction, parser workflows, or visualization setup.
 

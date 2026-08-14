@@ -18,7 +18,7 @@ __all__ = [
     'list_Translator_APIs',
     'load_translator_resources',
     'neighborhood_finder',
-    'pathfinder',
+    'query_TCT_pathfinder',
     'get_translator_resources',
     'clear_translator_resource_cache',
     'FinderResult',
@@ -1100,7 +1100,7 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 # module). These wrappers resolve human-readable names, normalize CURIEs,
 # load Translator resources lazily, and return a small result object with the
 # most useful output fields surfaced directly. Import them from the
-# top-level package, e.g. ``from TCT import pathfinder, neighborhood_finder``.
+# top-level package, e.g. ``from TCT import query_TCT_pathfinder, neighborhood_finder``.
 # ---------------------------------------------------------------------------
 
 NodeInput: TypeAlias = str
@@ -1178,7 +1178,7 @@ def get_translator_resources(*, refresh: bool = False) -> TranslatorResources:
     Examples
     --------
     >>> resources = get_translator_resources()
-    >>> paths = pathfinder("asthma", "albuterol", ["Gene"], resources=resources)
+    >>> paths = query_TCT_pathfinder("asthma", "albuterol", ["Gene"], resources=resources)
     """
     global _DEFAULT_TRANSLATOR_RESOURCES
     if refresh or _DEFAULT_TRANSLATOR_RESOURCES is None:
@@ -2455,11 +2455,11 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 
 # ---------------------------------------------------------------------------
 # Developer-friendly finder entry points live in their submodules and are
-# re-exported here as the top-level package API (``from TCT import pathfinder``).
+# re-exported here as the top-level package API (``from TCT import query_TCT_pathfinder``).
 # Imported after the shared helpers above are defined so the submodules can
 # pull sele_predicates_API and these helpers from this module without a
 # circular import.
 # ---------------------------------------------------------------------------
-from .TCT_pathfinder import pathfinder  # noqa: E402
+from .TCT_pathfinder import query_TCT_pathfinder  # noqa: E402
 from .TCT_neighborhood_finder import neighborhood_finder  # noqa: E402
 

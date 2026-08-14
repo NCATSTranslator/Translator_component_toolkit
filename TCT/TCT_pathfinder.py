@@ -390,7 +390,7 @@ def query_arax_pathfinder_with_constraints(node1_id, node1_category, node2_id, n
     return response
 
 
-def pathfinder(
+def query_TCT_pathfinder(
     start: NodeInput,
     end: NodeInput,
     intermediate_categories: CategoryList,
@@ -447,8 +447,8 @@ def pathfinder(
 
     Examples
     --------
-    >>> from TCT import pathfinder
-    >>> result = pathfinder("asthma", "albuterol", ["Gene"])
+    >>> from TCT import query_TCT_pathfinder
+    >>> result = query_TCT_pathfinder("asthma", "albuterol", ["Gene"])
     >>> result.resolved_nodes["start"].curie
     'MONDO:0004979'
     """

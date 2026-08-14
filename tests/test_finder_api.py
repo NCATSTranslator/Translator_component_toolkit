@@ -9,7 +9,7 @@ from TCT import (
     clear_translator_resource_cache,
     get_translator_resources,
     neighborhood_finder,
-    pathfinder,
+    query_TCT_pathfinder,
 )
 from TCT import TCT as tct_main
 from TCT import TCT_neighborhood_finder as tct_neighborhood_finder
@@ -203,7 +203,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
         lambda *args, **kwargs: _raw_output(),
     )
 
-    result = pathfinder(
+    result = query_TCT_pathfinder(
         "asthma",
         "albuterol",
         ["Gene"],
