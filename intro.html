@@ -47,7 +47,9 @@ Parallel and fast querying of the selected APIs.<br>
 Providing reproducible results by setting constraints.<br>
 Allowing testing whether a user defined API follows a <a class="reference external" href="https://github.com/NCATSTranslator/ReasonerAPI">TRAPI</a> standard or not. <br>
 Faciliting to explore knowledge graphs from both Translator ecosystem and user defined APIs.<br>
-Connecting large language models to convert user’s questions into TRAPI queries. <br></p>
+Developer-friendly <code class="docutils literal notranslate"><span class="pre">pathfinder</span></code> and <code class="docutils literal notranslate"><span class="pre">neighborhood_finder</span></code> wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results (<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">TCT</span> <span class="pre">import</span> <span class="pre">query_TCT_pathfinder,</span> <span class="pre">neighborhood_finder</span></code>). <br>
+Connecting large language models to convert user’s questions into TRAPI queries. <br>
+<em>Note: Visualization capabilities (pyvis, matplotlib, seaborn) can be installed via the <code class="docutils literal notranslate"><span class="pre">vision</span></code> extra using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">TCT[vision]</span></code></em></p>
 <section id="contributing">
 <h3>Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h3>
 <p>TCT is a tool that helps to explore knowledge graphs developed in the Biomedical Data Translator Consortium. Consortium members and external contributors are encouraged to submit issues and pull requests.</p>
@@ -61,7 +63,14 @@ Connecting large language models to convert user’s questions into TRAPI querie
 <h2>How to use TCT<a class="headerlink" href="#how-to-use-tct" title="Link to this heading">¶</a></h2>
 <section id="install-requirements">
 <h3>Install Requirements<a class="headerlink" href="#install-requirements" title="Link to this heading">¶</a></h3>
-<p>To install TCT as a python library, you can install the library using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">TCT</span></code> from the command line.</p>
+<p>To install the minimal TCT package, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>TCT
+</pre></div>
+</div>
+<p>Visualization support is optional. Install it with the <code class="docutils literal notranslate"><span class="pre">vision</span></code> extra when you need the plotting and graph-rendering utilities:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;TCT[vision]&quot;</span>
+</pre></div>
+</div>
 <p>The TCT is continuously updated, if you would like to use the latest functions, you can also  clone this most recent github repository (https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main),
 <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/NCATSTranslator/Translator_component_toolkit.git</span></code>
 <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">Translator_component_toolkit</span></code>

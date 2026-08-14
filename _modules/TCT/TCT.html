@@ -31,19 +31,17 @@
           <div class="body" role="main">
             
   <h1>Source code for TCT.TCT</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w">  </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="c1">#import openai</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span><span class="p">,</span> <span class="n">node_normalizer</span><span class="p">,</span> <span class="n">translator_query</span>
 
 <span class="c1"># plt.switch_backend(&#39;module://ipykernel.pylab.backend_inline&#39;)</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">&#39;TCT_help&#39;</span><span class="p">,</span>
@@ -52,8 +50,13 @@
     <span class="s1">&#39;get_SmartAPI_Translator_KP_info&#39;</span><span class="p">,</span>
     <span class="s1">&#39;list_Translator_APIs&#39;</span><span class="p">,</span>
     <span class="s1">&#39;load_translator_resources&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Neighborhood_finder&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;Path_finder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;neighborhood_finder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;query_TCT_pathfinder&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_translator_resources&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;clear_translator_resource_cache&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;FinderResult&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;ResolvedNode&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;TranslatorResources&#39;</span><span class="p">,</span>
     <span class="s1">&#39;format_query_json&#39;</span><span class="p">,</span>
     <span class="s1">&#39;select_API&#39;</span><span class="p">,</span>
     <span class="s1">&#39;select_concept&#39;</span><span class="p">,</span>
@@ -83,8 +86,6 @@
     <span class="s1">&#39;extract_json&#39;</span><span class="p">,</span>
     <span class="s1">&#39;TRAPI_json_validation&#39;</span>
 <span class="p">]</span>
-
-
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">TCT_help</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
@@ -130,7 +131,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the SmartAPI Translator KP info from the smart-api.info API.</span>
 <span class="sd">    Returns a DataFrame with the SmartAPI Translator KP info.</span>
-
 
 
 <span class="sd">    Examples</span>
@@ -471,10 +471,6 @@
     <span class="k">return</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span>
 
 
-
-
-
-
 <span class="c1"># used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
 <div class="viewcode-block" id="select_API">
 <a class="viewcode-back" href="../../TCT.html#TCT.TCT.select_API">[docs]</a>
@@ -510,7 +506,6 @@
     <span class="n">df2</span> <span class="o">=</span> <span class="n">metaKG</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Subject&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">new_obj_list</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Object&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">new_sub_list</span><span class="p">))]</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df1</span><span class="p">,</span><span class="n">df2</span><span class="p">])</span>
     <span class="k">return</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;API&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span></div>
-
 
 
 
@@ -744,7 +739,6 @@
                 <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 
-
         <span class="n">cur_predicates</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_predicates</span><span class="p">:</span>
@@ -861,7 +855,6 @@
                     <span class="n">primary_infore_by_nodes</span><span class="p">[</span><span class="n">predict</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 
-
             <span class="n">cur_predicates</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="p">[</span><span class="n">new_id</span><span class="p">][</span><span class="s1">&#39;predicate&#39;</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">predicates_list</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">predict</span> <span class="ow">in</span> <span class="n">cur_predicates</span><span class="p">:</span>
@@ -904,6 +897,9 @@
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                                  <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                                  <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+
     <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
 
     <span class="c1">#title = &quot;Ranking of one-hop nodes by primary infores&quot;</span>
@@ -940,12 +936,12 @@
     <span class="c1">#plt.savefig(output_png, bbox_inches=&#39;tight&#39;, dpi=300)</span>
 
 
-
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_heatmap_ui</span><span class="p">(</span><span class="n">predicates_by_nodes_df</span><span class="p">,</span><span class="n">num_of_nodes</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
                                  <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
                                  <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                                  <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
-
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
 
     <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;Ranking of one-hop nodes by primary infores&quot;</span>
     <span class="n">ylab</span> <span class="o">=</span> <span class="s2">&quot;infores&quot;</span>
@@ -1153,193 +1149,347 @@
 
     <span class="k">return</span> <span class="n">ranked_result</span>
 
-<div class="viewcode-block" id="Neighborhood_finder">
-<a class="viewcode-back" href="../../TCT.html#TCT.TCT.Neighborhood_finder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">Neighborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[]):</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Developer-friendly finder APIs (promoted from the former TCT.experimental</span>
+<span class="c1"># module). These wrappers resolve human-readable names, normalize CURIEs,</span>
+<span class="c1"># load Translator resources lazily, and return a small result object with the</span>
+<span class="c1"># most useful output fields surfaced directly. Import them from the</span>
+<span class="c1"># top-level package, e.g. ``from TCT import query_TCT_pathfinder, neighborhood_finder``.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<span class="n">NodeInput</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">CategoryInput</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">str</span>
+<span class="n">CategoryList</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="nb">list</span><span class="p">[</span><span class="n">CategoryInput</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ResolvedNode">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.ResolvedNode">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ResolvedNode</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolved node metadata used by the finder APIs.&quot;&quot;&quot;</span>
+
+    <span class="n">input_value</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">curie</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">categories</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="TranslatorResources">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.TranslatorResources">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TranslatorResources</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Translator API metadata required by the finder query functions.&quot;&quot;&quot;</span>
+
+    <span class="n">api_names</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+    <span class="n">meta_kg</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="n">api_predicates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span></div>
+
+
+
+<div class="viewcode-block" id="FinderResult">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.FinderResult">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FinderResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience wrapper around a parsed TRAPI-style finder response.&quot;&quot;&quot;</span>
+
+    <span class="n">query</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">knowledge_graph</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+    <span class="n">auxiliary_graphs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="n">resolved_nodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ResolvedNode</span><span class="p">]</span>
+    <span class="n">raw</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+
+<div class="viewcode-block" id="FinderResult.to_dict">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.FinderResult.to_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the raw parsed TRAPI-style output dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Full parsed output generated by the existing finder parser.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; result = FinderResult({}, {}, [], {}, {}, {})</span>
+<span class="sd">        &gt;&gt;&gt; result.to_dict()</span>
+<span class="sd">        {}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw</span></div>
+</div>
+
+
+
+<span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TranslatorResources</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="get_translator_resources">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.get_translator_resources">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_translator_resources</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranslatorResources</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is used to find the neighborhood of a given input node with intermediate categories.</span>
+<span class="sd">    Return cached Translator API metadata, loading it on first use.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Parameters:</span>
-<span class="sd">    input_node (str): The input node - should be a CURIE id.</span>
-<span class="sd">    node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.</span>
-<span class="sd">    APInames (dict): A dictionary containing the names of the APIs to be used.</span>
-<span class="sd">    metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.</span>
-<span class="sd">    API_predicates (dict): A dictionary containing the predicates for each API.</span>
-<span class="sd">    input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    refresh : bool</span>
+<span class="sd">        If true, refetch SmartAPI/MetaKG data even when the singleton is</span>
+<span class="sd">        already populated.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Returns:</span>
-<span class="sd">    input_node_id (str): The curie id of the input node.</span>
-<span class="sd">    result (dict): The result of the query for the input node.</span>
-<span class="sd">    result_parsed (DataFrame): The parsed results for the input node.</span>
-<span class="sd">    result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    TranslatorResources</span>
+<span class="sd">        API names, MetaKG dataframe, and API predicate mapping used by the</span>
+<span class="sd">        finder functions.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neighborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
-<span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
-<span class="sd">                                                                                            APInames = APInames,</span>
-<span class="sd">                                                                                            metaKG = metaKG,</span>
-<span class="sd">                                                                                            API_predicates = API_predicates)</span>
-<span class="sd">    --------------</span>
-
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; resources = get_translator_resources()</span>
+<span class="sd">    &gt;&gt;&gt; paths = query_TCT_pathfinder(&quot;asthma&quot;, &quot;albuterol&quot;, [&quot;Gene&quot;], resources=resources)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
-
-    <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node</span>
-    <span class="c1"># Step 1: Resolve the input node to get its curie id and categories</span>
-    <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
-
-    <span class="c1"># Step 2: Select predicates and APIs based on the intermediate categories</span>
-    <span class="n">sele_predicates</span><span class="p">,</span> <span class="n">sele_APIs</span><span class="p">,</span> <span class="n">API_URLs</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">,</span>
-                                                                <span class="n">node2_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
-
-    <span class="c1"># Step 3: Format the query JSON for the input node</span>
-    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">([</span><span class="n">input_node_id</span><span class="p">],</span> <span class="p">[],</span>
-                                   <span class="p">[</span><span class="n">input_node_category</span><span class="p">],</span>
-                                   <span class="n">node2_categories</span><span class="p">,</span>
-                                   <span class="n">sele_predicates</span><span class="p">)</span>
-
-    <span class="c1"># Step 4: Query the APIs in parallel</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span>
-                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span>
-                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
-                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
-                             <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">))</span>
-    <span class="n">result_parsed</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="c1"># Step 7: Ranking the results. This ranking method is based on the number of unique</span>
-        <span class="c1"># primary infores. It can only be used to rank the results with one defined node.</span>
-    <span class="n">result_ranked_by_primary_infores1</span> <span class="o">=</span> <span class="n">rank_by_primary_infores</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span> <span class="n">input_node_id</span><span class="p">)</span>   <span class="c1"># input_node1_id is the curie id of the</span>
-    <span class="k">return</span> <span class="n">input_node_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">result_parsed</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores1</span></div>
+    <span class="k">global</span> <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span>
+    <span class="k">if</span> <span class="n">refresh</span> <span class="ow">or</span> <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">api_names</span><span class="p">,</span> <span class="n">meta_kg</span><span class="p">,</span> <span class="n">api_predicates</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">translator_query</span><span class="o">.</span><span class="n">get_translator_API_predicates</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span> <span class="o">=</span> <span class="n">TranslatorResources</span><span class="p">(</span>
+            <span class="n">api_names</span><span class="o">=</span><span class="n">api_names</span><span class="p">,</span>
+            <span class="n">meta_kg</span><span class="o">=</span><span class="n">meta_kg</span><span class="p">,</span>
+            <span class="n">api_predicates</span><span class="o">=</span><span class="n">api_predicates</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span></div>
 
 
-<div class="viewcode-block" id="Path_finder">
-<a class="viewcode-back" href="../../TCT.html#TCT.TCT.Path_finder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">Path_finder</span><span class="p">(</span><span class="n">input_node1</span><span class="p">,</span> <span class="n">input_node2</span><span class="p">,</span> <span class="n">intermediate_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span> <span class="n">input_node1_category</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">input_node2_category</span> <span class="o">=</span> <span class="p">[]):</span>
+
+<div class="viewcode-block" id="clear_translator_resource_cache">
+<a class="viewcode-back" href="../../TCT.html#TCT.TCT.clear_translator_resource_cache">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clear_translator_resource_cache</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is used to find paths between two input nodes with intermediate categories.</span>
+<span class="sd">    Clear the in-memory Translator resource singleton.</span>
 
-<span class="sd">    --------------</span>
-<span class="sd">    Parameters:</span>
-<span class="sd">    input_node1 (str): The first input node - should be a CURIE id.</span>
-<span class="sd">    input_node2 (str): The second input node - should be a CURIE id.</span>
-<span class="sd">    intermediate_categories (list): A list of intermediate categories to be used in the path finding process.</span>
-
-<span class="sd">    --------------</span>
-<span class="sd">    Returns:</span>
-<span class="sd">    paths (DataFrame): A DataFrame containing the paths found between the two input nodes.</span>
-<span class="sd">    input_node1_id (str): The curie id of the first input node.</span>
-<span class="sd">    input_node2_id (str): The curie id of the second input node.</span>
-<span class="sd">    result1 (dict): The result of the query for the first input node.</span>
-<span class="sd">    result2 (dict): The result of the query for the second input node.</span>
-<span class="sd">    result_parsed1 (DataFrame): The parsed results for the first input node.</span>
-<span class="sd">    result_parsed2 (DataFrame): The parsed results for the second input node.</span>
-<span class="sd">    result_ranked_by_primary_infores1 (DataFrame): The ranked results for the first input node based on primary infores.</span>
-<span class="sd">    result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second</span>
-<span class="sd">    --------------</span>
-<span class="sd">    Example:</span>
-<span class="sd">    &gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(&#39;NCBIGene:7477&#39;, &#39;NCBIGene:4869&#39;, [&#39;biolink:Gene&#39;, &#39;biolink:Protein&#39;]) # Input genes are WNT7B, NPM1</span>
-<span class="sd">    --------------</span>
-
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; clear_translator_resource_cache()</span>
+<span class="sd">    &gt;&gt;&gt; resources = get_translator_resources()  # refetches</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
-    <span class="n">input_node1_id</span> <span class="o">=</span> <span class="n">input_node1</span>
-    <span class="n">input_node2_id</span> <span class="o">=</span> <span class="n">input_node2</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">)</span>
-    <span class="n">normalized_node_dict</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">([</span><span class="n">input_node1_id</span><span class="p">,</span> <span class="n">input_node2_id</span><span class="p">])</span>
-    <span class="n">input_node1_info</span> <span class="o">=</span> <span class="n">normalized_node_dict</span><span class="p">[</span><span class="n">input_node1</span><span class="p">]</span>
-    <span class="n">input_node1_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node1_id</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span>
+    <span class="k">global</span> <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span>
+    <span class="n">_DEFAULT_TRANSLATOR_RESOURCES</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_category</span><span class="p">(</span><span class="n">category</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a category into a Biolink-prefixed category string.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    category : str</span>
+<span class="sd">        Category name, with or without the ``biolink:`` prefix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Biolink-prefixed category.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; _normalize_category(&quot;Gene&quot;)</span>
+<span class="sd">    &#39;biolink:Gene&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">category</span> <span class="o">=</span> <span class="n">category</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">category</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;biolink:&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">category</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;biolink:</span><span class="si">{</span><span class="n">category</span><span class="si">}</span><span class="s2">&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_categories</span><span class="p">(</span><span class="n">categories</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CategoryList</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Normalize a list of category strings.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    categories : list[str], optional</span>
+<span class="sd">        Category names, with or without ``biolink:`` prefixes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[str] or None</span>
+<span class="sd">        Normalized category names, or None when no categories were provided.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">categories</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_normalize_category</span><span class="p">(</span><span class="n">category</span><span class="p">)</span> <span class="k">for</span> <span class="n">category</span> <span class="ow">in</span> <span class="n">categories</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_looks_like_curie</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether a string looks like a CURIE.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : str</span>
+<span class="sd">        Candidate node input.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True when the value appears to be a CURIE.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;:&quot;</span> <span class="ow">in</span> <span class="n">value</span> <span class="ow">and</span> <span class="s2">&quot; &quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_node</span><span class="p">(</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name_resolver_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">node_normalizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ResolvedNode</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve a CURIE or display string into a normalized Translator node.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : str</span>
+<span class="sd">        CURIE or human-readable name.</span>
+<span class="sd">    name_resolver_kwargs : dict, optional</span>
+<span class="sd">        Additional keyword arguments for Name Resolver lookup.</span>
+<span class="sd">    node_normalizer_kwargs : dict, optional</span>
+<span class="sd">        Additional keyword arguments for Node Normalizer.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ResolvedNode</span>
+<span class="sd">        Original input, preferred CURIE, label, and Biolink categories.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    LookupError</span>
+<span class="sd">        If the input cannot be resolved or normalized.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">node_normalizer_kwargs</span> <span class="o">=</span> <span class="n">node_normalizer_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">_looks_like_curie</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">node_normalizer_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not normalize CURIE: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">input_node1_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">input_node1_category</span> <span class="o">=</span> <span class="n">input_node1_info</span><span class="o">.</span><span class="n">types</span>
+        <span class="n">resolved</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">return_top_response</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="p">(</span><span class="n">name_resolver_kwargs</span> <span class="ow">or</span> <span class="p">{}),</span>
+        <span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span>
+                <span class="n">resolved</span><span class="o">.</span><span class="n">curie</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">node_normalizer_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="ow">or</span> <span class="n">resolved</span>
+        <span class="p">)</span>
 
-    <span class="n">input_node2_info</span> <span class="o">=</span> <span class="n">normalized_node_dict</span><span class="p">[</span><span class="n">input_node2_id</span><span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">input_node2_id</span><span class="p">)</span>
-    <span class="n">input_node2_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node2_id</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node2_category</span> <span class="o">=</span> <span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">input_node2_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">input_node2_category</span> <span class="o">=</span> <span class="n">input_node2_info</span><span class="o">.</span><span class="n">types</span>
+    <span class="k">return</span> <span class="n">ResolvedNode</span><span class="p">(</span>
+        <span class="n">input_value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+        <span class="n">curie</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">curie</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+        <span class="n">categories</span><span class="o">=</span><span class="n">node</span><span class="o">.</span><span class="n">types</span> <span class="ow">or</span> <span class="p">[],</span>
+    <span class="p">)</span>
 
 
-    <span class="c1"># Step 5: Select predicates and APIs based on the intermediate categories</span>
-    <span class="n">sele_predicates1</span><span class="p">,</span> <span class="n">sele_APIs1</span><span class="p">,</span> <span class="n">API_URLs1</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node1_category</span><span class="p">,</span>
-                                                                <span class="n">intermediate_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
-    <span class="n">sele_predicates2</span><span class="p">,</span> <span class="n">sele_APIs2</span><span class="p">,</span> <span class="n">API_URLs2</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node2_category</span><span class="p">,</span>
-                                                                <span class="n">intermediate_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_nodes</span><span class="p">(</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">NodeInput</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeInput</span><span class="p">]],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">name_resolver_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">node_normalizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">ResolvedNode</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resolve one or more node inputs.</span>
 
-    <span class="n">query_json1</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">input_node1_list</span><span class="p">,</span>  <span class="c1"># a list of identifiers for input node1</span>
-                                    <span class="p">[],</span>  <span class="c1"># id list for the intermediate node, it can be empty list if only want to query node1</span>
-                                    <span class="n">input_node1_category</span><span class="p">,</span>  <span class="c1"># a list of categories of input node1</span>
-                                    <span class="n">intermediate_categories</span><span class="p">,</span>  <span class="c1"># a list of categories of the intermediate node</span>
-                                    <span class="n">sele_predicates1</span><span class="p">)</span> <span class="c1"># a list of predicates</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values : str or list[str]</span>
+<span class="sd">        CURIE or display-string node inputs.</span>
+<span class="sd">    name_resolver_kwargs : dict, optional</span>
+<span class="sd">        Additional keyword arguments for Name Resolver lookup.</span>
+<span class="sd">    node_normalizer_kwargs : dict, optional</span>
+<span class="sd">        Additional keyword arguments for Node Normalizer.</span>
 
-    <span class="n">query_json2</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">input_node2_list</span><span class="p">,</span>  <span class="c1"># a list of identifiers for input node2</span>
-                                    <span class="p">[],</span>  <span class="c1"># id list for the intermediate node, it can be empty list if only want to query node2</span>
-                                    <span class="n">input_node2_category</span><span class="p">,</span>  <span class="c1"># a list of categories of input node2</span>
-                                    <span class="n">intermediate_categories</span><span class="p">,</span>  <span class="c1"># a list of categories of the intermediate node</span>
-                                    <span class="n">sele_predicates2</span><span class="p">)</span> <span class="c1"># a list of predicates</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[ResolvedNode]</span>
+<span class="sd">        Resolved nodes in the same order as input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">values</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">_resolve_node</span><span class="p">(</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">name_resolver_kwargs</span><span class="o">=</span><span class="n">name_resolver_kwargs</span><span class="p">,</span>
+            <span class="n">node_normalizer_kwargs</span><span class="o">=</span><span class="n">node_normalizer_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span>
+    <span class="p">]</span>
 
-    <span class="n">result1</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json1</span><span class="p">,</span>
-                             <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs1</span><span class="p">,</span>
-                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
-                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
-                             <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs1</span><span class="p">))</span>
-    <span class="n">result2</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json2</span><span class="p">,</span>
-                                <span class="n">select_APIs</span> <span class="o">=</span> <span class="n">sele_APIs2</span><span class="p">,</span>
-                                <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
-                                <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
-                                <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs2</span><span class="p">))</span>
 
-    <span class="n">result_parsed1</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result1</span><span class="p">)</span>
-        <span class="c1"># Step 7: Ranking the results. This ranking method is based on the number of unique</span>
-        <span class="c1"># primary infores. It can only be used to rank the results with one defined node.</span>
-    <span class="n">result_ranked_by_primary_infores1</span> <span class="o">=</span> <span class="n">rank_by_primary_infores</span><span class="p">(</span><span class="n">result_parsed1</span><span class="p">,</span> <span class="n">input_node1_id</span><span class="p">)</span>   <span class="c1"># input_node1_id is the curie id of the</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_resources</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TranslatorResources</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">api_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">meta_kg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">api_predicates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranslatorResources</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merge explicit resource overrides with caller-provided or singleton resources.</span>
 
-    <span class="n">result_parsed2</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result2</span><span class="p">)</span>
-    <span class="n">result_ranked_by_primary_infores2</span> <span class="o">=</span> <span class="n">rank_by_primary_infores</span><span class="p">(</span><span class="n">result_parsed2</span><span class="p">,</span> <span class="n">input_node2_id</span><span class="p">)</span>   <span class="c1"># input_node2_id is the curie id of the</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    resources : TranslatorResources, optional</span>
+<span class="sd">        Complete resource object to use as the base.</span>
+<span class="sd">    api_names, meta_kg, api_predicates : optional</span>
+<span class="sd">        Partial overrides for the base resource object.</span>
 
-    <span class="n">possible_paths</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores2</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">])))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of possible paths: &quot;</span><span class="p">,</span> <span class="n">possible_paths</span><span class="p">)</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    TranslatorResources</span>
+<span class="sd">        Complete resource bundle for a query.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">resources</span> <span class="ow">or</span> <span class="n">get_translator_resources</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">TranslatorResources</span><span class="p">(</span>
+        <span class="n">api_names</span><span class="o">=</span><span class="n">api_names</span> <span class="k">if</span> <span class="n">api_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base</span><span class="o">.</span><span class="n">api_names</span><span class="p">,</span>
+        <span class="n">meta_kg</span><span class="o">=</span><span class="n">meta_kg</span> <span class="k">if</span> <span class="n">meta_kg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base</span><span class="o">.</span><span class="n">meta_kg</span><span class="p">,</span>
+        <span class="n">api_predicates</span><span class="o">=</span><span class="n">api_predicates</span>
+        <span class="k">if</span> <span class="n">api_predicates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="n">base</span><span class="o">.</span><span class="n">api_predicates</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="n">paths</span> <span class="o">=</span> <span class="n">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores2</span><span class="p">,</span>
-                                            <span class="n">top_n</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
-                                            <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-                                            <span class="n">title_fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,)</span>
-    <span class="c1"># return an boject containing the paths and the ranked results for both input nodes. The ranked results can be used for further analysis or visualization.</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="n">paths</span><span class="p">,</span>
-        <span class="s2">&quot;input_node1_id&quot;</span><span class="p">:</span> <span class="n">input_node1_id</span><span class="p">,</span>
-        <span class="s2">&quot;input_node2_id&quot;</span><span class="p">:</span> <span class="n">input_node2_id</span><span class="p">,</span>
-        <span class="s2">&quot;result1&quot;</span><span class="p">:</span> <span class="n">result1</span><span class="p">,</span>
-        <span class="s2">&quot;result2&quot;</span><span class="p">:</span> <span class="n">result2</span><span class="p">,</span>
-        <span class="s2">&quot;result_parsed1&quot;</span><span class="p">:</span> <span class="n">result_parsed1</span><span class="p">,</span>
-        <span class="s2">&quot;result_parsed2&quot;</span><span class="p">:</span> <span class="n">result_parsed2</span><span class="p">,</span>
-        <span class="s2">&quot;result_ranked_by_primary_infores1&quot;</span><span class="p">:</span> <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span>
-        <span class="s2">&quot;result_ranked_by_primary_infores2&quot;</span><span class="p">:</span> <span class="n">result_ranked_by_primary_infores2</span>
-    <span class="p">}</span>
-    <span class="c1">#return paths,  input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2</span>
-    <span class="k">return</span>  <span class="n">result</span></div>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_finder_result</span><span class="p">(</span>
+    <span class="n">raw_output</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">resolved_nodes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ResolvedNode</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinderResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a FinderResult from a parsed TRAPI-style output dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raw_output : dict</span>
+<span class="sd">        Parsed output from an existing finder parser.</span>
+<span class="sd">    resolved_nodes : dict[str, ResolvedNode]</span>
+<span class="sd">        Resolved input-node metadata keyed by role.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    FinderResult</span>
+<span class="sd">        Convenience result wrapper.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">FinderResult</span><span class="p">(</span>
+        <span class="n">query</span><span class="o">=</span><span class="n">raw_output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;query_graph&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+        <span class="n">knowledge_graph</span><span class="o">=</span><span class="n">raw_output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;knowledge_graph&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+        <span class="n">results</span><span class="o">=</span><span class="n">raw_output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="p">[]),</span>
+        <span class="n">auxiliary_graphs</span><span class="o">=</span><span class="n">raw_output</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;auxiliary_graphs&quot;</span><span class="p">,</span> <span class="p">{}),</span>
+        <span class="n">resolved_nodes</span><span class="o">=</span><span class="n">resolved_nodes</span><span class="p">,</span>
+        <span class="n">raw</span><span class="o">=</span><span class="n">raw_output</span><span class="p">,</span>
+    <span class="p">)</span>
 
 
 <span class="c1"># used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
@@ -1429,7 +1579,6 @@
             <span class="n">dic_nodes</span><span class="p">[</span><span class="nb">object</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">subject</span><span class="p">]</span>
 
 
-
     <span class="n">dic_remain_nodes</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="n">dic_with_input_nodes</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1449,8 +1598,6 @@
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic_with_input_nodes</span><span class="p">:</span>
         <span class="n">dic_with_input_nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dic_with_input_nodes</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-
-
 
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dic_with_input_nodes</span><span class="p">:</span>
@@ -1532,7 +1679,6 @@
 
 
 
-
 <span class="c1"># parse results to a dictionary. Dec 5, 2023</span>
 <span class="c1"># used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
 <div class="viewcode-block" id="rank_by_primary_infores">
@@ -1580,10 +1726,8 @@
     <span class="n">rank_df</span><span class="p">[</span><span class="s1">&#39;unique_predicates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">unique_predicates</span>
 
 
-
     <span class="n">rank_df_ranked</span> <span class="o">=</span> <span class="n">rank_df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Num_of_primary_infores&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="k">return</span><span class="p">(</span><span class="n">rank_df_ranked</span><span class="p">)</span></div>
-
 
 
 
@@ -1594,7 +1738,8 @@
                            <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                            <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
                            <span class="p">):</span>
-
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
 
     <span class="n">dic_rank1</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -1643,7 +1788,6 @@
     <span class="k">return</span> <span class="n">result_xy_sorted</span>
 
 
-
 <span class="k">def</span><span class="w"> </span><span class="nf">merge_ranking_by_number_of_infores</span><span class="p">(</span><span class="n">result_ranked_by_primary_infores</span><span class="p">,</span>
                                        <span class="n">result_ranked_by_primary_infores1</span><span class="p">,</span>
                                        <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -1675,7 +1819,6 @@
     <span class="n">result_xy</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dic_xy</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span>
     <span class="n">result_xy</span><span class="p">[</span><span class="s1">&#39;output_node&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result_xy</span><span class="o">.</span><span class="n">index</span>
     <span class="c1"># convert the output_node to preferred name</span>
-
 
 
     <span class="c1">#result_xy[&quot;output_node_name&quot;] = new_colnames</span>
@@ -1712,6 +1855,9 @@
                     <span class="n">fontsize</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
                     <span class="n">title_fontsize</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                     <span class="n">output_png</span><span class="o">=</span><span class="s2">&quot;NE_heatmap.png&quot;</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+
     <span class="c1">#matplotlib.use(&#39;Agg&#39;)</span>
 
     <span class="c1"># title = &quot;Bridging nodes&quot;  # Unused variable</span>
@@ -1813,8 +1959,6 @@
     <span class="k">return</span><span class="p">(</span><span class="n">result_dict</span><span class="p">,</span> <span class="n">result_concept</span><span class="p">)</span>
 
 
-
-
 <span class="c1"># to be revised</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">connecting_two_dots_two_hops</span><span class="p">(</span><span class="n">sorted_dic1</span><span class="p">,</span> <span class="n">sorted_dic</span><span class="p">):</span>
     <span class="n">intermediate</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1904,8 +2048,10 @@
     <span class="k">return</span><span class="p">(</span><span class="n">for_plot</span><span class="p">)</span>
 
 
-
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_predicates</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                 <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
                                 <span class="n">target</span><span class="o">=</span><span class="s1">&#39;Object&#39;</span><span class="p">,</span>
@@ -1954,6 +2100,8 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_infores</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                     <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
@@ -2003,6 +2151,8 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_graph_by_API</span><span class="p">(</span><span class="n">for_plot</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
 
     <span class="n">graph</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">from_pandas_edgelist</span><span class="p">(</span><span class="n">for_plot</span><span class="p">,</span>
                                     <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Subject&#39;</span><span class="p">,</span>
@@ -2185,7 +2335,6 @@
 <span class="c1">#    return response</span>
 
 
-
 <span class="c1">#def ask_chatGPT4(prompt_text):</span>
 <span class="c1">#    response = query_chatGPT4(prompt_text)</span>
 <span class="c1">#    return response</span>
@@ -2218,6 +2367,9 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">visulize_path</span><span class="p">(</span><span class="n">input_node1_id</span><span class="p">,</span> <span class="n">intermediate_node</span><span class="p">,</span> <span class="n">input_node3_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">result2</span><span class="p">):</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">networkx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nx</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+
     <span class="n">forplot_subject</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">forplot_object</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">forplot_predicate</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2383,6 +2535,17 @@
 
     <span class="n">similar_predicate</span>
     <span class="k">return</span> <span class="n">similar_predicate</span>
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Developer-friendly finder entry points live in their submodules and are</span>
+<span class="c1"># re-exported here as the top-level package API (``from TCT import query_TCT_pathfinder``).</span>
+<span class="c1"># Imported after the shared helpers above are defined so the submodules can</span>
+<span class="c1"># pull sele_predicates_API and these helpers from this module without a</span>
+<span class="c1"># circular import.</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.TCT_pathfinder</span><span class="w"> </span><span class="kn">import</span> <span class="n">query_TCT_pathfinder</span>  <span class="c1"># noqa: E402</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.TCT_neighborhood_finder</span><span class="w"> </span><span class="kn">import</span> <span class="n">neighborhood_finder</span>  <span class="c1"># noqa: E402</span>
 
 </pre></div>
 

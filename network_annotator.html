@@ -43,9 +43,9 @@ It will only include the input nodes and the nodes that are connected to the inp
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>result_parsed</strong><span class="classifier">dict</span></dt><dd><p>The parsed results for results from TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().</p>
+<dt><strong>result_parsed</strong><span class="classifier">dict</span></dt><dd><p>The parsed results (<code class="docutils literal notranslate"><span class="pre">FinderResult.raw</span></code>) from <code class="docutils literal notranslate"><span class="pre">TCT_neighborhood_finder.neighborhood_finder()</span></code> run with multiple input nodes.</p>
 </dd>
-<dt><strong>input_identifiers</strong><span class="classifier">list</span></dt><dd><p>A list of input node identifiers, which are also input for TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().</p>
+<dt><strong>input_identifiers</strong><span class="classifier">list</span></dt><dd><p>A list of input node identifiers, which are also input for <code class="docutils literal notranslate"><span class="pre">TCT_neighborhood_finder.neighborhood_finder()</span></code>.</p>
 </dd>
 </dl>
 </dd>
@@ -58,11 +58,12 @@ It will only include the input nodes and the nodes that are connected to the inp
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">input_identifiers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;NCBIGene:6774&#39;</span><span class="p">,</span> <span class="s1">&#39;NCBIGene:4170&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:4792&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:4288&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:596&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:581&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:836&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:6777&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:4790&#39;</span><span class="p">,</span><span class="s1">&#39;NCBIGene:545&#39;</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="p">,</span> <span class="n">result_parsed</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">input_identifiers</span><span class="p">,</span>
-<span class="go">                                                                                        node2_categories = [&#39;biolink:Gene&#39;,&#39;biolink:Protein&#39;],</span>
-<span class="go">                                                                                        APInames = APInames,</span>
-<span class="go">                                                                                        metaKG = metaKG,</span>
-<span class="go">                                                                                        API_predicates = API_predicates)   </span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">finder_result</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">neighborhood_finder</span><span class="p">(</span><span class="n">input_identifiers</span><span class="p">,</span>
+<span class="go">                                                                neighbor_categories=[&#39;biolink:Gene&#39;,&#39;biolink:Protein&#39;],</span>
+<span class="go">                                                                api_names=APInames,</span>
+<span class="go">                                                                meta_kg=metaKG,</span>
+<span class="go">                                                                api_predicates=API_predicates)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result_parsed</span> <span class="o">=</span> <span class="n">finder_result</span><span class="o">.</span><span class="n">raw</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">TCT_network_annotator</span><span class="o">.</span><span class="n">get_connected_graph</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span> <span class="n">input_identifiers</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>

@@ -33,12 +33,25 @@
   <h1>Source code for TCT.TCT_neighborhood_finder</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">sele_predicates_API</span><span class="p">,</span> <span class="n">parse_KG</span><span class="p">,</span> <span class="n">rank_by_primary_infores</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.TCT</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CategoryList</span><span class="p">,</span>
+    <span class="n">FinderResult</span><span class="p">,</span>
+    <span class="n">NodeInput</span><span class="p">,</span>
+    <span class="n">TranslatorResources</span><span class="p">,</span>
+    <span class="n">_build_finder_result</span><span class="p">,</span>
+    <span class="n">_get_resources</span><span class="p">,</span>
+    <span class="n">_normalize_categories</span><span class="p">,</span>
+    <span class="n">_resolve_nodes</span><span class="p">,</span>
+    <span class="n">sele_predicates_API</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.TCT_pathfinder</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_score_results</span><span class="p">,</span> <span class="n">build_query_graph</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.translator_query</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_query_json</span>
 
 <div class="viewcode-block" id="parse_results_for_neighborhood_finder">
-<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT_neighborhood_finder.parse_results_for_neighborhood_finder">[docs]</a>
+<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT.parse_results_for_neighborhood_finder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
         <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -133,7 +146,7 @@
 
 <span class="c1"># TODO: can we use multiple input nodes?</span>
 <div class="viewcode-block" id="parse_results_for_neighborhood_finder_multiple_inputs">
-<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT_neighborhood_finder.parse_results_for_neighborhood_finder_multiple_inputs">[docs]</a>
+<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT.parse_results_for_neighborhood_finder_multiple_inputs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">start_node_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
         <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -226,195 +239,127 @@
 
 
 <div class="viewcode-block" id="neighborhood_finder">
-<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT_neighborhood_finder.neighborhood_finder">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">neighborhood_finder</span><span class="p">(</span><span class="n">input_node</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">,</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[],</span>
-        <span class="n">predicates_subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">attribute_constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT.neighborhood_finder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">neighborhood_finder</span><span class="p">(</span>
+    <span class="n">node</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">NodeInput</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">NodeInput</span><span class="p">]],</span>
+    <span class="n">neighbor_categories</span><span class="p">:</span> <span class="n">CategoryList</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">node_categories</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CategoryList</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">api_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">meta_kg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">api_predicates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">resources</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TranslatorResources</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">predicates_subset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">attribute_constraints</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">name_resolver_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">node_normalizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinderResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is used to find the neighborhood of a given input node with intermediate categories.</span>
+<span class="sd">    Find one-hop neighbors for one or more biomedical concepts.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_node : str</span>
-<span class="sd">        The input node - should be a CURIE id.</span>
-<span class="sd">    node2_categories : list</span>
-<span class="sd">        A list of intermediate categories to be used in the neighborhood finding process.</span>
-<span class="sd">    APInames : dict</span>
-<span class="sd">        A dictionary containing the names of the APIs to be used.</span>
-<span class="sd">    metaKG : DataFrame</span>
-<span class="sd">        The metadata knowledge graph containing information about the APIs and their predicates.</span>
-<span class="sd">    API_predicates : dict</span>
-<span class="sd">        A dictionary containing the predicates for each API.</span>
-<span class="sd">    input_node_category : list</span>
-<span class="sd">        Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
-<span class="sd">    attribute_constraints : list</span>
-<span class="sd">        Optional. List of outputs of translator_query.build_attribute_constraint</span>
+<span class="sd">    node : str or list[str]</span>
+<span class="sd">        Source node or nodes. Each value may be a CURIE or human-readable</span>
+<span class="sd">        string. Human-readable strings are resolved with Name Resolver and then</span>
+<span class="sd">        normalized with Node Normalizer.</span>
+<span class="sd">    neighbor_categories : list[str]</span>
+<span class="sd">        Desired neighbor categories. Values may be short names like ``&quot;Drug&quot;``</span>
+<span class="sd">        or full Biolink names like ``&quot;biolink:Drug&quot;``.</span>
+<span class="sd">    node_categories : list[str], optional</span>
+<span class="sd">        Category override for source nodes. If omitted, categories are inferred</span>
+<span class="sd">        from the first normalized source node.</span>
+<span class="sd">    resources : TranslatorResources, optional</span>
+<span class="sd">        Preloaded Translator resources. If omitted, the module-level singleton</span>
+<span class="sd">        is loaded on first use and reused.</span>
+<span class="sd">    api_names, meta_kg, api_predicates : optional</span>
+<span class="sd">        Advanced partial overrides for the Translator resources used by the</span>
+<span class="sd">        neighborhood implementation.</span>
+<span class="sd">    predicates_subset : list[str], optional</span>
+<span class="sd">        Optional predicate filter applied after MetaKG predicate selection.</span>
+<span class="sd">    attribute_constraints : list[dict], optional</span>
+<span class="sd">        TRAPI attribute constraints passed through to query construction.</span>
+<span class="sd">    name_resolver_kwargs : dict, optional</span>
+<span class="sd">        Extra keyword arguments for ``name_resolver.lookup``.</span>
+<span class="sd">    node_normalizer_kwargs : dict, optional</span>
+<span class="sd">        Extra keyword arguments for ``node_normalizer.get_normalized_nodes``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    input_node_id : str</span>
-<span class="sd">        The curie id of the input node.</span>
-<span class="sd">    result : dict</span>
-<span class="sd">        The result of the query for the input node.</span>
-<span class="sd">    result_parsed : DataFrame</span>
-<span class="sd">        The parsed results for the input node.</span>
-<span class="sd">    result_ranked_by_primary_infores : DataFrame</span>
-<span class="sd">        The ranked results based on primary infores.</span>
+<span class="sd">    FinderResult</span>
+<span class="sd">        Convenience wrapper containing resolved input nodes, parsed neighborhood</span>
+<span class="sd">        knowledge graph, results, auxiliary graphs, and raw TRAPI-style output.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = neighborhood_finder(&#39;MONDO:0008170&#39;, #Ovarian Cancer</span>
-<span class="sd">                                                                                            node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
-<span class="sd">                                                                                            APInames = APInames,</span>
-<span class="sd">                                                                                            metaKG = metaKG,</span>
-<span class="sd">                                                                                            API_predicates = API_predicates)</span>
+<span class="sd">    &gt;&gt;&gt; from TCT import neighborhood_finder</span>
+<span class="sd">    &gt;&gt;&gt; result = neighborhood_finder(&quot;asthma&quot;, [&quot;SmallMolecule&quot;, &quot;Drug&quot;])</span>
+<span class="sd">    &gt;&gt;&gt; result.knowledge_graph[&quot;nodes&quot;]</span>
+<span class="sd">    {...}</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+    <span class="n">resolved_nodes</span> <span class="o">=</span> <span class="n">_resolve_nodes</span><span class="p">(</span>
+        <span class="n">node</span><span class="p">,</span>
+        <span class="n">name_resolver_kwargs</span><span class="o">=</span><span class="n">name_resolver_kwargs</span><span class="p">,</span>
+        <span class="n">node_normalizer_kwargs</span><span class="o">=</span><span class="n">node_normalizer_kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">source_categories</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_normalize_categories</span><span class="p">(</span><span class="n">node_categories</span><span class="p">)</span> <span class="ow">or</span> <span class="n">resolved_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">categories</span>
+    <span class="p">)</span>
+    <span class="n">neighbor_categories</span> <span class="o">=</span> <span class="n">_normalize_categories</span><span class="p">(</span><span class="n">neighbor_categories</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">resolved_resources</span> <span class="o">=</span> <span class="n">_get_resources</span><span class="p">(</span>
+        <span class="n">resources</span><span class="o">=</span><span class="n">resources</span><span class="p">,</span>
+        <span class="n">api_names</span><span class="o">=</span><span class="n">api_names</span><span class="p">,</span>
+        <span class="n">meta_kg</span><span class="o">=</span><span class="n">meta_kg</span><span class="p">,</span>
+        <span class="n">api_predicates</span><span class="o">=</span><span class="n">api_predicates</span><span class="p">,</span>
+    <span class="p">)</span>
 
-    <span class="n">input_node_id</span> <span class="o">=</span> <span class="n">input_node</span>
-    <span class="c1"># Step 1: Resolve the input node to get its curie id and categories</span>
-    <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">)</span>
+    <span class="n">predicates</span><span class="p">,</span> <span class="n">apis</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span>
+        <span class="n">source_categories</span><span class="p">,</span>
+        <span class="n">neighbor_categories</span><span class="p">,</span>
+        <span class="n">resolved_resources</span><span class="o">.</span><span class="n">meta_kg</span><span class="p">,</span>
+        <span class="n">resolved_resources</span><span class="o">.</span><span class="n">api_names</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">predicates_subset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">predicates_subset</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predicates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">predicates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biolink:related_to&quot;</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
-
-    <span class="c1"># Step 2: Select predicates and APIs based on the intermediate categories</span>
-    <span class="n">sele_predicates</span><span class="p">,</span> <span class="n">sele_APIs</span><span class="p">,</span> <span class="n">API_URLs</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">,</span>
-                                                                <span class="n">node2_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sele_predicates</span><span class="p">)</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-        <span class="n">sele_predicates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biolink:related_to&quot;</span><span class="p">]</span>
-        
-    <span class="c1"># Step 3: Format the query JSON for the input node</span>
-    <span class="c1">#query_json = format_query_json([input_node_id], </span>
-    <span class="c1">#                               None,</span>
-    <span class="c1">#                               None,</span>
-    <span class="c1">#                               node2_categories,</span>
-    <span class="c1">#                               sele_predicates,</span>
-    <span class="c1">#                               attribute_constraints=attribute_constraints)</span>
-    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">subject_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_node_id</span><span class="p">],</span>
-        <span class="n">object_ids</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">subject_categories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">object_categories</span> <span class="o">=</span> <span class="n">node2_categories</span><span class="p">,</span>
-        <span class="n">predicates</span> <span class="o">=</span> <span class="n">sele_predicates</span><span class="p">,</span>
-        <span class="n">attribute_constraints</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">input_curies</span> <span class="o">=</span> <span class="p">[</span><span class="n">resolved_node</span><span class="o">.</span><span class="n">curie</span> <span class="k">for</span> <span class="n">resolved_node</span> <span class="ow">in</span> <span class="n">resolved_nodes</span><span class="p">]</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">format_query_json</span><span class="p">(</span>
+        <span class="n">subject_ids</span><span class="o">=</span><span class="n">input_curies</span><span class="p">,</span>
+        <span class="n">object_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">subject_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">object_categories</span><span class="o">=</span><span class="n">neighbor_categories</span><span class="p">,</span>
+        <span class="n">predicates</span><span class="o">=</span><span class="n">predicates</span><span class="p">,</span>
+        <span class="n">attribute_constraints</span><span class="o">=</span><span class="n">attribute_constraints</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">raw_edges</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span>
+        <span class="n">query_json</span><span class="o">=</span><span class="n">query</span><span class="p">,</span>
+        <span class="n">select_APIs</span><span class="o">=</span><span class="n">apis</span><span class="p">,</span>
+        <span class="n">APInames</span><span class="o">=</span><span class="n">resolved_resources</span><span class="o">.</span><span class="n">api_names</span><span class="p">,</span>
+        <span class="n">API_predicates</span><span class="o">=</span><span class="n">resolved_resources</span><span class="o">.</span><span class="n">api_predicates</span><span class="p">,</span>
+        <span class="n">max_workers</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">apis</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">raw_output</span> <span class="o">=</span> <span class="n">parse_results_for_neighborhood_finder</span><span class="p">(</span>
+            <span class="n">input_curies</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">raw_edges</span><span class="p">,</span>
+            <span class="n">source_categories</span><span class="p">,</span>
+            <span class="n">neighbor_categories</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="c1"># Step 4: Query the APIs in parallel</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span>
-                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span>
-                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
-                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
-                             <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">))</span>
-    <span class="n">result_parsed</span> <span class="o">=</span> <span class="n">parse_KG</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="c1"># Step 7: Ranking the results. This ranking method is based on the number of unique</span>
-        <span class="c1"># primary infores. It can only be used to rank the results with one defined node.</span>
-    <span class="n">result_ranked_by_primary_infores1</span> <span class="o">=</span> <span class="n">rank_by_primary_infores</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span> <span class="n">input_node_id</span><span class="p">)</span>   <span class="c1"># input_node1_id is the curie id of the</span>
-    <span class="n">parsed_results</span> <span class="o">=</span> <span class="n">parse_results_for_neighborhood_finder</span><span class="p">(</span><span class="n">input_node_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">input_node_category</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">input_node_id</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">parsed_results</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores1</span></div>
-
-
-
-<div class="viewcode-block" id="neighborhood_finder_multiple_inputs">
-<a class="viewcode-back" href="../../neighborhood.html#TCT.TCT_neighborhood_finder.neighborhood_finder_multiple_inputs">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">input_nodes</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">node2_categories</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="n">API_predicates</span><span class="p">,</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="p">[],</span>
-        <span class="n">predicates_subset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">attribute_constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is used to find the neighborhood of a given input node with intermediate categories.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    input_nodes : list[str]</span>
-<span class="sd">        The input nodes - should be a list of CURIE ids.</span>
-<span class="sd">    node2_categories : list</span>
-<span class="sd">        A list of intermediate categories to be used in the neighborhood finding process.</span>
-<span class="sd">    APInames : dict</span>
-<span class="sd">        A dictionary containing the names of the APIs to be used.</span>
-<span class="sd">    metaKG : DataFrame</span>
-<span class="sd">        The metadata knowledge graph containing information about the APIs and their predicates.</span>
-<span class="sd">    API_predicates : dict</span>
-<span class="sd">        A dictionary containing the predicates for each API.</span>
-<span class="sd">    input_node_category : list</span>
-<span class="sd">        Optional. A list of categories for the input node. If empty, it will be derived from the input node&#39;s types.</span>
-<span class="sd">    attribute_constraints : list</span>
-<span class="sd">        Optional. List of outputs of translator_query.build_attribute_constraint</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    input_node_id (str)</span>
-<span class="sd">        The curie id of the input node.</span>
-<span class="sd">    result (dict)</span>
-<span class="sd">        The result of the query for the input node.</span>
-<span class="sd">    result_parsed (DataFrame)</span>
-<span class="sd">        The parsed results for the input node.</span>
-<span class="sd">    result_ranked_by_primary_infores (DataFrame)</span>
-<span class="sd">        The ranked results based on primary infores.</span>
-
-
-<span class="sd">    Examples</span>
-<span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; result, result_parsed = neighborhood_finder_multiple_inputs([&#39;NCBIGene:6774&#39;, &#39;NCBIGene:4170&#39;, &#39;NCBIGene:4792&#39;],</span>
-<span class="sd">                                                                    node2_categories = [&#39;biolink:SmallMolecule&#39;, &#39;biolink:Drug&#39;, &#39;biolink:ChemicalEntity&#39;],</span>
-<span class="sd">                                                                    APInames = APInames,</span>
-<span class="sd">                                                                    metaKG = metaKG,</span>
-<span class="sd">                                                                    API_predicates = API_predicates)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">node_normalizer</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
-
-    <span class="c1"># Step 1: Resolve the input nodes to get its curie id and categories</span>
-    <span class="n">input_nodes_info</span> <span class="o">=</span> <span class="n">node_normalizer</span><span class="o">.</span><span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">input_nodes</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">input_nodes</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_nodes_info</span><span class="p">[</span><span class="n">input_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">types</span>
+        <span class="n">result_nodes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="n">resolved_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">input_node_info</span> <span class="o">=</span> <span class="n">input_nodes_info</span><span class="p">[</span><span class="n">input_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-        <span class="n">input_node_category</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span><span class="p">)))</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">input_node_category</span> <span class="o">=</span> <span class="n">input_node_info</span><span class="o">.</span><span class="n">types</span>
-
-    <span class="c1"># Step 2: Select predicates and APIs based on the intermediate categories</span>
-    <span class="n">sele_predicates</span><span class="p">,</span> <span class="n">sele_APIs</span><span class="p">,</span> <span class="n">API_URLs</span> <span class="o">=</span> <span class="n">sele_predicates_API</span><span class="p">(</span><span class="n">input_node_category</span><span class="p">,</span>
-                                                                <span class="n">node2_categories</span><span class="p">,</span>
-                                                                <span class="n">metaKG</span><span class="p">,</span> <span class="n">APInames</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sele_predicates</span><span class="p">)</span> <span class="o">==</span><span class="mi">0</span><span class="p">:</span>
-        <span class="n">sele_predicates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biolink:related_to&quot;</span><span class="p">]</span>
-        
-    <span class="c1"># Step 3: Format the query JSON for the input node</span>
-    <span class="c1">#query_json = format_query_json([input_node_id], </span>
-    <span class="c1">#                               None,</span>
-    <span class="c1">#                               None,</span>
-    <span class="c1">#                               node2_categories,</span>
-    <span class="c1">#                               sele_predicates,</span>
-    <span class="c1">#                               attribute_constraints=attribute_constraints)</span>
-    <span class="n">query_json</span> <span class="o">=</span> <span class="n">format_query_json</span><span class="p">(</span><span class="n">subject_ids</span> <span class="o">=</span> <span class="n">input_nodes</span><span class="p">,</span>
-        <span class="n">object_ids</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">subject_categories</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">object_categories</span> <span class="o">=</span> <span class="n">node2_categories</span><span class="p">,</span>
-        <span class="n">predicates</span> <span class="o">=</span> <span class="n">sele_predicates</span><span class="p">,</span>
-        <span class="n">attribute_constraints</span> <span class="o">=</span> <span class="n">attribute_constraints</span><span class="p">,</span>
+        <span class="n">raw_output</span> <span class="o">=</span> <span class="n">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span>
+            <span class="n">input_curies</span><span class="p">,</span>
+            <span class="n">raw_edges</span><span class="p">,</span>
+            <span class="n">source_categories</span><span class="p">,</span>
+            <span class="n">neighbor_categories</span><span class="p">,</span>
         <span class="p">)</span>
-    <span class="c1"># Step 4: Query the APIs in parallel</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">parallel_api_query</span><span class="p">(</span><span class="n">query_json</span><span class="o">=</span><span class="n">query_json</span><span class="p">,</span>
-                             <span class="n">select_APIs</span><span class="o">=</span> <span class="n">sele_APIs</span><span class="p">,</span>
-                             <span class="n">APInames</span><span class="o">=</span><span class="n">APInames</span><span class="p">,</span>
-                             <span class="n">API_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
-                             <span class="n">max_workers</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">sele_APIs</span><span class="p">))</span>
-    <span class="n">parsed_results</span> <span class="o">=</span> <span class="n">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">input_nodes</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">input_node_category</span><span class="p">,</span> <span class="n">node2_categories</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">parsed_results</span></div>
-
-
+        <span class="n">result_nodes</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="sa">f</span><span class="s2">&quot;node_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">resolved_node</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">resolved_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">resolved_nodes</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="k">return</span> <span class="n">_build_finder_result</span><span class="p">(</span><span class="n">raw_output</span><span class="p">,</span> <span class="n">resolved_nodes</span><span class="o">=</span><span class="n">result_nodes</span><span class="p">)</span></div>
 
 </pre></div>
 

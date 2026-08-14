@@ -35,6 +35,40 @@
             
   <section id="module-TCT.TCT">
 <span id="tct-utility-functions"></span><h1>TCT utility functions<a class="headerlink" href="#module-TCT.TCT" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="TCT.TCT.FinderResult">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">FinderResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knowledge_graph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auxiliary_graphs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolved_nodes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#TCT.TCT.ResolvedNode" title="TCT.TCT.ResolvedNode"><span class="pre">ResolvedNode</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#FinderResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.FinderResult" title="Link to this definition">¶</a></dt>
+<dd><p>Convenience wrapper around a parsed TRAPI-style finder response.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#TCT.TCT.FinderResult.to_dict" title="TCT.TCT.FinderResult.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code></a>()</p></td>
+<td><p>Return the raw parsed TRAPI-style output dictionary.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="TCT.TCT.FinderResult.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/TCT/TCT.html#FinderResult.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.FinderResult.to_dict" title="Link to this definition">¶</a></dt>
+<dd><p>Return the raw parsed TRAPI-style output dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>dict</dt><dd><p>Full parsed output generated by the existing finder parser.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">FinderResult</span><span class="p">({},</span> <span class="p">{},</span> <span class="p">[],</span> <span class="p">{},</span> <span class="p">{},</span> <span class="p">{})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="go">{}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">ID_convert_to_preferred_name_nodeNormalizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#ID_convert_to_preferred_name_nodeNormalizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer" title="Link to this definition">¶</a></dt>
@@ -51,45 +85,27 @@ Arg:</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="TCT.TCT.Neighborhood_finder">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Neighborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Neighborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Neighborhood_finder" title="Link to this definition">¶</a></dt>
-<dd><p>This function is used to find the neighborhood of a given input node with intermediate categories.</p>
-<p>node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.
-APInames (dict): A dictionary containing the names of the APIs to be used.
-metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.
-API_predicates (dict): A dictionary containing the predicates for each API.
-input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node’s types.</p>
-<p>result (dict): The result of the query for the input node.
-result_parsed (DataFrame): The parsed results for the input node.
-result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.</p>
-<blockquote>
-<div><p>node2_categories = [‘biolink:SmallMolecule’, ‘biolink:Drug’, ‘biolink:ChemicalEntity’],
-APInames = APInames,
-metaKG = metaKG,
-API_predicates = API_predicates)</p>
-</div></blockquote>
-<hr class="docutils" />
+<dl class="py class">
+<dt class="sig sig-object py" id="TCT.TCT.ResolvedNode">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">ResolvedNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curie</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#ResolvedNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.ResolvedNode" title="Link to this definition">¶</a></dt>
+<dd><p>Resolved node metadata used by the finder APIs.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="TCT.TCT.TranslatorResources">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">TranslatorResources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta_kg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#TranslatorResources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.TranslatorResources" title="Link to this definition">¶</a></dt>
+<dd><p>Translator API metadata required by the finder query functions.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="TCT.TCT.Path_finder">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">Path_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_node1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_categories</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">APInames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metaKG</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">API_predicates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node1_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_node2_category</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#Path_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.Path_finder" title="Link to this definition">¶</a></dt>
-<dd><p>This function is used to find paths between two input nodes with intermediate categories.</p>
-<p>input_node2 (str): The second input node - should be a CURIE id.
-intermediate_categories (list): A list of intermediate categories to be used in the path finding process.</p>
-<p>input_node1_id (str): The curie id of the first input node.
-input_node2_id (str): The curie id of the second input node.
-result1 (dict): The result of the query for the first input node.
-result2 (dict): The result of the query for the second input node.
-result_parsed1 (DataFrame): The parsed results for the first input node.
-result_parsed2 (DataFrame): The parsed results for the second input node.
-result_ranked_by_primary_infores1 (DataFrame): The ranked results for the first input node based on primary infores.
-result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second
-————–
-Example:
-&gt;&gt;&gt; paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder(‘NCBIGene:7477’, ‘NCBIGene:4869’, [‘biolink:Gene’, ‘biolink:Protein’]) # Input genes are WNT7B, NPM1
-————–</p>
+<dt class="sig sig-object py" id="TCT.TCT.clear_translator_resource_cache">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">clear_translator_resource_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/TCT/TCT.html#clear_translator_resource_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.clear_translator_resource_cache" title="Link to this definition">¶</a></dt>
+<dd><p>Clear the in-memory Translator resource singleton.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">clear_translator_resource_cache</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">resources</span> <span class="o">=</span> <span class="n">get_translator_resources</span><span class="p">()</span>  <span class="c1"># refetches</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -125,9 +141,86 @@ Returns a DataFrame with the SmartAPI Translator KP info.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT.get_translator_resources">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">get_translator_resources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#TCT.TCT.TranslatorResources" title="TCT.TCT.TranslatorResources"><span class="pre">TranslatorResources</span></a></span></span><a class="reference internal" href="_modules/TCT/TCT.html#get_translator_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.get_translator_resources" title="Link to this definition">¶</a></dt>
+<dd><p>Return cached Translator API metadata, loading it on first use.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>refresh</strong><span class="classifier">bool</span></dt><dd><p>If true, refetch SmartAPI/MetaKG data even when the singleton is
+already populated.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>TranslatorResources</dt><dd><p>API names, MetaKG dataframe, and API predicate mapping used by the
+finder functions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">resources</span> <span class="o">=</span> <span class="n">get_translator_resources</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">paths</span> <span class="o">=</span> <span class="n">query_TCT_pathfinder</span><span class="p">(</span><span class="s2">&quot;asthma&quot;</span><span class="p">,</span> <span class="s2">&quot;albuterol&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Gene&quot;</span><span class="p">],</span> <span class="n">resources</span><span class="o">=</span><span class="n">resources</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT.load_translator_resources">
 <span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">load_translator_resources</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT.html#load_translator_resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.load_translator_resources" title="Link to this definition">¶</a></dt>
 <dd><p>Load the necessary resources for the Translator.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT.neighborhood_finder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">neighborhood_finder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neighbor_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta_kg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#TCT.TCT.TranslatorResources" title="TCT.TCT.TranslatorResources"><span class="pre">TranslatorResources</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates_subset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attribute_constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_resolver_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_normalizer_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#TCT.TCT.FinderResult" title="TCT.TCT.FinderResult"><span class="pre">FinderResult</span></a></span></span><a class="reference internal" href="_modules/TCT/TCT_neighborhood_finder.html#neighborhood_finder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.neighborhood_finder" title="Link to this definition">¶</a></dt>
+<dd><p>Find one-hop neighbors for one or more biomedical concepts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>node</strong><span class="classifier">str or list[str]</span></dt><dd><p>Source node or nodes. Each value may be a CURIE or human-readable
+string. Human-readable strings are resolved with Name Resolver and then
+normalized with Node Normalizer.</p>
+</dd>
+<dt><strong>neighbor_categories</strong><span class="classifier">list[str]</span></dt><dd><p>Desired neighbor categories. Values may be short names like <code class="docutils literal notranslate"><span class="pre">&quot;Drug&quot;</span></code>
+or full Biolink names like <code class="docutils literal notranslate"><span class="pre">&quot;biolink:Drug&quot;</span></code>.</p>
+</dd>
+<dt><strong>node_categories</strong><span class="classifier">list[str], optional</span></dt><dd><p>Category override for source nodes. If omitted, categories are inferred
+from the first normalized source node.</p>
+</dd>
+<dt><strong>resources</strong><span class="classifier">TranslatorResources, optional</span></dt><dd><p>Preloaded Translator resources. If omitted, the module-level singleton
+is loaded on first use and reused.</p>
+</dd>
+<dt><strong>api_names, meta_kg, api_predicates</strong><span class="classifier">optional</span></dt><dd><p>Advanced partial overrides for the Translator resources used by the
+neighborhood implementation.</p>
+</dd>
+<dt><strong>predicates_subset</strong><span class="classifier">list[str], optional</span></dt><dd><p>Optional predicate filter applied after MetaKG predicate selection.</p>
+</dd>
+<dt><strong>attribute_constraints</strong><span class="classifier">list[dict], optional</span></dt><dd><p>TRAPI attribute constraints passed through to query construction.</p>
+</dd>
+<dt><strong>name_resolver_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Extra keyword arguments for <code class="docutils literal notranslate"><span class="pre">name_resolver.lookup</span></code>.</p>
+</dd>
+<dt><strong>node_normalizer_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Extra keyword arguments for <code class="docutils literal notranslate"><span class="pre">node_normalizer.get_normalized_nodes</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>FinderResult</dt><dd><p>Convenience wrapper containing resolved input nodes, parsed neighborhood
+knowledge graph, results, auxiliary graphs, and raw TRAPI-style output.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">neighborhood_finder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">neighborhood_finder</span><span class="p">(</span><span class="s2">&quot;asthma&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;SmallMolecule&quot;</span><span class="p">,</span> <span class="s2">&quot;Drug&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">knowledge_graph</span><span class="p">[</span><span class="s2">&quot;nodes&quot;</span><span class="p">]</span>
+<span class="go">{...}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -140,6 +233,60 @@ predicate
 primary_knowledge_sources
 aggregator_knowledge_sources
 subject_predicate_object_primary_knowledge_sources_aggregator_knowledge_sources</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT.query_TCT_pathfinder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT.</span></span><span class="sig-name descname"><span class="pre">query_TCT_pathfinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intermediate_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_categories</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">meta_kg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#TCT.TCT.TranslatorResources" title="TCT.TCT.TranslatorResources"><span class="pre">TranslatorResources</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scoring_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'infores'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_resolver_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_normalizer_kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#TCT.TCT.FinderResult" title="TCT.TCT.FinderResult"><span class="pre">FinderResult</span></a></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#query_TCT_pathfinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT.query_TCT_pathfinder" title="Link to this definition">¶</a></dt>
+<dd><p>Find paths between two biomedical concepts using Translator KPs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">str</span></dt><dd><p>Start node as either a CURIE (for example, <code class="docutils literal notranslate"><span class="pre">&quot;MONDO:0004979&quot;</span></code>) or a
+human-readable string (for example, <code class="docutils literal notranslate"><span class="pre">&quot;asthma&quot;</span></code>).</p>
+</dd>
+<dt><strong>end</strong><span class="classifier">str</span></dt><dd><p>End node as either a CURIE or human-readable string.</p>
+</dd>
+<dt><strong>intermediate_categories</strong><span class="classifier">list[str]</span></dt><dd><p>Allowed categories for intermediate path nodes. Values may be short
+names like <code class="docutils literal notranslate"><span class="pre">&quot;Gene&quot;</span></code> or full Biolink names like <code class="docutils literal notranslate"><span class="pre">&quot;biolink:Gene&quot;</span></code>.</p>
+</dd>
+<dt><strong>start_categories</strong><span class="classifier">list[str], optional</span></dt><dd><p>Category override for the start node. If omitted, categories are
+inferred from Node Normalizer.</p>
+</dd>
+<dt><strong>end_categories</strong><span class="classifier">list[str], optional</span></dt><dd><p>Category override for the end node. If omitted, categories are inferred
+from Node Normalizer.</p>
+</dd>
+<dt><strong>resources</strong><span class="classifier">TranslatorResources, optional</span></dt><dd><p>Preloaded Translator resources. If omitted, the module-level singleton
+is loaded on first use and reused.</p>
+</dd>
+<dt><strong>api_names, meta_kg, api_predicates</strong><span class="classifier">optional</span></dt><dd><p>Advanced partial overrides for the Translator resources used by the
+pathfinder implementation.</p>
+</dd>
+<dt><strong>scoring_method</strong><span class="classifier">str</span></dt><dd><p>Scoring method passed to the legacy parser. Current values are
+<code class="docutils literal notranslate"><span class="pre">&quot;infores&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;edges&quot;</span></code>.</p>
+</dd>
+<dt><strong>name_resolver_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Extra keyword arguments for <code class="docutils literal notranslate"><span class="pre">name_resolver.lookup</span></code>.</p>
+</dd>
+<dt><strong>node_normalizer_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Extra keyword arguments for <code class="docutils literal notranslate"><span class="pre">node_normalizer.get_normalized_nodes</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>FinderResult</dt><dd><p>Convenience wrapper containing resolved input nodes, the parsed
+knowledge graph, results, auxiliary graphs, and the raw TRAPI-style
+output dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">TCT</span><span class="w"> </span><span class="kn">import</span> <span class="n">query_TCT_pathfinder</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">query_TCT_pathfinder</span><span class="p">(</span><span class="s2">&quot;asthma&quot;</span><span class="p">,</span> <span class="s2">&quot;albuterol&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;Gene&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span><span class="o">.</span><span class="n">resolved_nodes</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">curie</span>
+<span class="go">&#39;MONDO:0004979&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -224,14 +371,19 @@ obj_list = [“biolink:Gene”, “biolink:Disease”]</p>
 <li class="toctree-l1"><a class="reference internal" href="translator_query.html">TCT.translator_query</a></li>
 <li class="toctree-l1"><a class="reference internal" href="translator_node.html">TCT.translator_node</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">TCT utility functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.FinderResult"><code class="docutils literal notranslate"><span class="pre">FinderResult</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.ID_convert_to_preferred_name_nodeNormalizer"><code class="docutils literal notranslate"><span class="pre">ID_convert_to_preferred_name_nodeNormalizer()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Neighborhood_finder"><code class="docutils literal notranslate"><span class="pre">Neighborhood_finder()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.Path_finder"><code class="docutils literal notranslate"><span class="pre">Path_finder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.ResolvedNode"><code class="docutils literal notranslate"><span class="pre">ResolvedNode</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.TranslatorResources"><code class="docutils literal notranslate"><span class="pre">TranslatorResources</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.clear_translator_resource_cache"><code class="docutils literal notranslate"><span class="pre">clear_translator_resource_cache()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.format_query_json"><code class="docutils literal notranslate"><span class="pre">format_query_json()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.get_SmartAPI_Translator_KP_info"><code class="docutils literal notranslate"><span class="pre">get_SmartAPI_Translator_KP_info()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.get_Translator_APIs"><code class="docutils literal notranslate"><span class="pre">get_Translator_APIs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.get_translator_resources"><code class="docutils literal notranslate"><span class="pre">get_translator_resources()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.load_translator_resources"><code class="docutils literal notranslate"><span class="pre">load_translator_resources()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.neighborhood_finder"><code class="docutils literal notranslate"><span class="pre">neighborhood_finder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.parse_KG"><code class="docutils literal notranslate"><span class="pre">parse_KG()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.query_TCT_pathfinder"><code class="docutils literal notranslate"><span class="pre">query_TCT_pathfinder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.rank_by_primary_infores"><code class="docutils literal notranslate"><span class="pre">rank_by_primary_infores()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.rank_by_primary_infores_input_as_list"><code class="docutils literal notranslate"><span class="pre">rank_by_primary_infores_input_as_list()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT.sele_predicates_API"><code class="docutils literal notranslate"><span class="pre">sele_predicates_API()</span></code></a></li>

@@ -64,23 +64,19 @@
 <span class="sd">        Merged TRAPI JSON object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">TCT_neighborhood_finder_result</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">gene_list</span><span class="p">:</span>
         <span class="n">input_identifiers</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">&#39;NCBITaxon:9606&#39;</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">curie</span>
 
-        <span class="n">input_node_id</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="n">input_identifiers</span><span class="p">],</span> <span class="n">result_parsed</span><span class="p">,</span> <span class="n">result_ranked_by_primary_infores</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">neighborhood_finder</span><span class="p">(</span><span class="n">input_identifiers</span><span class="p">,</span>
-                                                                                              <span class="n">node2_categories</span> <span class="o">=</span> <span class="n">node2_categories</span><span class="p">,</span>
-                                                                                            <span class="n">APInames</span> <span class="o">=</span> <span class="n">select_APIs</span><span class="p">,</span>
-                                                                                            <span class="n">metaKG</span> <span class="o">=</span> <span class="n">select_metaKG</span><span class="p">,</span>
-                                                                                            <span class="n">API_predicates</span> <span class="o">=</span> <span class="n">API_predicates</span><span class="p">)</span>
-       
-
-    <span class="k">for</span> <span class="n">input_identifiers</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="n">TCT_neighborhood_finder_result</span><span class="p">[</span><span class="n">input_identifiers</span><span class="p">]</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">parse_results_for_neighborhood_finder</span><span class="p">(</span><span class="n">input_identifiers</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="n">input_identifiers</span><span class="p">],</span>
-        <span class="n">start_node_categories</span><span class="o">=</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">&#39;infores&#39;</span><span class="p">)</span>
+        <span class="n">finder_result</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">neighborhood_finder</span><span class="p">(</span>
+            <span class="n">input_identifiers</span><span class="p">,</span>
+            <span class="n">node2_categories</span><span class="p">,</span>
+            <span class="n">node_categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">],</span>
+            <span class="n">api_names</span><span class="o">=</span><span class="n">select_APIs</span><span class="p">,</span>
+            <span class="n">meta_kg</span><span class="o">=</span><span class="n">select_metaKG</span><span class="p">,</span>
+            <span class="n">api_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">TCT_neighborhood_finder_result</span><span class="p">[</span><span class="n">input_identifiers</span><span class="p">]</span> <span class="o">=</span> <span class="n">finder_result</span><span class="o">.</span><span class="n">raw</span>
 
     <span class="n">gene_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">gene_list</span><span class="p">)</span>
 
@@ -214,9 +210,9 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    result_parsed : dict</span>
-<span class="sd">        The parsed results for results from TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().</span>
+<span class="sd">        The parsed results (``FinderResult.raw``) from ``TCT_neighborhood_finder.neighborhood_finder()`` run with multiple input nodes.</span>
 <span class="sd">    input_identifiers : list</span>
-<span class="sd">        A list of input node identifiers, which are also input for TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().</span>
+<span class="sd">        A list of input node identifiers, which are also input for ``TCT_neighborhood_finder.neighborhood_finder()``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -226,11 +222,12 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; input_identifiers = [&#39;NCBIGene:6774&#39;, &#39;NCBIGene:4170&#39;,&#39;NCBIGene:4792&#39;,&#39;NCBIGene:4288&#39;,&#39;NCBIGene:596&#39;,&#39;NCBIGene:581&#39;,&#39;NCBIGene:836&#39;,&#39;NCBIGene:6777&#39;,&#39;NCBIGene:4790&#39;,&#39;NCBIGene:545&#39;]</span>
-<span class="sd">    &gt;&gt;&gt; result, result_parsed = TCT_neighborhood_finder.neighborhood_finder_multiple_inputs(input_identifiers,</span>
-<span class="sd">                                                                                            node2_categories = [&#39;biolink:Gene&#39;,&#39;biolink:Protein&#39;],</span>
-<span class="sd">                                                                                            APInames = APInames,</span>
-<span class="sd">                                                                                            metaKG = metaKG,</span>
-<span class="sd">                                                                                            API_predicates = API_predicates)   </span>
+<span class="sd">    &gt;&gt;&gt; finder_result = TCT_neighborhood_finder.neighborhood_finder(input_identifiers,</span>
+<span class="sd">                                                                    neighbor_categories=[&#39;biolink:Gene&#39;,&#39;biolink:Protein&#39;],</span>
+<span class="sd">                                                                    api_names=APInames,</span>
+<span class="sd">                                                                    meta_kg=metaKG,</span>
+<span class="sd">                                                                    api_predicates=API_predicates)</span>
+<span class="sd">    &gt;&gt;&gt; result_parsed = finder_result.raw</span>
 <span class="sd">    &gt;&gt;&gt; result = TCT_network_annotator.get_connected_graph(result_parsed, input_identifiers)</span>
 <span class="sd">    &gt;&gt;&gt; import datetime</span>
 <span class="sd">    &gt;&gt;&gt; import json</span>
