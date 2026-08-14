@@ -1,10 +1,19 @@
-"""Tests for the experimental developer-friendly API."""
+"""Tests for the developer-friendly finder API (promoted to the main API)."""
 
 import pandas as pd
 import pytest
 
-from TCT import experimental
-from TCT.experimental import FinderResult, TranslatorResources
+from TCT import (
+    FinderResult,
+    TranslatorResources,
+    clear_translator_resource_cache,
+    get_translator_resources,
+    neighborhood_finder,
+    query_TCT_pathfinder,
+)
+from TCT import TCT as tct_main
+from TCT import TCT_neighborhood_finder as tct_neighborhood_finder
+from TCT import TCT_pathfinder as tct_pathfinder
 from TCT.translator_node import TranslatorNode
 
 
@@ -34,10 +43,10 @@ def _raw_output():
 
 
 def test_normalize_category_accepts_short_and_prefixed_names():
-    assert experimental._normalize_category("Gene") == "biolink:Gene"
-    assert experimental._normalize_category("biolink:Disease") == "biolink:Disease"
-    assert experimental._normalize_categories([" Drug "]) == ["biolink:Drug"]
-    assert experimental._normalize_categories(None) is None
+    assert tct_main._normalize_category("Gene") == "biolink:Gene"
+    assert tct_main._normalize_category("biolink:Disease") == "biolink:Disease"
+    assert tct_main._normalize_categories([" Drug "]) == ["biolink:Drug"]
+    assert tct_main._normalize_categories(None) is None
 
 
 def test_translator_resources_cache_lifecycle(monkeypatch):
@@ -48,39 +57,39 @@ def test_translator_resources_cache_lifecycle(monkeypatch):
         return {"api": "url"}, pd.DataFrame({"call": [len(calls)]}), {"api": []}
 
     monkeypatch.setattr(
-        experimental.translator_query,
+        tct_main.translator_query,
         "get_translator_API_predicates",
         fake_fetch,
     )
-    experimental.clear_translator_resource_cache()
+    clear_translator_resource_cache()
 
-    first = experimental.get_translator_resources()
-    second = experimental.get_translator_resources()
-    refreshed = experimental.get_translator_resources(refresh=True)
+    first = get_translator_resources()
+    second = get_translator_resources()
+    refreshed = get_translator_resources(refresh=True)
 
     assert first is second
     assert refreshed is not first
     assert len(calls) == 2
 
-    experimental.clear_translator_resource_cache()
-    assert experimental._DEFAULT_TRANSLATOR_RESOURCES is None
+    clear_translator_resource_cache()
+    assert tct_main._DEFAULT_TRANSLATOR_RESOURCES is None
 
 
 def test_resolve_node_normalizes_curie_without_name_lookup(monkeypatch):
     name_lookup_calls = []
 
     monkeypatch.setattr(
-        experimental.node_normalizer,
+        tct_main.node_normalizer,
         "get_normalized_nodes",
         lambda value, **kwargs: _node(value, "Asthma", ["biolink:Disease"]),
     )
     monkeypatch.setattr(
-        experimental.name_resolver,
+        tct_main.name_resolver,
         "lookup",
         lambda *args, **kwargs: name_lookup_calls.append(args),
     )
 
-    resolved = experimental._resolve_node("MONDO:0004979")
+    resolved = tct_main._resolve_node("MONDO:0004979")
 
     assert resolved.input_value == "MONDO:0004979"
     assert resolved.curie == "MONDO:0004979"
@@ -93,7 +102,7 @@ def test_resolve_node_uses_name_resolver_for_strings(monkeypatch):
     calls = []
 
     monkeypatch.setattr(
-        experimental.name_resolver,
+        tct_main.name_resolver,
         "lookup",
         lambda value, **kwargs: _node("MONDO:0004979", value, ["biolink:Disease"]),
     )
@@ -103,12 +112,12 @@ def test_resolve_node_uses_name_resolver_for_strings(monkeypatch):
         return _node(value, "asthma", ["biolink:Disease"])
 
     monkeypatch.setattr(
-        experimental.node_normalizer,
+        tct_main.node_normalizer,
         "get_normalized_nodes",
         fake_normalize,
     )
 
-    resolved = experimental._resolve_node(
+    resolved = tct_main._resolve_node(
         "asthma",
         node_normalizer_kwargs={"conflate": True},
     )
@@ -120,25 +129,25 @@ def test_resolve_node_uses_name_resolver_for_strings(monkeypatch):
 
 def test_resolve_node_raises_for_unknown_curie(monkeypatch):
     monkeypatch.setattr(
-        experimental.node_normalizer,
+        tct_main.node_normalizer,
         "get_normalized_nodes",
         lambda value, **kwargs: None,
     )
 
     with pytest.raises(LookupError, match="Could not normalize CURIE"):
-        experimental._resolve_node("MISSING:CURIE")
+        tct_main._resolve_node("MISSING:CURIE")
 
 
 def test_get_resources_uses_complete_resources_and_partial_overrides(monkeypatch):
     monkeypatch.setattr(
-        experimental,
+        tct_main,
         "get_translator_resources",
         lambda: pytest.fail("cache should not be used when resources are provided"),
     )
     base = _resources()
     override_meta = pd.DataFrame({"Subject": ["biolink:Disease"]})
 
-    resolved = experimental._get_resources(resources=base, meta_kg=override_meta)
+    resolved = tct_main._get_resources(resources=base, meta_kg=override_meta)
 
     assert resolved.api_names is base.api_names
     assert resolved.api_predicates is base.api_predicates
@@ -163,7 +172,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
     queries = []
 
     monkeypatch.setattr(
-        experimental,
+        tct_pathfinder,
         "_resolve_node",
         lambda value, **kwargs: _node(
             value if ":" in value else f"CURIE:{value}",
@@ -172,7 +181,7 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
         ),
     )
     monkeypatch.setattr(
-        experimental,
+        tct_pathfinder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:related_to"],
@@ -186,15 +195,15 @@ def test_pathfinder_resolves_inputs_queries_apis_and_wraps_output(monkeypatch):
         return {f"edge-{len(queries)}": {"subject": "s", "object": "o"}}
 
     monkeypatch.setattr(
-        experimental.translator_query, "parallel_api_query", fake_parallel
+        tct_pathfinder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
-        experimental,
+        tct_pathfinder,
         "parse_results_for_pathfinder",
         lambda *args, **kwargs: _raw_output(),
     )
 
-    result = experimental.pathfinder(
+    result = query_TCT_pathfinder(
         "asthma",
         "albuterol",
         ["Gene"],
@@ -220,14 +229,14 @@ def test_neighborhood_finder_single_input_queries_and_wraps_output(monkeypatch):
     queries = []
 
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:0004979", "asthma", ["biolink:Disease"])
         ],
     )
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:treats"],
@@ -241,15 +250,15 @@ def test_neighborhood_finder_single_input_queries_and_wraps_output(monkeypatch):
         return {"edge-1": {"subject": "MONDO:0004979", "object": "CHEBI:1"}}
 
     monkeypatch.setattr(
-        experimental.translator_query, "parallel_api_query", fake_parallel
+        tct_neighborhood_finder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "parse_results_for_neighborhood_finder",
         lambda *args, **kwargs: _raw_output(),
     )
 
-    result = experimental.neighborhood_finder(
+    result = neighborhood_finder(
         "asthma",
         ["Drug"],
         resources=_resources(),
@@ -267,14 +276,14 @@ def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypa
     queries = []
 
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:0004979", "asthma", ["biolink:Disease"])
         ],
     )
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: (
             ["biolink:treats"],
@@ -288,10 +297,10 @@ def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypa
         return {}
 
     monkeypatch.setattr(
-        experimental.translator_query, "parallel_api_query", fake_parallel
+        tct_neighborhood_finder.translator_query, "parallel_api_query", fake_parallel
     )
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "parse_results_for_neighborhood_finder",
         lambda *args, **kwargs: _raw_output(),
     )
@@ -303,7 +312,7 @@ def test_neighborhood_finder_places_attribute_constraints_on_query_edge(monkeypa
         }
     ]
 
-    experimental.neighborhood_finder(
+    neighborhood_finder(
         "asthma",
         ["Drug"],
         resources=_resources(),
@@ -319,7 +328,7 @@ def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
     parser_calls = []
 
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "_resolve_nodes",
         lambda values, **kwargs: [
             _node("MONDO:1", "one", ["biolink:Disease"]),
@@ -327,12 +336,12 @@ def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "sele_predicates_API",
         lambda source, target, meta_kg, api_names: ([], ["fake-api"], []),
     )
     monkeypatch.setattr(
-        experimental.translator_query,
+        tct_neighborhood_finder.translator_query,
         "parallel_api_query",
         lambda **kwargs: {},
     )
@@ -342,12 +351,12 @@ def test_neighborhood_finder_multiple_inputs_uses_multiple_parser(monkeypatch):
         return _raw_output()
 
     monkeypatch.setattr(
-        experimental,
+        tct_neighborhood_finder,
         "parse_results_for_neighborhood_finder_multiple_inputs",
         fake_parser,
     )
 
-    result = experimental.neighborhood_finder(
+    result = neighborhood_finder(
         ["one", "two"],
         ["Gene"],
         resources=_resources(),

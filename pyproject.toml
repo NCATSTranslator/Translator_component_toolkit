@@ -23,17 +23,20 @@ requires-python = ">=3.10"
 dependencies = [
     "requests",
     "pandas",
-    "seaborn",
-    "matplotlib",
-    "ipycytoscape",
-    "networkx",
     "numpy",
-    'igraph',
-    'pyvis',
-    'zstandard',
+    "igraph",
+    "pyvis",
+    "zstandard",
 ]
 
 [project.optional-dependencies]
+vision = [
+    "ipycytoscape",
+    "matplotlib",
+    "networkx",
+    "pyvis",
+    "seaborn",
+]
 mcp = [
     "fastmcp>=2.12.2",
 ]

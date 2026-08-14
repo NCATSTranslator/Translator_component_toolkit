@@ -1,9 +1,6 @@
 
 from .node_normalizer import ID_convert_to_preferred_name_nodeNormalizer
 
-import networkx as nx
-from pyvis.network import Network
-
 def visualize_neighborhood_graph(result, show_label=True, height="1000px", width="100%", output_filename_prefix=None):
     '''Visualize the neighborhood graph using pyvis
     Args:
@@ -18,6 +15,9 @@ def visualize_neighborhood_graph(result, show_label=True, height="1000px", width
         dic_graph = visualize_neighborhood_graph(result, show_label=True, height="500", width="100%")
     '''
     
+    import networkx as nx
+    from pyvis.network import Network
+
     # Your JSON (as Python dict)
     data = result
     IDs = []

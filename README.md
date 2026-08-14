@@ -19,8 +19,9 @@ Explore knowledge graphs in Translator<br>
 Find neighbors in the Translator KGs for a given node <br>
 Find paths between node A and node B in the Translator KG <br>
 Find a subnetwork given a list of nodes in the Translator KG <br>
-Experimental developer-friendly wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results <br>
+Developer-friendly wrappers for resolving labels/CURIEs, caching Translator resources, and returning parsed finder results <br>
 Connecting user's API with Translator API <br>
+*Note: Visualization capabilities (pyvis, matplotlib, seaborn) can be installed separately via the `vision` extra.*
 
 
 ## How to use TCT
@@ -34,8 +35,13 @@ pip install TCT
 # TCT is in development, to get the most recent update, user can install it through the github repo
 ```
 
-**This the recommended approach for installation.**
+**This is the recommended approach for a minimal installation.**
 
+Visualization support is optional. Install it with the `vision` extra when you need the plotting and graph-rendering utilities:
+
+```bash
+pip install "TCT[vision]"
+```
 
 #### Development Installation
 
@@ -55,6 +61,12 @@ pip install -e .
 git clone https://github.com/NCATSTranslator/Translator_component_toolkit.git
 cd Translator_component_toolkit
 uv sync
+```
+
+To include visualization support in the UV environment:
+
+```bash
+uv sync --extra vision
 ```
 
 #### Building and Deployment
@@ -85,10 +97,10 @@ Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translato
 #### Network finder
 Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
 
-#### Experimental API tutorial
-Quick-start notebook for the experimental developer-friendly finder wrappers: **[Experimental API tutorial](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Experimental_API_tutorial.ipynb)**
+#### Developer-friendly finder APIs
+The finder notebooks above include quick-start sections using the developer-friendly `pathfinder` and `neighborhood_finder` APIs, now part of TCT's main API surface (`from TCT import query_TCT_pathfinder, neighborhood_finder`).
 
-Use the detailed NeighborhoodFinder, PathFinder, NetworkFinder, KG overview, and visualization notebooks above when you need more fine-grained endpoint selection, predicate control, raw query construction, parser workflows, or visualization setup.
+Use the detailed NeighborhoodFinder, PathFinder, NetworkFinder, KG overview, and visualization notebooks when you need more fine-grained endpoint selection, predicate control, raw query construction, parser workflows, or visualization setup.
 
 
 #### Connecting to a user's API
