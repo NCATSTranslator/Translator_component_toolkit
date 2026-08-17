@@ -1,16 +1,14 @@
+from dataclasses import dataclass
+from typing import Any, Optional, TypeAlias, Union
+
 import requests
 import json
 import pandas as pd
-import  seaborn as sns
-import matplotlib.pyplot as plt
-import networkx as nx
 import numpy as np
 #import openai
-from . import name_resolver
+from . import name_resolver, node_normalizer, translator_query
 
 # plt.switch_backend('module://ipykernel.pylab.backend_inline')
-
-from IPython.display import display
 
 __all__ = [
     'TCT_help',
@@ -19,8 +17,13 @@ __all__ = [
     'get_SmartAPI_Translator_KP_info',
     'list_Translator_APIs',
     'load_translator_resources',
-    'Neighborhood_finder',
-    'Path_finder',
+    'neighborhood_finder',
+    'query_TCT_pathfinder',
+    'get_translator_resources',
+    'clear_translator_resource_cache',
+    'FinderResult',
+    'ResolvedNode',
+    'TranslatorResources',
     'format_query_json',
     'select_API',
     'select_concept',
@@ -50,8 +53,6 @@ __all__ = [
     'extract_json',
     'TRAPI_json_validation'
 ]
-
-
 
 
 def TCT_help(func):
@@ -92,7 +93,6 @@ def get_SmartAPI_Translator_KP_info():
     """
     Get the SmartAPI Translator KP info from the smart-api.info API.
     Returns a DataFrame with the SmartAPI Translator KP info.
-
 
 
     Examples
@@ -432,10 +432,6 @@ def list_Translator_APIs():
     return(APInames)
 
 
-
-
-
-
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def select_API(sub_list,obj_list, metaKG):
     '''
@@ -469,7 +465,6 @@ def select_API(sub_list,obj_list, metaKG):
     df2 = metaKG.loc[(metaKG['Subject'].isin(new_obj_list)) & (metaKG['Object'].isin(new_sub_list))]
     df = pd.concat([df1,df2])
     return(list(set(df['API'].values)))
-
 
 
 # used. Dec 5, 2023  (Example_query_one_hop_with_category.ipynb)
@@ -693,7 +688,6 @@ def visulization_one_hop_ranking_input_as_list(result_ranked_by_primary_infores,
                 primary_infore_by_nodes[predict].append(0)
 
 
-
         cur_predicates = result_parsed[new_id]['predicate']
         for predict in predicates_list:
             if predict in cur_predicates:
@@ -810,7 +804,6 @@ def visulization_one_hop_ranking(result_ranked_by_primary_infores,result_parsed 
                     primary_infore_by_nodes[predict].append(0)
 
 
-
             cur_predicates = result_parsed[new_id]['predicate']
             for predict in predicates_list:
                 if predict in cur_predicates:
@@ -853,6 +846,9 @@ def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
                                  fontsize = 6,
                                  title_fontsize = 10,
                                  output_png="NE_heatmap.png"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     #matplotlib.use('Agg')
 
     #title = "Ranking of one-hop nodes by primary infores"
@@ -889,12 +885,12 @@ def plot_heatmap(predicates_by_nodes_df,num_of_nodes = 20,
     #plt.savefig(output_png, bbox_inches='tight', dpi=300)
 
 
-
 def plot_heatmap_ui(predicates_by_nodes_df,num_of_nodes = 20,
                                  fontsize = 6,
                                  title_fontsize = 10,
                                  output_png="NE_heatmap.png"):
-
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
     title = "Ranking of one-hop nodes by primary infores"
     ylab = "infores"
@@ -1099,188 +1095,330 @@ def Neighborhood_finder_mcp(input_node, node2_categories):
 
     return ranked_result
 
-def Neighborhood_finder(input_node, node2_categories, APInames, metaKG, API_predicates, input_node_category = []):
+# ---------------------------------------------------------------------------
+# Developer-friendly finder APIs (promoted from the former TCT.experimental
+# module). These wrappers resolve human-readable names, normalize CURIEs,
+# load Translator resources lazily, and return a small result object with the
+# most useful output fields surfaced directly. Import them from the
+# top-level package, e.g. ``from TCT import query_TCT_pathfinder, neighborhood_finder``.
+# ---------------------------------------------------------------------------
+
+NodeInput: TypeAlias = str
+CategoryInput: TypeAlias = str
+CategoryList: TypeAlias = list[CategoryInput]
+
+
+@dataclass(frozen=True)
+class ResolvedNode:
+    """Resolved node metadata used by the finder APIs."""
+
+    input_value: str
+    curie: str
+    label: Optional[str]
+    categories: list[str]
+
+
+@dataclass
+class TranslatorResources:
+    """Translator API metadata required by the finder query functions."""
+
+    api_names: dict[str, str]
+    meta_kg: pd.DataFrame
+    api_predicates: dict[str, list[str]]
+
+
+@dataclass
+class FinderResult:
+    """Convenience wrapper around a parsed TRAPI-style finder response."""
+
+    query: dict[str, Any]
+    knowledge_graph: dict[str, Any]
+    results: list[dict[str, Any]]
+    auxiliary_graphs: dict[str, Any]
+    resolved_nodes: dict[str, ResolvedNode]
+    raw: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        """
+        Return the raw parsed TRAPI-style output dictionary.
+
+        Returns
+        -------
+        dict
+            Full parsed output generated by the existing finder parser.
+
+        Examples
+        --------
+        >>> result = FinderResult({}, {}, [], {}, {}, {})
+        >>> result.to_dict()
+        {}
+        """
+        return self.raw
+
+
+_DEFAULT_TRANSLATOR_RESOURCES: Optional[TranslatorResources] = None
+
+
+def get_translator_resources(*, refresh: bool = False) -> TranslatorResources:
     """
-    This function is used to find the neighborhood of a given input node with intermediate categories.
+    Return cached Translator API metadata, loading it on first use.
 
-    --------------
-    Parameters:
-    input_node (str): The input node - should be a CURIE id.
-    node2_categories (list): A list of intermediate categories to be used in the neighborhood finding process.
-    APInames (dict): A dictionary containing the names of the APIs to be used.
-    metaKG (DataFrame): The metadata knowledge graph containing information about the APIs and their predicates.
-    API_predicates (dict): A dictionary containing the predicates for each API.
-    input_node_category (list): Optional. A list of categories for the input node. If empty, it will be derived from the input node's types.
+    Parameters
+    ----------
+    refresh : bool
+        If true, refetch SmartAPI/MetaKG data even when the singleton is
+        already populated.
 
-    --------------
-    Returns:
-    input_node_id (str): The curie id of the input node.
-    result (dict): The result of the query for the input node.
-    result_parsed (DataFrame): The parsed results for the input node.
-    result_ranked_by_primary_infores (DataFrame): The ranked results based on primary infores.
+    Returns
+    -------
+    TranslatorResources
+        API names, MetaKG dataframe, and API predicate mapping used by the
+        finder functions.
 
-    --------------
-    Example:
-    >>> input_node_id, result, result_parsed, result_ranked_by_primary_infores1 = Neighborhood_finder('MONDO:0008170', #Ovarian Cancer
-                                                                                            node2_categories = ['biolink:SmallMolecule', 'biolink:Drug', 'biolink:ChemicalEntity'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)
-    --------------
-
+    Examples
+    --------
+    >>> resources = get_translator_resources()
+    >>> paths = query_TCT_pathfinder("asthma", "albuterol", ["Gene"], resources=resources)
     """
-    from . import node_normalizer
-    from . import translator_query
+    global _DEFAULT_TRANSLATOR_RESOURCES
+    if refresh or _DEFAULT_TRANSLATOR_RESOURCES is None:
+        api_names, meta_kg, api_predicates = (
+            translator_query.get_translator_API_predicates()
+        )
+        _DEFAULT_TRANSLATOR_RESOURCES = TranslatorResources(
+            api_names=api_names,
+            meta_kg=meta_kg,
+            api_predicates=api_predicates,
+        )
+    return _DEFAULT_TRANSLATOR_RESOURCES
 
-    input_node_id = input_node
-    # Step 1: Resolve the input node to get its curie id and categories
-    input_node_info = node_normalizer.get_normalized_nodes(input_node_id)
-    print(input_node_id)
 
-    if len(input_node_category) == 0:
-        input_node_category = input_node_info.types
+def clear_translator_resource_cache() -> None:
+    """
+    Clear the in-memory Translator resource singleton.
+
+    Examples
+    --------
+    >>> clear_translator_resource_cache()
+    >>> resources = get_translator_resources()  # refetches
+    """
+    global _DEFAULT_TRANSLATOR_RESOURCES
+    _DEFAULT_TRANSLATOR_RESOURCES = None
+
+
+def _normalize_category(category: str) -> str:
+    """
+    Convert a category into a Biolink-prefixed category string.
+
+    Parameters
+    ----------
+    category : str
+        Category name, with or without the ``biolink:`` prefix.
+
+    Returns
+    -------
+    str
+        Biolink-prefixed category.
+
+    Examples
+    --------
+    >>> _normalize_category("Gene")
+    'biolink:Gene'
+    """
+    category = category.strip()
+    if category.startswith("biolink:"):
+        return category
+    return f"biolink:{category}"
+
+
+def _normalize_categories(categories: Optional[CategoryList]) -> Optional[list[str]]:
+    """
+    Normalize a list of category strings.
+
+    Parameters
+    ----------
+    categories : list[str], optional
+        Category names, with or without ``biolink:`` prefixes.
+
+    Returns
+    -------
+    list[str] or None
+        Normalized category names, or None when no categories were provided.
+    """
+    if categories is None:
+        return None
+    return [_normalize_category(category) for category in categories]
+
+
+def _looks_like_curie(value: str) -> bool:
+    """
+    Return whether a string looks like a CURIE.
+
+    Parameters
+    ----------
+    value : str
+        Candidate node input.
+
+    Returns
+    -------
+    bool
+        True when the value appears to be a CURIE.
+    """
+    return ":" in value and " " not in value
+
+
+def _resolve_node(
+    value: str,
+    *,
+    name_resolver_kwargs: Optional[dict[str, Any]] = None,
+    node_normalizer_kwargs: Optional[dict[str, Any]] = None,
+) -> ResolvedNode:
+    """
+    Resolve a CURIE or display string into a normalized Translator node.
+
+    Parameters
+    ----------
+    value : str
+        CURIE or human-readable name.
+    name_resolver_kwargs : dict, optional
+        Additional keyword arguments for Name Resolver lookup.
+    node_normalizer_kwargs : dict, optional
+        Additional keyword arguments for Node Normalizer.
+
+    Returns
+    -------
+    ResolvedNode
+        Original input, preferred CURIE, label, and Biolink categories.
+
+    Raises
+    ------
+    LookupError
+        If the input cannot be resolved or normalized.
+    """
+    node_normalizer_kwargs = node_normalizer_kwargs or {}
+
+    if _looks_like_curie(value):
+        node = node_normalizer.get_normalized_nodes(value, **node_normalizer_kwargs)
+        if node is None:
+            raise LookupError(f"Could not normalize CURIE: {value}")
     else:
-        input_node_category = list(set(input_node_category).intersection(set(input_node_info.types)))
-        if len(input_node_category) == 0:
-            input_node_category = input_node_info.types
+        resolved = name_resolver.lookup(
+            value,
+            return_top_response=True,
+            **(name_resolver_kwargs or {}),
+        )
+        node = (
+            node_normalizer.get_normalized_nodes(
+                resolved.curie,
+                **node_normalizer_kwargs,
+            )
+            or resolved
+        )
 
-    # Step 2: Select predicates and APIs based on the intermediate categories
-    sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node_category,
-                                                                node2_categories,
-                                                                metaKG, APInames)
+    return ResolvedNode(
+        input_value=value,
+        curie=node.curie,
+        label=node.label,
+        categories=node.types or [],
+    )
 
-    # Step 3: Format the query JSON for the input node
-    query_json = format_query_json([input_node_id], [],
-                                   [input_node_category],
-                                   node2_categories,
-                                   sele_predicates)
 
-    # Step 4: Query the APIs in parallel
-    result = translator_query.parallel_api_query(query_json=query_json,
-                             select_APIs= sele_APIs,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
-                             max_workers=len(sele_APIs))
-    result_parsed = parse_KG(result)
-        # Step 7: Ranking the results. This ranking method is based on the number of unique
-        # primary infores. It can only be used to rank the results with one defined node.
-    result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed, input_node_id)   # input_node1_id is the curie id of the
-    return input_node_id, result, result_parsed, result_ranked_by_primary_infores1
-
-def Path_finder(input_node1, input_node2, intermediate_categories, APInames, metaKG, API_predicates, input_node1_category = [], input_node2_category = []):
+def _resolve_nodes(
+    values: Union[NodeInput, list[NodeInput]],
+    *,
+    name_resolver_kwargs: Optional[dict[str, Any]] = None,
+    node_normalizer_kwargs: Optional[dict[str, Any]] = None,
+) -> list[ResolvedNode]:
     """
-    This function is used to find paths between two input nodes with intermediate categories.
+    Resolve one or more node inputs.
 
-    --------------
-    Parameters:
-    input_node1 (str): The first input node - should be a CURIE id.
-    input_node2 (str): The second input node - should be a CURIE id.
-    intermediate_categories (list): A list of intermediate categories to be used in the path finding process.
+    Parameters
+    ----------
+    values : str or list[str]
+        CURIE or display-string node inputs.
+    name_resolver_kwargs : dict, optional
+        Additional keyword arguments for Name Resolver lookup.
+    node_normalizer_kwargs : dict, optional
+        Additional keyword arguments for Node Normalizer.
 
-    --------------
-    Returns:
-    paths (DataFrame): A DataFrame containing the paths found between the two input nodes.
-    input_node1_id (str): The curie id of the first input node.
-    input_node2_id (str): The curie id of the second input node.
-    result1 (dict): The result of the query for the first input node.
-    result2 (dict): The result of the query for the second input node.
-    result_parsed1 (DataFrame): The parsed results for the first input node.
-    result_parsed2 (DataFrame): The parsed results for the second input node.
-    result_ranked_by_primary_infores1 (DataFrame): The ranked results for the first input node based on primary infores.
-    result_ranked_by_primary_infores2 (DataFrame): The ranked results for the second
-    --------------
-    Example:
-    >>> paths, input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2 = Path_finder('NCBIGene:7477', 'NCBIGene:4869', ['biolink:Gene', 'biolink:Protein']) # Input genes are WNT7B, NPM1
-    --------------
-
+    Returns
+    -------
+    list[ResolvedNode]
+        Resolved nodes in the same order as input.
     """
-    from . import node_normalizer
-    from . import translator_query
-    input_node1_id = input_node1
-    input_node2_id = input_node2
-    print(input_node1_id)
-    normalized_node_dict = node_normalizer.get_normalized_nodes([input_node1_id, input_node2_id])
-    input_node1_info = normalized_node_dict[input_node1]
-    input_node1_list = [input_node1_id]
-    if len(input_node1_category) == 0:
-        input_node1_category = input_node1_info.types
-    else:
-        input_node1_category = list(set(input_node1_category).intersection(set(input_node1_info.types)))
-        if len(input_node1_category) == 0:
-            input_node1_category = input_node1_info.types
-
-    input_node2_info = normalized_node_dict[input_node2_id]
-    print(input_node2_id)
-    input_node2_list = [input_node2_id]
-
-    if len(input_node2_category) == 0:
-        input_node2_category = input_node2_info.types
-    else:
-        input_node2_category = list(set(input_node2_category).intersection(set(input_node2_info.types)))
-        if len(input_node2_category) == 0:
-            input_node2_category = input_node2_info.types
+    if isinstance(values, str):
+        values = [values]
+    return [
+        _resolve_node(
+            value,
+            name_resolver_kwargs=name_resolver_kwargs,
+            node_normalizer_kwargs=node_normalizer_kwargs,
+        )
+        for value in values
+    ]
 
 
-    # Step 5: Select predicates and APIs based on the intermediate categories
-    sele_predicates1, sele_APIs1, API_URLs1 = sele_predicates_API(input_node1_category,
-                                                                intermediate_categories,
-                                                                metaKG, APInames)
-    sele_predicates2, sele_APIs2, API_URLs2 = sele_predicates_API(input_node2_category,
-                                                                intermediate_categories,
-                                                                metaKG, APInames)
+def _get_resources(
+    *,
+    resources: Optional[TranslatorResources] = None,
+    api_names: Optional[dict[str, str]] = None,
+    meta_kg: Optional[pd.DataFrame] = None,
+    api_predicates: Optional[dict[str, list[str]]] = None,
+) -> TranslatorResources:
+    """
+    Merge explicit resource overrides with caller-provided or singleton resources.
 
-    query_json1 = format_query_json(input_node1_list,  # a list of identifiers for input node1
-                                    [],  # id list for the intermediate node, it can be empty list if only want to query node1
-                                    input_node1_category,  # a list of categories of input node1
-                                    intermediate_categories,  # a list of categories of the intermediate node
-                                    sele_predicates1) # a list of predicates
+    Parameters
+    ----------
+    resources : TranslatorResources, optional
+        Complete resource object to use as the base.
+    api_names, meta_kg, api_predicates : optional
+        Partial overrides for the base resource object.
 
-    query_json2 = format_query_json(input_node2_list,  # a list of identifiers for input node2
-                                    [],  # id list for the intermediate node, it can be empty list if only want to query node2
-                                    input_node2_category,  # a list of categories of input node2
-                                    intermediate_categories,  # a list of categories of the intermediate node
-                                    sele_predicates2) # a list of predicates
+    Returns
+    -------
+    TranslatorResources
+        Complete resource bundle for a query.
+    """
+    base = resources or get_translator_resources()
+    return TranslatorResources(
+        api_names=api_names if api_names is not None else base.api_names,
+        meta_kg=meta_kg if meta_kg is not None else base.meta_kg,
+        api_predicates=api_predicates
+        if api_predicates is not None
+        else base.api_predicates,
+    )
 
-    result1 = translator_query.parallel_api_query(query_json=query_json1,
-                             select_APIs = sele_APIs1,
-                             APInames=APInames,
-                             API_predicates=API_predicates,
-                             max_workers=len(sele_APIs1))
-    result2 = translator_query.parallel_api_query(query_json=query_json2,
-                                select_APIs = sele_APIs2,
-                                APInames=APInames,
-                                API_predicates=API_predicates,
-                                max_workers=len(sele_APIs2))
 
-    result_parsed1 = parse_KG(result1)
-        # Step 7: Ranking the results. This ranking method is based on the number of unique
-        # primary infores. It can only be used to rank the results with one defined node.
-    result_ranked_by_primary_infores1 = rank_by_primary_infores(result_parsed1, input_node1_id)   # input_node1_id is the curie id of the
+def _build_finder_result(
+    raw_output: dict[str, Any],
+    *,
+    resolved_nodes: dict[str, ResolvedNode],
+) -> FinderResult:
+    """
+    Build a FinderResult from a parsed TRAPI-style output dictionary.
 
-    result_parsed2 = parse_KG(result2)
-    result_ranked_by_primary_infores2 = rank_by_primary_infores(result_parsed2, input_node2_id)   # input_node2_id is the curie id of the
+    Parameters
+    ----------
+    raw_output : dict
+        Parsed output from an existing finder parser.
+    resolved_nodes : dict[str, ResolvedNode]
+        Resolved input-node metadata keyed by role.
 
-    possible_paths = len(set(result_ranked_by_primary_infores1['output_node']).intersection(set(result_ranked_by_primary_infores2['output_node'])))
-    print("Number of possible paths: ", possible_paths)
+    Returns
+    -------
+    FinderResult
+        Convenience result wrapper.
+    """
+    return FinderResult(
+        query=raw_output.get("query_graph", {}),
+        knowledge_graph=raw_output.get("knowledge_graph", {}),
+        results=raw_output.get("results", []),
+        auxiliary_graphs=raw_output.get("auxiliary_graphs", {}),
+        resolved_nodes=resolved_nodes,
+        raw=raw_output,
+    )
 
-    paths = merge_ranking_by_number_of_infores(result_ranked_by_primary_infores1, result_ranked_by_primary_infores2,
-                                            top_n = 30,
-                                            fontsize=10,
-                                            title_fontsize=12,)
-    # return an boject containing the paths and the ranked results for both input nodes. The ranked results can be used for further analysis or visualization.
-    result = {
-        "paths": paths,
-        "input_node1_id": input_node1_id,
-        "input_node2_id": input_node2_id,
-        "result1": result1,
-        "result2": result2,
-        "result_parsed1": result_parsed1,
-        "result_parsed2": result_parsed2,
-        "result_ranked_by_primary_infores1": result_ranked_by_primary_infores1,
-        "result_ranked_by_primary_infores2": result_ranked_by_primary_infores2
-    }
-    #return paths,  input_node1_id, input_node2_id, result1, result2, result_parsed1, result_parsed2, result_ranked_by_primary_infores1, result_ranked_by_primary_infores2
-    return  result
 
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 
@@ -1366,7 +1504,6 @@ def parse_network_result(result, input_node1_list):
             dic_nodes[object] = [subject]
 
 
-
     dic_remain_nodes = {}
 
     dic_with_input_nodes = {}
@@ -1386,8 +1523,6 @@ def parse_network_result(result, input_node1_list):
 
     for i in dic_with_input_nodes:
         dic_with_input_nodes[i] = list(set(dic_with_input_nodes[i]))
-
-
 
 
     for i in dic_with_input_nodes:
@@ -1466,7 +1601,6 @@ def rank_by_primary_infores_input_as_list(result_parsed, input_nodes):
     return(rank_df_ranked)
 
 
-
 # parse results to a dictionary. Dec 5, 2023
 # used. Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def rank_by_primary_infores(result_parsed, input_node):
@@ -1512,10 +1646,8 @@ def rank_by_primary_infores(result_parsed, input_node):
     rank_df['unique_predicates'] = unique_predicates
 
 
-
     rank_df_ranked = rank_df.sort_values(by=['Num_of_primary_infores'], ascending=False)
     return(rank_df_ranked)
-
 
 
 # used. Dec 5, 2023 (Example_query_rank_the_path.ipynb)
@@ -1525,7 +1657,8 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
                            title_fontsize = 12,
                            fontsize = 12,
                            ):
-
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
     dic_rank1 = {}
     for i in range(0, result_ranked_by_primary_infores.shape[0]):
@@ -1574,7 +1707,6 @@ def merge_by_ranking_index(result_ranked_by_primary_infores,
     return result_xy_sorted
 
 
-
 def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
                                        result_ranked_by_primary_infores1,
                                        plot=True,
@@ -1606,7 +1738,6 @@ def merge_ranking_by_number_of_infores(result_ranked_by_primary_infores,
     result_xy = pd.DataFrame.from_dict(dic_xy, orient='index', columns=['score'])
     result_xy['output_node'] = result_xy.index
     # convert the output_node to preferred name
-
 
 
     #result_xy["output_node_name"] = new_colnames
@@ -1643,6 +1774,9 @@ def plot_path_bar(x,
                     fontsize = 8,
                     title_fontsize = 10,
                     output_png="NE_heatmap.png"):
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+
     #matplotlib.use('Agg')
 
     # title = "Bridging nodes"  # Unused variable
@@ -1744,8 +1878,6 @@ def query_KP_all(subject_ids, object_ids, subject_categories, object_categories,
     return(result_dict, result_concept)
 
 
-
-
 # to be revised
 def connecting_two_dots_two_hops(sorted_dic1, sorted_dic):
     intermediate = []
@@ -1835,8 +1967,10 @@ def select_result_to_analysis(sele_genes,Temp_result_df1, Temp_result_df2 ):
     return(for_plot)
 
 
-
 def plot_graph_by_predicates(for_plot):
+    import networkx as nx
+    from IPython.display import display
+
     graph = nx.from_pandas_edgelist(for_plot,
                                 source='Subject',
                                 target='Object',
@@ -1885,6 +2019,8 @@ def plot_graph_by_predicates(for_plot):
 
 
 def plot_graph_by_infores(for_plot):
+    import networkx as nx
+    from IPython.display import display
 
     graph = nx.from_pandas_edgelist(for_plot,
                                     source='Subject',
@@ -1934,6 +2070,8 @@ def plot_graph_by_infores(for_plot):
 
 
 def plot_graph_by_API(for_plot):
+    import networkx as nx
+    from IPython.display import display
 
     graph = nx.from_pandas_edgelist(for_plot,
                                     source='Subject',
@@ -2116,7 +2254,6 @@ def format_id(query_json_cur_clean):
 #    return response
 
 
-
 #def ask_chatGPT4(prompt_text):
 #    response = query_chatGPT4(prompt_text)
 #    return response
@@ -2146,6 +2283,9 @@ def load_translator_resources():
 
 
 def visulize_path(input_node1_id, intermediate_node, input_node3_id, result, result2):
+    import networkx as nx
+    from IPython.display import display
+
     forplot_subject = []
     forplot_object = []
     forplot_predicate = []
@@ -2311,4 +2451,15 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 
     similar_predicate
     return similar_predicate
+
+
+# ---------------------------------------------------------------------------
+# Developer-friendly finder entry points live in their submodules and are
+# re-exported here as the top-level package API (``from TCT import query_TCT_pathfinder``).
+# Imported after the shared helpers above are defined so the submodules can
+# pull sele_predicates_API and these helpers from this module without a
+# circular import.
+# ---------------------------------------------------------------------------
+from .TCT_pathfinder import query_TCT_pathfinder  # noqa: E402
+from .TCT_neighborhood_finder import neighborhood_finder  # noqa: E402
 

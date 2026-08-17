@@ -29,23 +29,19 @@ def network_annotator(gene_list,
         Merged TRAPI JSON object.
     """
     import json
-    result = {}
     TCT_neighborhood_finder_result = {}
     for gene in gene_list:
         input_identifiers = name_resolver.lookup(gene, only_taxa='NCBITaxon:9606', biolink_type='biolink:Gene').curie
 
-        input_node_id, result[input_identifiers], result_parsed, result_ranked_by_primary_infores = TCT_neighborhood_finder.neighborhood_finder(input_identifiers,
-                                                                                              node2_categories = node2_categories,
-                                                                                            APInames = select_APIs,
-                                                                                            metaKG = select_metaKG,
-                                                                                            API_predicates = API_predicates)
-       
-
-    for input_identifiers in result.keys():
-        TCT_neighborhood_finder_result[input_identifiers] = TCT_neighborhood_finder.parse_results_for_neighborhood_finder(input_identifiers, result[input_identifiers],
-        start_node_categories='biolink:Gene', end_node_categories=None,
-        get_node_info=True,
-        scoring_method='infores')
+        finder_result = TCT_neighborhood_finder.neighborhood_finder(
+            input_identifiers,
+            node2_categories,
+            node_categories=['biolink:Gene'],
+            api_names=select_APIs,
+            meta_kg=select_metaKG,
+            api_predicates=API_predicates,
+        )
+        TCT_neighborhood_finder_result[input_identifiers] = finder_result.raw
 
     gene_set = set(gene_list)
 
@@ -176,9 +172,9 @@ def get_connected_graph(result_parsed, input_identifiers):
     Parameters
     ----------
     result_parsed : dict
-        The parsed results for results from TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().
+        The parsed results (``FinderResult.raw``) from ``TCT_neighborhood_finder.neighborhood_finder()`` run with multiple input nodes.
     input_identifiers : list
-        A list of input node identifiers, which are also input for TCT_neighborhood_finder.neighborhood_finder_multiple_inputs().
+        A list of input node identifiers, which are also input for ``TCT_neighborhood_finder.neighborhood_finder()``.
 
     Returns
     -------
@@ -188,11 +184,12 @@ def get_connected_graph(result_parsed, input_identifiers):
     Examples
     --------
     >>> input_identifiers = ['NCBIGene:6774', 'NCBIGene:4170','NCBIGene:4792','NCBIGene:4288','NCBIGene:596','NCBIGene:581','NCBIGene:836','NCBIGene:6777','NCBIGene:4790','NCBIGene:545']
-    >>> result, result_parsed = TCT_neighborhood_finder.neighborhood_finder_multiple_inputs(input_identifiers,
-                                                                                            node2_categories = ['biolink:Gene','biolink:Protein'],
-                                                                                            APInames = APInames,
-                                                                                            metaKG = metaKG,
-                                                                                            API_predicates = API_predicates)   
+    >>> finder_result = TCT_neighborhood_finder.neighborhood_finder(input_identifiers,
+                                                                    neighbor_categories=['biolink:Gene','biolink:Protein'],
+                                                                    api_names=APInames,
+                                                                    meta_kg=metaKG,
+                                                                    api_predicates=API_predicates)
+    >>> result_parsed = finder_result.raw
     >>> result = TCT_network_annotator.get_connected_graph(result_parsed, input_identifiers)
     >>> import datetime
     >>> import json

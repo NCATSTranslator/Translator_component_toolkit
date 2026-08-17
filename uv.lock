@@ -3290,22 +3290,25 @@ version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "igraph" },
-    { name = "ipycytoscape" },
     { name = "matplotlib" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
-    { name = "pyvis" },
     { name = "requests" },
-    { name = "seaborn" },
     { name = "zstandard" },
 ]
 
 [package.optional-dependencies]
 mcp = [
     { name = "fastmcp" },
+]
+vision = [
+    { name = "ipycytoscape" },
+    { name = "matplotlib" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyvis" },
+    { name = "seaborn" },
 ]
 
 [package.dev-dependencies]
@@ -3323,17 +3326,17 @@ dev = [
 requires-dist = [
     { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=2.12.2" },
     { name = "igraph" },
-    { name = "ipycytoscape" },
-    { name = "matplotlib" },
-    { name = "networkx" },
+    { name = "ipycytoscape", marker = "extra == 'vision'" },
+    { name = "matplotlib", marker = "extra == 'vision'" },
+    { name = "networkx", marker = "extra == 'vision'" },
     { name = "numpy" },
     { name = "pandas" },
-    { name = "pyvis" },
+    { name = "pyvis", marker = "extra == 'vision'" },
     { name = "requests" },
-    { name = "seaborn" },
+    { name = "seaborn", marker = "extra == 'vision'" },
     { name = "zstandard" },
 ]
-provides-extras = ["mcp"]
+provides-extras = ["vision", "mcp"]
 
 [package.metadata.requires-dev]
 dev = [
