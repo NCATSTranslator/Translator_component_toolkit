@@ -57,7 +57,7 @@
 <dd class="field-even"></dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">&quot;BigGIM_BMG&quot;</span><span class="p">,</span> <span class="s2">&quot;http://127.0.0.1:8000/find_path_by_predicate&quot;</span><span class="p">,</span> <span class="s2">&quot;Gene-physically_interacts_with-gene&quot;</span><span class="p">,</span> <span class="s2">&quot;Gene&quot;</span><span class="p">,</span> <span class="s2">&quot;Gene&quot;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span> <span class="o">=</span> <span class="n">add_new_API_for_query</span><span class="p">(</span><span class="n">APInames</span><span class="p">,</span> <span class="n">metaKG</span><span class="p">,</span> <span class="s2">"BigGIM_BMG"</span><span class="p">,</span> <span class="s2">"http://127.0.0.1:8000/find_path_by_predicate"</span><span class="p">,</span> <span class="s2">"Gene-physically_interacts_with-gene"</span><span class="p">,</span> <span class="s2">"Gene"</span><span class="p">,</span> <span class="s2">"Gene"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -111,8 +111,8 @@ and RTX KG2.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">metaKG</span> <span class="o">=</span> <span class="n">get_KP_metadata</span><span class="p">(</span><span class="n">APInames</span><span class="p">)</span> 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">All_predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">&#39;Predicate&#39;</span><span class="p">]))</span>
-<span class="go">All_categories = list((set(list(set(metaKG[&#39;Subject&#39;]))+list(set(metaKG[&#39;Object&#39;])))))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">All_predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">metaKG</span><span class="p">[</span><span class="s1">'Predicate'</span><span class="p">]))</span>
+<span class="go">All_categories = list((set(list(set(metaKG['Subject']))+list(set(metaKG['Object'])))))</span>
 </pre></div>
 </div>
 </dd></dl>

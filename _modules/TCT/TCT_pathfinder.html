@@ -63,8 +63,8 @@
         <span class="n">predicates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span>
         <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        format user&#39;s input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">        format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -89,13 +89,13 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; query_json_temp = format_query_json_for_pathfinder_with_constraints(</span>
-<span class="sd">        subject_ids=&#39;NCBIGene:6774&#39;,</span>
-<span class="sd">        object_ids=&#39;NCBIGene:4170&#39;,</span>
-<span class="sd">        subject_categories=[&#39;biolink:Gene&#39;],</span>
-<span class="sd">        object_categories=[&#39;biolink:Gene&#39;],</span>
-<span class="sd">        predicates=[&#39;biolink:related_to&#39;],</span>
-<span class="sd">        constraints=[&#39;biolink:Protein&#39;])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        subject_ids='NCBIGene:6774',</span>
+<span class="sd">        object_ids='NCBIGene:4170',</span>
+<span class="sd">        subject_categories=['biolink:Gene'],</span>
+<span class="sd">        object_categories=['biolink:Gene'],</span>
+<span class="sd">        predicates=['biolink:related_to'],</span>
+<span class="sd">        constraints=['biolink:Protein'])</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">constraints</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -103,45 +103,45 @@
     
     <span class="k">else</span><span class="p">:</span>
         <span class="n">constraints_intermediate_category</span> <span class="o">=</span> <span class="p">[</span><span class="n">constraints</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: for ARAGORN or ARAX pathfinder pipeline, it is only allowed to have only one intermediate category in the constraints list. If there are multiple intermediate categories, the query will return an error. Therefore, we will only use one intermediate category in  the constraints list. &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Warning: for ARAGORN or ARAX pathfinder pipeline, it is only allowed to have only one intermediate category in the constraints list. If there are multiple intermediate categories, the query will return an error. Therefore, we will only use one intermediate category in  the constraints list. "</span><span class="p">)</span>
     <span class="n">q</span> <span class="o">=</span>  <span class="p">{</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;n0&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"query_graph"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"nodes"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"n0"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="n">subject_ids</span>
                 <span class="p">]</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;n1&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"n1"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="n">object_ids</span>
                 <span class="p">]</span>
                 <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;p0&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;n0&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;n1&quot;</span><span class="p">,</span>
-                    <span class="c1">#&quot;predicates&quot;: [</span>
-                    <span class="c1">#    &quot;biolink:related_to&quot;</span>
+            <span class="s2">"paths"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"p0"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"n0"</span><span class="p">,</span>
+                    <span class="s2">"object"</span><span class="p">:</span> <span class="s2">"n1"</span><span class="p">,</span>
+                    <span class="c1">#"predicates": [</span>
+                    <span class="c1">#    "biolink:related_to"</span>
                     <span class="c1">#],</span>
-                    <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">"constraints"</span><span class="p">:</span> <span class="p">[</span>
                         <span class="p">{</span>
-                            <span class="s2">&quot;intermediate_categories&quot;</span><span class="p">:</span> <span class="n">constraints_intermediate_category</span>
+                            <span class="s2">"intermediate_categories"</span><span class="p">:</span> <span class="n">constraints_intermediate_category</span>
                         <span class="p">}</span>
                 <span class="p">]</span>
                 <span class="p">}</span>
             <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;submitter&quot;</span><span class="p">:</span> <span class="s2">&quot;TCT&quot;</span><span class="p">,</span>
-        <span class="c1">#&quot;stream_progress&quot;: True,</span>
-        <span class="s2">&quot;query_options&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;kp_timeout&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;prune_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;50&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;max_pathfinder_paths&quot;</span><span class="p">:</span> <span class="s2">&quot;500&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;max_path_length&quot;</span><span class="p">:</span> <span class="mi">4</span>
+        <span class="s2">"submitter"</span><span class="p">:</span> <span class="s2">"TCT"</span><span class="p">,</span>
+        <span class="c1">#"stream_progress": True,</span>
+        <span class="s2">"query_options"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"kp_timeout"</span><span class="p">:</span> <span class="s2">"30"</span><span class="p">,</span>
+            <span class="s2">"prune_threshold"</span><span class="p">:</span> <span class="s2">"50"</span><span class="p">,</span>
+            <span class="s2">"max_pathfinder_paths"</span><span class="p">:</span> <span class="s2">"500"</span><span class="p">,</span>
+            <span class="s2">"max_path_length"</span><span class="p">:</span> <span class="mi">4</span>
         <span class="p">}</span>
         <span class="p">}</span>
   
@@ -151,38 +151,38 @@
 <div class="viewcode-block" id="build_query_graph">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.build_query_graph">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    start_node_categories and end_node_categories are lists of categories.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">q</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;on&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="n">end_node_categories</span><span class="p">,</span>
-                    <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                    <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"nodes"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"on"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"categories"</span><span class="p">:</span> <span class="n">end_node_categories</span><span class="p">,</span>
+                    <span class="s2">"constraints"</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span>
                         <span class="n">end_node_id</span>
                     <span class="p">],</span>
-                    <span class="s2">&quot;is_set&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="s2">&quot;option_group_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;set_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;set_interpretation&quot;</span><span class="p">:</span> <span class="s2">&quot;BATCH&quot;</span>
+                    <span class="s2">"is_set"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="s2">"option_group_id"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"set_id"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"set_interpretation"</span><span class="p">:</span> <span class="s2">"BATCH"</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;sn&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="n">start_node_categories</span><span class="p">,</span>
-                    <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="p">[],</span>
-                    <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">start_node_id</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">start_node_id</span><span class="p">,</span>
-                    <span class="s2">&quot;is_set&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-                    <span class="s2">&quot;option_group_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;set_id&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;set_interpretation&quot;</span><span class="p">:</span> <span class="s2">&quot;BATCH&quot;</span>
+                <span class="s2">"sn"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"categories"</span><span class="p">:</span> <span class="n">start_node_categories</span><span class="p">,</span>
+                    <span class="s2">"constraints"</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span><span class="n">start_node_id</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">start_node_id</span><span class="p">,</span>
+                    <span class="s2">"is_set"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="s2">"option_group_id"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"set_id"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"set_interpretation"</span><span class="p">:</span> <span class="s2">"BATCH"</span>
                 <span class="p">}</span>
             <span class="p">},</span>
-            <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;p0&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;constraints&quot;</span><span class="p">:</span> <span class="n">constraints_path</span><span class="p">,</span>
-                    <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;predicates&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;sn&quot;</span>
+            <span class="s2">"paths"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"p0"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"constraints"</span><span class="p">:</span> <span class="n">constraints_path</span><span class="p">,</span>
+                    <span class="s2">"object"</span><span class="p">:</span> <span class="s2">"on"</span><span class="p">,</span>
+                    <span class="s2">"predicates"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"sn"</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">}</span>
@@ -192,21 +192,21 @@
 
 <div class="viewcode-block" id="generate_score_results">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.generate_score_results">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_score_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;infores&#39;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Generates a score dict, and a list of &quot;analyses&quot;.</span>
-<span class="sd">    method can be &#39;infores&#39; or &#39;edges&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_score_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Generates a score dict, and a list of "analyses".</span>
+<span class="sd">    method can be 'infores' or 'edges'</span>
+<span class="sd">    """</span>
     <span class="n">graph_scores</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">max_score</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">auxiliary_graphs</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">]</span>
+    <span class="n">auxiliary_graphs</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">'auxiliary_graphs'</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">graph</span> <span class="ow">in</span> <span class="n">auxiliary_graphs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;infores&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">'infores'</span><span class="p">:</span>
             <span class="n">sources</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">edge_index</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">:</span>
-                <span class="n">edge</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="n">edge_index</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">[</span><span class="s1">&#39;sources&#39;</span><span class="p">]:</span>
-                    <span class="n">sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">resource</span><span class="p">[</span><span class="s1">&#39;resource_id&#39;</span><span class="p">])</span>
+                <span class="n">edge</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">][</span><span class="n">edge_index</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">resource</span> <span class="ow">in</span> <span class="n">edge</span><span class="p">[</span><span class="s1">'sources'</span><span class="p">]:</span>
+                    <span class="n">sources</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">resource</span><span class="p">[</span><span class="s1">'resource_id'</span><span class="p">])</span>
             <span class="n">score</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">max_score</span><span class="p">:</span>
                 <span class="n">max_score</span> <span class="o">=</span> <span class="n">score</span>
@@ -219,13 +219,13 @@
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">graph_scores</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="n">graph_scores</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">/</span><span class="n">max_score</span>
         <span class="n">graph_scores_formatted</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-            <span class="s1">&#39;attributes&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s1">&#39;path_bindings&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;p0&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">k</span><span class="p">}]},</span>
-            <span class="s1">&#39;resource_id&#39;</span><span class="p">:</span> <span class="s1">&#39;infores:tct&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="n">graph_scores</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
-            <span class="s1">&#39;scoring_method&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="s1">&#39;support_graphs&#39;</span><span class="p">:</span> <span class="kc">None</span>
+            <span class="s1">'attributes'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">'path_bindings'</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">'p0'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'id'</span><span class="p">:</span> <span class="n">k</span><span class="p">}]},</span>
+            <span class="s1">'resource_id'</span><span class="p">:</span> <span class="s1">'infores:tct'</span><span class="p">,</span>
+            <span class="s1">'score'</span><span class="p">:</span> <span class="n">graph_scores</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+            <span class="s1">'scoring_method'</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">'support_graphs'</span><span class="p">:</span> <span class="kc">None</span>
             <span class="p">})</span>
     <span class="k">return</span> <span class="n">graph_scores</span><span class="p">,</span> <span class="n">graph_scores_formatted</span></div>
 
@@ -236,26 +236,26 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_pathfinder</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">result1</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">result2</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
         <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">&#39;infores&#39;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.</span>
-<span class="sd">    scoring_method is how the node scores are generated, and could be &#39;infores&#39; or &#39;edges&#39;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.</span>
+<span class="sd">    """</span>
     <span class="c1"># nodes</span>
     <span class="c1"># TODO: get some node info? node attributes</span>
     <span class="n">node_info</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># edges is a dict of intermediate nodes</span>
     <span class="n">intermediate_node_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
+        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">if</span> <span class="n">i1</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i2</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">elif</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i1</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;subject&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'subject'</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">i1</span> <span class="o">==</span> <span class="n">start_node_id</span> <span class="ow">or</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">)</span> <span class="ow">and</span> <span class="n">intermediate_node_id</span> <span class="ow">in</span> <span class="n">intermediate_node_edges</span><span class="p">:</span>
@@ -269,89 +269,89 @@
             <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_dict</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]])</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category'</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name&#39;</span> <span class="ow">and</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name'</span> <span class="ow">and</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                <span class="n">node_dict</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]</span>
         <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
     <span class="n">connecting_intermediate_nodes</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result2</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">i1</span> <span class="o">==</span> <span class="n">end_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i2</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">elif</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">end_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i1</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;subject&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'subject'</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">i1</span> <span class="o">==</span> <span class="n">end_node_id</span> <span class="ow">or</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">end_node_id</span><span class="p">)</span> <span class="ow">and</span> <span class="n">intermediate_node_id</span> <span class="ow">in</span> <span class="n">intermediate_node_edges</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">intermediate_node_id</span> <span class="ow">in</span> <span class="n">connecting_intermediate_nodes</span><span class="p">:</span>
-                <span class="n">connecting_intermediate_nodes</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">][</span><span class="s1">&#39;e2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="n">connecting_intermediate_nodes</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">][</span><span class="s1">'e2'</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">connecting_intermediate_nodes</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;e1&#39;</span><span class="p">:</span> <span class="n">intermediate_node_edges</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">],</span> <span class="s1">&#39;e2&#39;</span> <span class="p">:</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)]}</span>
+                <span class="n">connecting_intermediate_nodes</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'e1'</span><span class="p">:</span> <span class="n">intermediate_node_edges</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">],</span> <span class="s1">'e2'</span> <span class="p">:</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)]}</span>
         <span class="k">if</span> <span class="n">intermediate_node_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_info</span><span class="p">:</span>
             <span class="n">node_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="p">}</span>
             <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_dict</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]])</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category'</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name&#39;</span> <span class="ow">and</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name'</span> <span class="ow">and</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                <span class="n">node_dict</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]</span>
         <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">])</span>
     <span class="n">all_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">all_auxiliary_graphs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="c1"># sort connecting_intermediate_nodes by total number of connections</span>
-    <span class="n">connection_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;e1&#39;</span><span class="p">])</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;e2&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">connecting_intermediate_nodes</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="n">connection_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">'e1'</span><span class="p">])</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">'e2'</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">connecting_intermediate_nodes</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
     <span class="k">for</span> <span class="n">i1</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">most_common</span><span class="p">():</span>
         <span class="n">kv</span> <span class="o">=</span> <span class="n">connecting_intermediate_nodes</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span>
-        <span class="n">e1s</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="s1">&#39;e1&#39;</span><span class="p">]</span>
-        <span class="n">e2s</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="s1">&#39;e2&#39;</span><span class="p">]</span>
+        <span class="n">e1s</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="s1">'e1'</span><span class="p">]</span>
+        <span class="n">e2s</span> <span class="o">=</span> <span class="n">kv</span><span class="p">[</span><span class="s1">'e2'</span><span class="p">]</span>
         <span class="n">edges</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">e1s</span><span class="p">}</span>
         <span class="n">edges</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">e2s</span><span class="p">})</span>
         <span class="n">all_edges</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">e1s</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">e2s</span><span class="p">]</span>
-        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">'aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="c1"># generate output json</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;query_graph&#39;</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
-        <span class="c1"># TODO: don&#39;t drop the nodes</span>
-        <span class="s1">&#39;knowledge_graph&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
-                            <span class="s1">&#39;edges&#39;</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
+        <span class="s1">'query_graph'</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
+        <span class="c1"># TODO: don't drop the nodes</span>
+        <span class="s1">'knowledge_graph'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'nodes'</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
+                            <span class="s1">'edges'</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
                            <span class="p">},</span>
-        <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;analyses&#39;</span><span class="p">:</span> <span class="p">[]}],</span>
-        <span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
+        <span class="s1">'results'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'analyses'</span><span class="p">:</span> <span class="p">[]}],</span>
+        <span class="s1">'auxiliary_graphs'</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
     <span class="p">}</span>
     <span class="n">graph_scores</span><span class="p">,</span> <span class="n">graph_scores_formatted</span> <span class="o">=</span> <span class="n">generate_score_results</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">scoring_method</span><span class="p">)</span>
-    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;analyses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">'results'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">'analyses'</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
     <span class="k">if</span> <span class="n">get_node_info</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.node_normalizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_normalized_nodes</span>
         <span class="n">nodes_to_add</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                 <span class="n">nodes_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nodes_to_add</span><span class="p">:</span>
-            <span class="n">normalized_nodes</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">nodes_to_add</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">)</span>
+            <span class="n">normalized_nodes</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">nodes_to_add</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'post'</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">nodes_to_add</span><span class="p">:</span>
                 <span class="n">nn</span> <span class="o">=</span> <span class="n">normalized_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">nn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
+                    <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">'categories'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">output</span></div>
 
 
@@ -360,55 +360,55 @@
 <div class="viewcode-block" id="format_pathfinder_query">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.format_pathfinder_query">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="w">    </span><span class="sd">'''</span>
 <span class="sd">    </span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    '''</span>
     <span class="n">query_json</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;SN&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">"message"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"query_graph"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"nodes"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"SN"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span>
                             <span class="n">node1_id</span>
                         <span class="p">],</span>
-                        <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">"categories"</span><span class="p">:</span> <span class="p">[</span>
                             <span class="n">node1_category</span>
                         <span class="p">]</span>
                     <span class="p">},</span>
-                    <span class="s2">&quot;ON&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;ids&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">"ON"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"ids"</span><span class="p">:</span> <span class="p">[</span>
                             <span class="n">node2_id</span>
                         <span class="p">],</span>
-                        <span class="s2">&quot;categories&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">"categories"</span><span class="p">:</span> <span class="p">[</span>
                             <span class="n">node2_category</span>
                         <span class="p">]</span>
                     <span class="p">}</span>
                 <span class="p">},</span>
-                <span class="s2">&quot;paths&quot;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s2">&quot;qpath&quot;</span><span class="p">:</span> <span class="p">{</span>
-                        <span class="s2">&quot;subject&quot;</span><span class="p">:</span> <span class="s2">&quot;SN&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="s2">&quot;ON&quot;</span>
+                <span class="s2">"paths"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"qpath"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"subject"</span><span class="p">:</span> <span class="s2">"SN"</span><span class="p">,</span>
+                        <span class="s2">"object"</span><span class="p">:</span> <span class="s2">"ON"</span>
                     <span class="p">}</span>
                 <span class="p">}</span>
             <span class="p">}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;submitter&quot;</span><span class="p">:</span> <span class="s2">&quot;TCT&quot;</span><span class="p">,</span>
+        <span class="s2">"submitter"</span><span class="p">:</span> <span class="s2">"TCT"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">query_json</span></div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
-    <span class="c1">#aragorn_endpoint = &#39;https://shepherd.renci.org/aragorn/query&#39; # dev endpoint</span>
-    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://shepherd.ci.transltr.io/aragorn/query&#39;</span> <span class="c1"># new ci endpoint</span>
+    <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
+    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
-    <span class="c1">#aragorn_endpoint = &#39;https://shepherd.renci.org/aragorn/query&#39; # dev endpoint</span>
-    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://shepherd.ci.transltr.io/aragorn/query&#39;</span> <span class="c1"># new ci endpoint</span>
+    <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
+    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
         <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
         <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>
@@ -420,13 +420,13 @@
     <span class="k">return</span> <span class="n">response</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
-    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://arax.ci.transltr.io/api/arax/v1.4/query&#39;</span>
+    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ARAX_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
-    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">&#39;https://arax.ci.transltr.io/api/arax/v1.4/query&#39;</span>
+    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
         <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
         <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>
@@ -451,23 +451,23 @@
     <span class="n">meta_kg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">api_predicates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">resources</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TranslatorResources</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">scoring_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;infores&quot;</span><span class="p">,</span>
+    <span class="n">scoring_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"infores"</span><span class="p">,</span>
     <span class="n">name_resolver_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">node_normalizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinderResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find paths between two biomedical concepts using Translator KPs.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    start : str</span>
-<span class="sd">        Start node as either a CURIE (for example, ``&quot;MONDO:0004979&quot;``) or a</span>
-<span class="sd">        human-readable string (for example, ``&quot;asthma&quot;``).</span>
+<span class="sd">        Start node as either a CURIE (for example, ``"MONDO:0004979"``) or a</span>
+<span class="sd">        human-readable string (for example, ``"asthma"``).</span>
 <span class="sd">    end : str</span>
 <span class="sd">        End node as either a CURIE or human-readable string.</span>
 <span class="sd">    intermediate_categories : list[str]</span>
 <span class="sd">        Allowed categories for intermediate path nodes. Values may be short</span>
-<span class="sd">        names like ``&quot;Gene&quot;`` or full Biolink names like ``&quot;biolink:Gene&quot;``.</span>
+<span class="sd">        names like ``"Gene"`` or full Biolink names like ``"biolink:Gene"``.</span>
 <span class="sd">    start_categories : list[str], optional</span>
 <span class="sd">        Category override for the start node. If omitted, categories are</span>
 <span class="sd">        inferred from Node Normalizer.</span>
@@ -482,7 +482,7 @@
 <span class="sd">        pathfinder implementation.</span>
 <span class="sd">    scoring_method : str</span>
 <span class="sd">        Scoring method passed to the legacy parser. Current values are</span>
-<span class="sd">        ``&quot;infores&quot;`` and ``&quot;edges&quot;``.</span>
+<span class="sd">        ``"infores"`` and ``"edges"``.</span>
 <span class="sd">    name_resolver_kwargs : dict, optional</span>
 <span class="sd">        Extra keyword arguments for ``name_resolver.lookup``.</span>
 <span class="sd">    node_normalizer_kwargs : dict, optional</span>
@@ -498,10 +498,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from TCT import query_TCT_pathfinder</span>
-<span class="sd">    &gt;&gt;&gt; result = query_TCT_pathfinder(&quot;asthma&quot;, &quot;albuterol&quot;, [&quot;Gene&quot;])</span>
-<span class="sd">    &gt;&gt;&gt; result.resolved_nodes[&quot;start&quot;].curie</span>
-<span class="sd">    &#39;MONDO:0004979&#39;</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    &gt;&gt;&gt; result = query_TCT_pathfinder("asthma", "albuterol", ["Gene"])</span>
+<span class="sd">    &gt;&gt;&gt; result.resolved_nodes["start"].curie</span>
+<span class="sd">    'MONDO:0004979'</span>
+<span class="sd">    """</span>
     <span class="n">start_node</span> <span class="o">=</span> <span class="n">_resolve_node</span><span class="p">(</span>
         <span class="n">start</span><span class="p">,</span>
         <span class="n">name_resolver_kwargs</span><span class="o">=</span><span class="n">name_resolver_kwargs</span><span class="p">,</span>
@@ -574,7 +574,7 @@
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">_build_finder_result</span><span class="p">(</span>
         <span class="n">raw_output</span><span class="p">,</span>
-        <span class="n">resolved_nodes</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="n">start_node</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">end_node</span><span class="p">},</span>
+        <span class="n">resolved_nodes</span><span class="o">=</span><span class="p">{</span><span class="s2">"start"</span><span class="p">:</span> <span class="n">start_node</span><span class="p">,</span> <span class="s2">"end"</span><span class="p">:</span> <span class="n">end_node</span><span class="p">},</span>
     <span class="p">)</span></div>
 
 </pre></div>

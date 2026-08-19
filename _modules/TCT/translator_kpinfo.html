@@ -38,13 +38,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="sd">&quot;&quot;&quot;This is the root URL for the resource.&quot;&quot;&quot;</span>
-<span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;https://smart-api.info/api/query?q=tags.name:translator&#39;</span>
+<span class="sd">"""This is the root URL for the resource."""</span>
+<span class="n">URL</span> <span class="o">=</span> <span class="s1">'https://smart-api.info/api/query?q=tags.name:translator'</span>
 
 <div class="viewcode-block" id="get_translator_kp_info">
 <a class="viewcode-back" href="../../translator_kpinfo.html#TCT.translator_kpinfo.get_translator_kp_info">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_translator_kp_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the SmartAPI Translator KP info from the smart-api.info API.</span>
 <span class="sd">    Returns a DataFrame with the SmartAPI Translator KP info.</span>
 
@@ -61,18 +61,18 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; Translator_KP_info, APInames = get_translator_kp_info()</span>
 <span class="sd">    &gt;&gt;&gt; print(Translator_KP_info.head())</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Get x-bte smartapi specs</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&amp;size=1000&amp;sort=_seq_no&amp;raw=1&amp;fields=paths,servers,tags,components.x-bte*,info,_meta&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&amp;size=1000&amp;sort=_seq_no&amp;raw=1&amp;fields=paths,servers,tags,components.x-bte*,info,_meta"</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;error downloading smartapi specs: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error downloading smartapi specs: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">exit</span><span class="p">()</span>
 
     <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-    <span class="n">smartapis</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">&quot;hits&quot;</span><span class="p">]</span>
+    <span class="n">smartapis</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">"hits"</span><span class="p">]</span>
 
     <span class="n">id_list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">title_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -85,60 +85,60 @@
         <span class="n">ci_found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">test_found</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">])):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'servers'</span><span class="p">])):</span>
             
-            <span class="n">server</span> <span class="o">=</span> <span class="n">api</span><span class="p">[</span><span class="s1">&#39;servers&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">&#39;x-maturity&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">server</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping server without x-maturity: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">server</span> <span class="o">=</span> <span class="n">api</span><span class="p">[</span><span class="s1">'servers'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">'x-maturity'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">server</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping server without x-maturity: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;production&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'production'</span><span class="p">:</span>
                     <span class="c1"># if prod_ur is not ars-prod.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;https://ars-prod.transltr.io&#39;</span><span class="p">:</span>
-                        <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/ars/api/submit/&#39;</span>
+                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars-prod.transltr.io'</span><span class="p">:</span>
+                        <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if prod_url does not end with /, add &#39;/query/&#39; to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;query/&#39;</span>
+                        <span class="c1"># if prod_url does not end with /, add '/query/' to the end</span>
+                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
+                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if prod_url does not end with /, add &#39;/query/&#39; to the end</span>
-                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/query/&#39;</span>
+                            <span class="c1"># if prod_url does not end with /, add '/query/' to the end</span>
+                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
                     
                     <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">True</span>
                 
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;staging&#39;</span> <span class="ow">or</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;development&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'staging'</span> <span class="ow">or</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'development'</span><span class="p">:</span>
                     <span class="c1"># if ci_url is not ars.ci.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;https://ars.ci.transltr.io&#39;</span><span class="p">:</span>
-                        <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/ars/api/submit/&#39;</span>
+                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars.ci.transltr.io'</span><span class="p">:</span>
+                        <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if ci_url does not end with /, add &#39;/query/&#39; to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;query/&#39;</span>
+                        <span class="c1"># if ci_url does not end with /, add '/query/' to the end</span>
+                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
+                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if ci_url does not end with /, add &#39;/query/&#39; to the end</span>
-                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/query/&#39;</span>
+                            <span class="c1"># if ci_url does not end with /, add '/query/' to the end</span>
+                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
                     <span class="n">ci_found</span> <span class="o">=</span> <span class="kc">True</span>
 
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;x-maturity&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;testing&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'testing'</span><span class="p">:</span>
                     <span class="c1"># if test_url is not ars-test.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;https://ars.test.transltr.io&#39;</span><span class="p">:</span>
-                        <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/ars/api/submit/&#39;</span>
+                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars.test.transltr.io'</span><span class="p">:</span>
+                        <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if test_url does not end with /, add &#39;/query/&#39; to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
-                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;query/&#39;</span>
+                        <span class="c1"># if test_url does not end with /, add '/query/' to the end</span>
+                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
+                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if test_url does not end with /, add &#39;/query/&#39; to the end</span>
-                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/query/&#39;</span>
+                            <span class="c1"># if test_url does not end with /, add '/query/' to the end</span>
+                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
 
                     <span class="n">test_found</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">prod_found</span> <span class="ow">or</span> <span class="n">ci_found</span> <span class="ow">or</span> <span class="n">test_found</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping server without production, staging or testing: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'info'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping server without production, staging or testing: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;https://smart-api.info/ui/&#39;</span><span class="o">+</span><span class="n">api</span><span class="p">[</span><span class="s1">&#39;_id&#39;</span><span class="p">])</span>
-            <span class="n">title_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">][</span><span class="s1">&#39;title&#39;</span><span class="p">])</span>
+            <span class="n">id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'https://smart-api.info/ui/'</span><span class="o">+</span><span class="n">api</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">])</span>
+            <span class="n">title_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'info'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">prod_found</span><span class="p">:</span>
                 <span class="n">prod_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod_url</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -156,20 +156,20 @@
     <span class="c1"># write all the smartapis to a dataframe</span>
 
     <span class="n">smartapi_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-        <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">id_list</span><span class="p">,</span>
-        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">title_list</span><span class="p">,</span>
-        <span class="s1">&#39;prod_url&#39;</span><span class="p">:</span> <span class="n">prod_url_list</span><span class="p">,</span>
-        <span class="s1">&#39;ci_url&#39;</span><span class="p">:</span> <span class="n">ci_url_list</span><span class="p">,</span>
-        <span class="s1">&#39;test_url&#39;</span><span class="p">:</span> <span class="n">test_url_list</span><span class="p">,</span>
+        <span class="s1">'id'</span><span class="p">:</span> <span class="n">id_list</span><span class="p">,</span>
+        <span class="s1">'title'</span><span class="p">:</span> <span class="n">title_list</span><span class="p">,</span>
+        <span class="s1">'prod_url'</span><span class="p">:</span> <span class="n">prod_url_list</span><span class="p">,</span>
+        <span class="s1">'ci_url'</span><span class="p">:</span> <span class="n">ci_url_list</span><span class="p">,</span>
+        <span class="s1">'test_url'</span><span class="p">:</span> <span class="n">test_url_list</span><span class="p">,</span>
     <span class="p">})</span>
     
     <span class="n">API_names</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">smartapi_df</span><span class="p">)):</span>
         <span class="k">if</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1">#API_names[smartapi_df[&#39;title&#39;][i]] = smartapi_df[&#39;prod_url&#39;][i] + &#39;query/&#39;</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="c1">#API_names[smartapi_df['title'][i]] = smartapi_df['prod_url'][i] + 'query/'</span>
+            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">&#39;title&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> 
+            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> 
     <span class="k">return</span> <span class="n">smartapi_df</span><span class="p">,</span> <span class="n">API_names</span></div>
 
 </pre></div>

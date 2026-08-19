@@ -55,25 +55,25 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
         <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">&#39;infores&#39;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.</span>
-<span class="sd">    scoring_method is how the node scores are generated, and could be &#39;infores&#39; or &#39;edges&#39;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.</span>
+<span class="sd">    """</span>
     <span class="c1"># nodes</span>
     <span class="n">node_info</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># edges is a dict of intermediate nodes</span>
     <span class="n">node_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
+        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">if</span> <span class="n">i1</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i2</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">elif</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i1</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;subject&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'subject'</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">i1</span> <span class="o">==</span> <span class="n">start_node_id</span> <span class="ow">or</span> <span class="n">i2</span> <span class="o">==</span> <span class="n">start_node_id</span><span class="p">)</span> <span class="ow">and</span> <span class="n">intermediate_node_id</span> <span class="ow">in</span> <span class="n">node_edges</span><span class="p">:</span>
@@ -87,20 +87,20 @@
             <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_dict</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;attributes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="s1">'attributes'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category'</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name&#39;</span> <span class="ow">and</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name'</span> <span class="ow">and</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                <span class="n">node_dict</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]</span>
         <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">])</span>
     <span class="n">all_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">all_auxiliary_graphs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
@@ -110,36 +110,36 @@
         <span class="n">edges</span> <span class="o">=</span> <span class="n">node_edges</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span>
         <span class="n">all_edges</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">})</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">]</span>
-        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">'aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="c1"># generate output json</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;query_graph&#39;</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
-        <span class="s1">&#39;knowledge_graph&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
-                            <span class="s1">&#39;edges&#39;</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
+        <span class="s1">'query_graph'</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
+        <span class="s1">'knowledge_graph'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'nodes'</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
+                            <span class="s1">'edges'</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
                            <span class="p">},</span>
-        <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;analyses&#39;</span><span class="p">:</span> <span class="p">[]}],</span>
-        <span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
+        <span class="s1">'results'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'analyses'</span><span class="p">:</span> <span class="p">[]}],</span>
+        <span class="s1">'auxiliary_graphs'</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
     <span class="p">}</span>
     <span class="n">graph_scores</span><span class="p">,</span> <span class="n">graph_scores_formatted</span> <span class="o">=</span> <span class="n">generate_score_results</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">scoring_method</span><span class="p">)</span>
-    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;analyses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">'results'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">'analyses'</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
     <span class="k">if</span> <span class="n">get_node_info</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.node_normalizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_normalized_nodes</span>
         <span class="n">nodes_to_add</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                 <span class="n">nodes_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nodes_to_add</span><span class="p">:</span>
             <span class="n">batch_limit</span> <span class="o">=</span> <span class="mi">1000</span>
             <span class="n">all_normalized_nodes</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes_to_add</span><span class="p">),</span> <span class="n">batch_limit</span><span class="p">):</span>
                 <span class="n">batch</span> <span class="o">=</span> <span class="n">nodes_to_add</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">idx</span> <span class="o">+</span> <span class="n">batch_limit</span><span class="p">]</span>
-                <span class="n">batch_result</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">)</span>
+                <span class="n">batch_result</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'post'</span><span class="p">)</span>
                 <span class="n">all_normalized_nodes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch_result</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">nodes_to_add</span><span class="p">:</span>
                 <span class="n">nn</span> <span class="o">=</span> <span class="n">all_normalized_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">nn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
+                    <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">'categories'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">output</span></div>
 
 
@@ -150,25 +150,25 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">start_node_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
         <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">&#39;infores&#39;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.</span>
-<span class="sd">    scoring_method is how the node scores are generated, and could be &#39;infores&#39; or &#39;edges&#39;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.</span>
+<span class="sd">    """</span>
     <span class="c1"># nodes</span>
     <span class="n">node_info</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="c1"># edges is a dict of intermediate nodes</span>
     <span class="n">node_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
-        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
+        <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">if</span> <span class="n">i1</span> <span class="ow">in</span> <span class="n">start_node_ids</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i2</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;object&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'object'</span>
         <span class="k">elif</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">start_node_ids</span><span class="p">:</span>
             <span class="n">intermediate_node_id</span> <span class="o">=</span> <span class="n">i1</span>
-            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">&#39;subject&#39;</span>
+            <span class="n">s_o</span> <span class="o">=</span> <span class="s1">'subject'</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">i1</span> <span class="ow">in</span> <span class="n">start_node_ids</span> <span class="ow">or</span> <span class="n">i2</span> <span class="ow">in</span> <span class="n">start_node_ids</span><span class="p">)</span> <span class="ow">and</span> <span class="n">intermediate_node_id</span> <span class="ow">in</span> <span class="n">node_edges</span><span class="p">:</span>
@@ -182,20 +182,20 @@
             <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">node_dict</span> <span class="o">=</span> <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;attributes&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;attributes&#39;</span><span class="p">]:</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]])</span>
+        <span class="k">if</span> <span class="s1">'attributes'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">v</span><span class="p">[</span><span class="s1">'attributes'</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_category'</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]])</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;attribute_type_id&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name&#39;</span> <span class="ow">and</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
-                <span class="n">node_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">]</span>
+                    <span class="n">node_dict</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'attribute_type_id'</span><span class="p">]</span> <span class="o">==</span> <span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">s_o</span><span class="si">}</span><span class="s1">_name'</span> <span class="ow">and</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+                <span class="n">node_dict</span><span class="p">[</span><span class="s1">'name'</span><span class="p">]</span> <span class="o">=</span> <span class="n">attribute</span><span class="p">[</span><span class="s1">'value'</span><span class="p">]</span>
         <span class="n">node_info</span><span class="p">[</span><span class="n">intermediate_node_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">node_dict</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">node_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
-            <span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;categories&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">'categories'</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">'categories'</span><span class="p">])</span>
     <span class="n">all_edges</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">all_auxiliary_graphs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
@@ -205,36 +205,36 @@
         <span class="n">edges</span> <span class="o">=</span> <span class="n">node_edges</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span>
         <span class="n">all_edges</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">})</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">edges</span><span class="p">]</span>
-        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
+        <span class="n">all_auxiliary_graphs</span><span class="p">[</span><span class="sa">f</span><span class="s1">'aux_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i1</span><span class="si">}</span><span class="s1">'</span><span class="p">]</span> <span class="o">=</span> <span class="n">keys</span>
         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="c1"># generate output json</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s1">&#39;query_graph&#39;</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_ids</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
-        <span class="s1">&#39;knowledge_graph&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;nodes&#39;</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
-                            <span class="s1">&#39;edges&#39;</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
+        <span class="s1">'query_graph'</span><span class="p">:</span> <span class="n">build_query_graph</span><span class="p">(</span><span class="n">start_node_ids</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">),</span>
+        <span class="s1">'knowledge_graph'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'nodes'</span><span class="p">:</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">node_info</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">connection_counts</span><span class="o">.</span><span class="n">keys</span><span class="p">()},</span>
+                            <span class="s1">'edges'</span><span class="p">:</span> <span class="n">all_edges</span><span class="p">,</span>
                            <span class="p">},</span>
-        <span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;analyses&#39;</span><span class="p">:</span> <span class="p">[]}],</span>
-        <span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
+        <span class="s1">'results'</span><span class="p">:</span> <span class="p">[{</span><span class="s1">'analyses'</span><span class="p">:</span> <span class="p">[]}],</span>
+        <span class="s1">'auxiliary_graphs'</span><span class="p">:</span> <span class="n">all_auxiliary_graphs</span>
     <span class="p">}</span>
     <span class="n">graph_scores</span><span class="p">,</span> <span class="n">graph_scores_formatted</span> <span class="o">=</span> <span class="n">generate_score_results</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">scoring_method</span><span class="p">)</span>
-    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;analyses&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">'results'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">'analyses'</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_scores_formatted</span>
     <span class="k">if</span> <span class="n">get_node_info</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.node_normalizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_normalized_nodes</span>
         <span class="n">nodes_to_add</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">&#39;categories&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="s1">'name'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">or</span> <span class="s1">'categories'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
                 <span class="n">nodes_to_add</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">nodes_to_add</span><span class="p">:</span>
             <span class="n">batch_limit</span> <span class="o">=</span> <span class="mi">1000</span>
             <span class="n">all_normalized_nodes</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes_to_add</span><span class="p">),</span> <span class="n">batch_limit</span><span class="p">):</span>
                 <span class="n">batch</span> <span class="o">=</span> <span class="n">nodes_to_add</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">idx</span> <span class="o">+</span> <span class="n">batch_limit</span><span class="p">]</span>
-                <span class="n">batch_result</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;post&#39;</span><span class="p">)</span>
+                <span class="n">batch_result</span> <span class="o">=</span> <span class="n">get_normalized_nodes</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">'post'</span><span class="p">)</span>
                 <span class="n">all_normalized_nodes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch_result</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="n">nodes_to_add</span><span class="p">:</span>
                 <span class="n">nn</span> <span class="o">=</span> <span class="n">all_normalized_nodes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">nn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">&#39;categories&#39;</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
+                    <span class="n">output</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">][</span><span class="n">node_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'name'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="s1">'categories'</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">types</span><span class="p">}</span>
     <span class="k">return</span> <span class="n">output</span></div>
 
 
@@ -254,7 +254,7 @@
     <span class="n">name_resolver_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">node_normalizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FinderResult</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find one-hop neighbors for one or more biomedical concepts.</span>
 
 <span class="sd">    Parameters</span>
@@ -264,8 +264,8 @@
 <span class="sd">        string. Human-readable strings are resolved with Name Resolver and then</span>
 <span class="sd">        normalized with Node Normalizer.</span>
 <span class="sd">    neighbor_categories : list[str]</span>
-<span class="sd">        Desired neighbor categories. Values may be short names like ``&quot;Drug&quot;``</span>
-<span class="sd">        or full Biolink names like ``&quot;biolink:Drug&quot;``.</span>
+<span class="sd">        Desired neighbor categories. Values may be short names like ``"Drug"``</span>
+<span class="sd">        or full Biolink names like ``"biolink:Drug"``.</span>
 <span class="sd">    node_categories : list[str], optional</span>
 <span class="sd">        Category override for source nodes. If omitted, categories are inferred</span>
 <span class="sd">        from the first normalized source node.</span>
@@ -293,10 +293,10 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; from TCT import neighborhood_finder</span>
-<span class="sd">    &gt;&gt;&gt; result = neighborhood_finder(&quot;asthma&quot;, [&quot;SmallMolecule&quot;, &quot;Drug&quot;])</span>
-<span class="sd">    &gt;&gt;&gt; result.knowledge_graph[&quot;nodes&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; result = neighborhood_finder("asthma", ["SmallMolecule", "Drug"])</span>
+<span class="sd">    &gt;&gt;&gt; result.knowledge_graph["nodes"]</span>
 <span class="sd">    {...}</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">resolved_nodes</span> <span class="o">=</span> <span class="n">_resolve_nodes</span><span class="p">(</span>
         <span class="n">node</span><span class="p">,</span>
         <span class="n">name_resolver_kwargs</span><span class="o">=</span><span class="n">name_resolver_kwargs</span><span class="p">,</span>
@@ -322,7 +322,7 @@
     <span class="k">if</span> <span class="n">predicates_subset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">predicates</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">predicates</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">predicates_subset</span><span class="p">))</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">predicates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">predicates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;biolink:related_to&quot;</span><span class="p">]</span>
+        <span class="n">predicates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"biolink:related_to"</span><span class="p">]</span>
 
     <span class="n">input_curies</span> <span class="o">=</span> <span class="p">[</span><span class="n">resolved_node</span><span class="o">.</span><span class="n">curie</span> <span class="k">for</span> <span class="n">resolved_node</span> <span class="ow">in</span> <span class="n">resolved_nodes</span><span class="p">]</span>
     <span class="n">query</span> <span class="o">=</span> <span class="n">translator_query</span><span class="o">.</span><span class="n">format_query_json</span><span class="p">(</span>
@@ -347,7 +347,7 @@
             <span class="n">source_categories</span><span class="p">,</span>
             <span class="n">neighbor_categories</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">result_nodes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;node&quot;</span><span class="p">:</span> <span class="n">resolved_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="n">result_nodes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"node"</span><span class="p">:</span> <span class="n">resolved_nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">]}</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">raw_output</span> <span class="o">=</span> <span class="n">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span>
             <span class="n">input_curies</span><span class="p">,</span>
@@ -356,7 +356,7 @@
             <span class="n">neighbor_categories</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">result_nodes</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;node_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">resolved_node</span>
+            <span class="sa">f</span><span class="s2">"node_</span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">resolved_node</span>
             <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">resolved_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">resolved_nodes</span><span class="p">)</span>
         <span class="p">}</span>
     <span class="k">return</span> <span class="n">_build_finder_result</span><span class="p">(</span><span class="n">raw_output</span><span class="p">,</span> <span class="n">resolved_nodes</span><span class="o">=</span><span class="n">result_nodes</span><span class="p">)</span></div>

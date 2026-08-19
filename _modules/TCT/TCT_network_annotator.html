@@ -47,7 +47,7 @@
                       <span class="n">select_metaKG</span><span class="p">,</span> 
                       <span class="n">API_predicates</span><span class="p">,</span> 
                       <span class="n">output_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Filter multiple TRAPI neighborhood JSON files by gene list and merge</span>
 <span class="sd">    them into a single TRAPI JSON.</span>
 
@@ -62,16 +62,16 @@
 <span class="sd">    -------</span>
 <span class="sd">    dict</span>
 <span class="sd">        Merged TRAPI JSON object.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
     <span class="n">TCT_neighborhood_finder_result</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">gene_list</span><span class="p">:</span>
-        <span class="n">input_identifiers</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">&#39;NCBITaxon:9606&#39;</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">curie</span>
+        <span class="n">input_identifiers</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">'NCBITaxon:9606'</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s1">'biolink:Gene'</span><span class="p">)</span><span class="o">.</span><span class="n">curie</span>
 
         <span class="n">finder_result</span> <span class="o">=</span> <span class="n">TCT_neighborhood_finder</span><span class="o">.</span><span class="n">neighborhood_finder</span><span class="p">(</span>
             <span class="n">input_identifiers</span><span class="p">,</span>
             <span class="n">node2_categories</span><span class="p">,</span>
-            <span class="n">node_categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;biolink:Gene&#39;</span><span class="p">],</span>
+            <span class="n">node_categories</span><span class="o">=</span><span class="p">[</span><span class="s1">'biolink:Gene'</span><span class="p">],</span>
             <span class="n">api_names</span><span class="o">=</span><span class="n">select_APIs</span><span class="p">,</span>
             <span class="n">meta_kg</span><span class="o">=</span><span class="n">select_metaKG</span><span class="p">,</span>
             <span class="n">api_predicates</span><span class="o">=</span><span class="n">API_predicates</span><span class="p">,</span>
@@ -81,12 +81,12 @@
     <span class="n">gene_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">gene_list</span><span class="p">)</span>
 
     <span class="n">merged</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;query_graph&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="s2">&quot;knowledge_graph&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">{},</span>
-            <span class="s2">&quot;edges&quot;</span><span class="p">:</span> <span class="p">{}</span>
+        <span class="s2">"query_graph"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"knowledge_graph"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"nodes"</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">"edges"</span><span class="p">:</span> <span class="p">{}</span>
         <span class="p">},</span>
-        <span class="s2">&quot;results&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="s2">"results"</span><span class="p">:</span> <span class="p">[]</span>
     <span class="p">}</span>
 
     <span class="k">for</span> <span class="n">json_cur</span> <span class="ow">in</span> <span class="n">TCT_neighborhood_finder_result</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
@@ -94,11 +94,11 @@
         <span class="n">data</span> <span class="o">=</span> <span class="n">json_cur</span>
         
         <span class="c1"># Keep first query graph</span>
-        <span class="k">if</span> <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;query_graph&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;query_graph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;query_graph&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="n">merged</span><span class="p">[</span><span class="s2">"query_graph"</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">merged</span><span class="p">[</span><span class="s2">"query_graph"</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"query_graph"</span><span class="p">,</span> <span class="p">{})</span>
 
-        <span class="n">kg_nodes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;knowledge_graph&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nodes&quot;</span><span class="p">,</span> <span class="p">{})</span>
-        <span class="n">kg_edges</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;knowledge_graph&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;edges&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">kg_nodes</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"knowledge_graph"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nodes"</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">kg_edges</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"knowledge_graph"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"edges"</span><span class="p">,</span> <span class="p">{})</span>
 
         <span class="c1"># --------------------------------------------------</span>
         <span class="c1"># Step 1: keep gene nodes in gene_list</span>
@@ -106,7 +106,7 @@
         <span class="n">keep_node_ids</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">node_id</span>
             <span class="k">for</span> <span class="n">node_id</span><span class="p">,</span> <span class="n">node_info</span> <span class="ow">in</span> <span class="n">kg_nodes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="n">gene_set</span>
+            <span class="k">if</span> <span class="n">node_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="ow">in</span> <span class="n">gene_set</span>
         <span class="p">}</span>
 
         <span class="c1"># --------------------------------------------------</span>
@@ -116,8 +116,8 @@
 
         <span class="k">for</span> <span class="n">edge_id</span><span class="p">,</span> <span class="n">edge_info</span> <span class="ow">in</span> <span class="n">kg_edges</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 
-            <span class="n">subject</span> <span class="o">=</span> <span class="n">edge_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subject&quot;</span><span class="p">)</span>
-            <span class="n">obj</span> <span class="o">=</span> <span class="n">edge_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
+            <span class="n">subject</span> <span class="o">=</span> <span class="n">edge_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"subject"</span><span class="p">)</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">edge_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"object"</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">keep_node_ids</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">keep_node_ids</span><span class="p">:</span>
                 <span class="n">keep_edge_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">edge_id</span><span class="p">)</span>
@@ -140,16 +140,16 @@
         <span class="c1"># --------------------------------------------------</span>
         <span class="n">filtered_results</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"results"</span><span class="p">,</span> <span class="p">[]):</span>
 
             <span class="n">keep_result</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="c1"># node bindings</span>
-            <span class="k">for</span> <span class="n">bindings</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;node_bindings&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">bindings</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"node_bindings"</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
 
                 <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">:</span>
 
-                    <span class="k">if</span> <span class="n">binding</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep_node_ids</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">binding</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep_node_ids</span><span class="p">:</span>
                         <span class="n">keep_result</span> <span class="o">=</span> <span class="kc">False</span>
                         <span class="k">break</span>
 
@@ -159,15 +159,15 @@
             <span class="c1"># edge bindings</span>
             <span class="k">if</span> <span class="n">keep_result</span><span class="p">:</span>
 
-                <span class="k">for</span> <span class="n">analysis</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;analyses&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="k">for</span> <span class="n">analysis</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"analyses"</span><span class="p">,</span> <span class="p">[]):</span>
 
                     <span class="k">for</span> <span class="n">bindings</span> <span class="ow">in</span> <span class="n">analysis</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                        <span class="s2">&quot;edge_bindings&quot;</span><span class="p">,</span> <span class="p">{}</span>
+                        <span class="s2">"edge_bindings"</span><span class="p">,</span> <span class="p">{}</span>
                     <span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
 
                         <span class="k">for</span> <span class="n">binding</span> <span class="ow">in</span> <span class="n">bindings</span><span class="p">:</span>
 
-                            <span class="k">if</span> <span class="n">binding</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep_edge_ids</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">binding</span><span class="p">[</span><span class="s2">"id"</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keep_edge_ids</span><span class="p">:</span>
                                 <span class="n">keep_result</span> <span class="o">=</span> <span class="kc">False</span>
                                 <span class="k">break</span>
 
@@ -183,16 +183,16 @@
         <span class="c1"># --------------------------------------------------</span>
         <span class="c1"># Step 5: merge</span>
         <span class="c1"># --------------------------------------------------</span>
-        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;knowledge_graph&quot;</span><span class="p">][</span><span class="s2">&quot;nodes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filtered_nodes</span><span class="p">)</span>
-        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;knowledge_graph&quot;</span><span class="p">][</span><span class="s2">&quot;edges&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filtered_edges</span><span class="p">)</span>
-        <span class="n">merged</span><span class="p">[</span><span class="s2">&quot;results&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">filtered_results</span><span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">"knowledge_graph"</span><span class="p">][</span><span class="s2">"nodes"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filtered_nodes</span><span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">"knowledge_graph"</span><span class="p">][</span><span class="s2">"edges"</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filtered_edges</span><span class="p">)</span>
+        <span class="n">merged</span><span class="p">[</span><span class="s2">"results"</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">filtered_results</span><span class="p">)</span>
 
     <span class="c1"># ------------------------------------------------------</span>
     <span class="c1"># Step 6: save merged file</span>
     <span class="c1"># ------------------------------------------------------</span>
     <span class="k">if</span> <span class="n">output_file</span><span class="p">:</span>
 
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">merged</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">merged</span></div>
@@ -202,7 +202,7 @@
 <div class="viewcode-block" id="get_connected_graph">
 <a class="viewcode-back" href="../../network_annotator.html#TCT.TCT_network_annotator.get_connected_graph">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_connected_graph</span><span class="p">(</span><span class="n">result_parsed</span><span class="p">,</span> <span class="n">input_identifiers</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This function is used to extract the connected graph from the returned graph based on neighborhood finder from multiple inputs. </span>
 <span class="sd">    It will only include the input nodes and the nodes that are connected to the input nodes with degree greater than 1. </span>
 
@@ -221,9 +221,9 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    &gt;&gt;&gt; input_identifiers = [&#39;NCBIGene:6774&#39;, &#39;NCBIGene:4170&#39;,&#39;NCBIGene:4792&#39;,&#39;NCBIGene:4288&#39;,&#39;NCBIGene:596&#39;,&#39;NCBIGene:581&#39;,&#39;NCBIGene:836&#39;,&#39;NCBIGene:6777&#39;,&#39;NCBIGene:4790&#39;,&#39;NCBIGene:545&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; input_identifiers = ['NCBIGene:6774', 'NCBIGene:4170','NCBIGene:4792','NCBIGene:4288','NCBIGene:596','NCBIGene:581','NCBIGene:836','NCBIGene:6777','NCBIGene:4790','NCBIGene:545']</span>
 <span class="sd">    &gt;&gt;&gt; finder_result = TCT_neighborhood_finder.neighborhood_finder(input_identifiers,</span>
-<span class="sd">                                                                    neighbor_categories=[&#39;biolink:Gene&#39;,&#39;biolink:Protein&#39;],</span>
+<span class="sd">                                                                    neighbor_categories=['biolink:Gene','biolink:Protein'],</span>
 <span class="sd">                                                                    api_names=APInames,</span>
 <span class="sd">                                                                    meta_kg=metaKG,</span>
 <span class="sd">                                                                    api_predicates=API_predicates)</span>
@@ -231,24 +231,24 @@
 <span class="sd">    &gt;&gt;&gt; result = TCT_network_annotator.get_connected_graph(result_parsed, input_identifiers)</span>
 <span class="sd">    &gt;&gt;&gt; import datetime</span>
 <span class="sd">    &gt;&gt;&gt; import json</span>
-<span class="sd">    &gt;&gt;&gt; timestamp = datetime.datetime.now().strftime(&#39;%Y%m%d_%H%M%S&#39;)</span>
-<span class="sd">    &gt;&gt;&gt; with open(&#39;./PathFinder_testing_results/&#39;+&#39;TCT_neighborhood_finder_result_&#39;+&#39;_&#39;+timestamp+&#39;.json&#39;, &#39;w&#39;) as f:</span>
+<span class="sd">    &gt;&gt;&gt; timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')</span>
+<span class="sd">    &gt;&gt;&gt; with open('./PathFinder_testing_results/'+'TCT_neighborhood_finder_result_'+'_'+timestamp+'.json', 'w') as f:</span>
 <span class="sd">    &gt;&gt;&gt;     json.dump(result, f)</span>
 <span class="sd">    &gt;&gt;&gt; # visualize the result using the TCT visualization tool (https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html). </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
         
     <span class="n">result_parsed_copy</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="c1"># count node degrees based on edge in the result_parsed[&#39;knowledge_graph&#39;][&#39;edges&#39;], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. </span>
+    <span class="c1"># count node degrees based on edge in the result_parsed['knowledge_graph']['edges'], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. </span>
 
     <span class="n">result_parsed_copy</span> <span class="o">=</span> <span class="n">result_parsed</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="c1"># count node degrees based on edge in the result_parsed[&#39;knowledge_graph&#39;][&#39;edges&#39;], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. </span>
+    <span class="c1"># count node degrees based on edge in the result_parsed['knowledge_graph']['edges'], if multiple nodes are connecting to the same node, then count the degree of that node as the number of nodes connecting to it. If there is only one node connecting to it, then count the degree of that node as 1. </span>
 
     <span class="n">dic_connected_nodes</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">]:</span>
 
-        <span class="n">edge</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">subject</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="nb">object</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="nb">object</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">subject</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dic_connected_nodes</span><span class="p">:</span>
             <span class="n">dic_connected_nodes</span><span class="p">[</span><span class="n">subject</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -272,32 +272,32 @@
     <span class="c1"># get the edges if the edge connects to the selected nodes</span>
     <span class="n">selected_edges_id</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">selected_edges</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">]:</span>
-        <span class="n">edge</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
-        <span class="n">subject</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">&#39;subject&#39;</span><span class="p">]</span>
-        <span class="nb">object</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">&#39;object&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">]:</span>
+        <span class="n">edge</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">subject</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">'subject'</span><span class="p">]</span>
+        <span class="nb">object</span> <span class="o">=</span> <span class="n">edge</span><span class="p">[</span><span class="s1">'object'</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">subject</span> <span class="ow">in</span> <span class="n">selected_nodes</span> <span class="ow">and</span> <span class="nb">object</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
             <span class="n">selected_edges_id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
             <span class="n">selected_edges</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge</span>
 
-    <span class="c1">#remove the result_parsed[&#39;auxiliary_graphs&#39;] if the selected_edges_id is in the result_parsed[&#39;auxiliary_graphs&#39;]</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-        <span class="n">current_auxiliary_graph</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+    <span class="c1">#remove the result_parsed['auxiliary_graphs'] if the selected_edges_id is in the result_parsed['auxiliary_graphs']</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'auxiliary_graphs'</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+        <span class="n">current_auxiliary_graph</span> <span class="o">=</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'auxiliary_graphs'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
         <span class="c1"># if all current_auxiliary_graph was included  in selected_edges_id, then keep it, otherwise remove it</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_auxiliary_graph</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">current_auxiliary_graph</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">selected_edges_id</span><span class="p">))):</span>
             <span class="k">continue</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;auxiliary_graphs&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'auxiliary_graphs'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="c1"># remove the edges in result_parsed_copy[&#39;knowledge_graph&#39;][&#39;edges&#39;] that are not in selected_edges_id</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="c1"># remove the edges in result_parsed_copy['knowledge_graph']['edges'] that are not in selected_edges_id</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selected_edges_id</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;edges&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'edges'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
 
-    <span class="c1"># remove the nodes in result_parsed_copy[&#39;knowledge_graph&#39;][&#39;nodes&#39;] that are not in selected_nodes</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="c1"># remove the nodes in result_parsed_copy['knowledge_graph']['nodes'] that are not in selected_nodes</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selected_nodes</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">&#39;knowledge_graph&#39;</span><span class="p">][</span><span class="s1">&#39;nodes&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">result_parsed_copy</span><span class="p">[</span><span class="s1">'knowledge_graph'</span><span class="p">][</span><span class="s1">'nodes'</span><span class="p">][</span><span class="n">key</span><span class="p">]</span>
     
     <span class="k">return</span> <span class="n">result_parsed_copy</span></div>
 

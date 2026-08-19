@@ -39,9 +39,9 @@
 <a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorAttribute">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TranslatorAttribute</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class that represents Translator node or edge attributes</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">attribute_type_id</span><span class="p">:</span> <span class="nb">str</span>
 
@@ -66,43 +66,43 @@
 <a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorNode">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TranslatorNode</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class for Translator graph nodes.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">curie</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;CURIE identifier&quot;</span>
+    <span class="s2">"CURIE identifier"</span>
 
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;human-readable name for the node&quot;</span>
+    <span class="s2">"human-readable name for the node"</span>
 
     <span class="n">types</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;list of biolink types&quot;</span>
+    <span class="s2">"list of biolink types"</span>
 
     <span class="c1"># TODO: add quantifiers/qualifiers?</span>
     <span class="c1"># TODO: add edges too?</span>
 
     <span class="n">synonyms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;list of synonymous labels&quot;</span>
+    <span class="s2">"list of synonymous labels"</span>
 
     <span class="n">curie_synonyms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;list of synonymous CURIE ids (in the same order as synonyms)&quot;</span>
+    <span class="s2">"list of synonymous CURIE ids (in the same order as synonyms)"</span>
 
     <span class="n">attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TranslatorAttribute</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;List of node attributes (which are key-value pairs.&quot;</span>
+    <span class="s2">"List of node attributes (which are key-value pairs."</span>
 
     <span class="n">taxa</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="s2">&quot;List of taxa for the given node (i.e. &#39;NCBITaxon:9606&#39;)&quot;</span>
+    <span class="s2">"List of taxa for the given node (i.e. 'NCBITaxon:9606')"</span>
 
     <span class="c1"># identifier is just another way to access/set the CURIE.</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;identifier is the CURIE id for the node.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""identifier is the CURIE id for the node."""</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">curie</span>
 
     <span class="nd">@identifier</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;identifier is the CURIE id for the node.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""identifier is the CURIE id for the node."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">curie</span> <span class="o">=</span> <span class="n">i</span>
 
     <span class="nd">@property</span>
@@ -113,23 +113,23 @@
 <a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorNode.from_dict">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a TranslatorNode object from a data dict.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s1">&#39;curie&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The input data dict must have a &quot;curie&quot; key.&#39;</span><span class="p">)</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;curie&#39;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="s1">&#39;label&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
-            <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;types&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Creates a TranslatorNode object from a data dict."""</span>
+        <span class="k">if</span> <span class="s1">'curie'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'The input data dict must have a "curie" key.'</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data_dict</span><span class="p">[</span><span class="s1">'curie'</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">'label'</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">'types'</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
             <span class="c1"># Do the types have the `biolink:` prefix? If not, add them.</span>
-            <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ty</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;biolink:</span><span class="si">{</span><span class="n">ty</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">ty</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;biolink:&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">ty</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;types&#39;</span><span class="p">]))</span>
-        <span class="k">if</span> <span class="s1">&#39;taxa&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
-            <span class="n">n</span><span class="o">.</span><span class="n">taxa</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;taxa&#39;</span><span class="p">]</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ty</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"biolink:</span><span class="si">{</span><span class="n">ty</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">ty</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'biolink:'</span><span class="p">)</span> <span class="k">else</span> <span class="n">ty</span><span class="p">,</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">'types'</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="s1">'taxa'</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+            <span class="n">n</span><span class="o">.</span><span class="n">taxa</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">'taxa'</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">return_synonyms</span><span class="p">:</span>
-            <span class="k">if</span> <span class="s1">&#39;synonyms&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
-                <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;synonyms&#39;</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="s1">&#39;names&#39;</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
-                <span class="c1"># NameRes refers to synonyms as &quot;names&quot;.</span>
-                <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">&#39;names&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">'synonyms'</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">'synonyms'</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">'names'</span> <span class="ow">in</span> <span class="n">data_dict</span><span class="p">:</span>
+                <span class="c1"># NameRes refers to synonyms as "names".</span>
+                <span class="n">n</span><span class="o">.</span><span class="n">synonyms</span> <span class="o">=</span> <span class="n">data_dict</span><span class="p">[</span><span class="s1">'names'</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">n</span></div>
 </div>
 
@@ -140,18 +140,18 @@
 <a class="viewcode-back" href="../../translator_node.html#TCT.translator_node.TranslatorEdge">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">TranslatorEdge</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Class that represents Translator edges.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">subject</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;The subject is a CURIE id for a node.&quot;</span>
+    <span class="s2">"The subject is a CURIE id for a node."</span>
 
     <span class="nb">object</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;The obj (object) is a CURIE id for a node.&quot;</span>
+    <span class="s2">"The obj (object) is a CURIE id for a node."</span>
 
     <span class="n">predicate</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;Predicates&quot;</span>
+    <span class="s2">"Predicates"</span>
 
     <span class="n">sources</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
