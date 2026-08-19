@@ -100,6 +100,23 @@
             color: #34495e;
             user-select: none;
         }
+        .export-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .export-scale-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .export-scale-row label {
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        .export-scale-row select {
+            flex: 1;
+        }
         #info-panel {
             width: 100%;
             max-height: 400px;
@@ -231,7 +248,19 @@
         </div>
         <div class="control-group">
             <label style="font-weight: bold;">10. Export:</label>
-            <button id="download-graph" type="button" disabled>Download Shown Graph</button>
+            <div class="export-controls">
+                <div class="export-scale-row">
+                    <label for="figure-scale-selector">Figure scale:</label>
+                    <select id="figure-scale-selector">
+                        <option value="1">1x (standard)</option>
+                        <option value="2" selected>2x (high)</option>
+                        <option value="3">3x (very high)</option>
+                        <option value="4">4x (ultra)</option>
+                    </select>
+                </div>
+                <button id="download-graph-figure" type="button" disabled>Download Graph Figure (PNG)</button>
+                <button id="download-graph" type="button" disabled>Download Shown Graph (JSON)</button>
+            </div>
         </div>
         <div class="instructions">
             <strong>Tip:</strong> Select one path or multiple paths in the dropdown (Command/Ctrl-click for non-adjacent options). Drag nodes freely to rearrange the graph.
@@ -901,6 +930,61 @@
             URL.revokeObjectURL(downloadUrl);
         }
 
+        function getGraphCanvasElement() {
+            if (network && network.body && network.body.canvas && network.body.canvas.frame && network.body.canvas.frame.canvas) {
+                return network.body.canvas.frame.canvas;
+            }
+
+            const containerCanvas = document.querySelector('#network-container canvas');
+            return containerCanvas || null;
+        }
+
+        function downloadHighResGraphFigure() {
+            if (!network || !currentRenderedGraph || currentRenderedGraph.nodes.length === 0) {
+                alert('No graph is currently displayed to download.');
+                return;
+            }
+
+            const sourceCanvas = getGraphCanvasElement();
+            if (!sourceCanvas) {
+                alert('Unable to find graph canvas for export.');
+                return;
+            }
+
+            const scaleSelector = document.getElementById('figure-scale-selector');
+            const selectedScale = Number(scaleSelector ? scaleSelector.value : 2);
+            const exportScale = Number.isFinite(selectedScale) && selectedScale > 0 ? selectedScale : 2;
+
+            const cssWidth = sourceCanvas.clientWidth || sourceCanvas.width;
+            const cssHeight = sourceCanvas.clientHeight || sourceCanvas.height;
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = Math.max(1, Math.round(cssWidth * exportScale));
+            exportCanvas.height = Math.max(1, Math.round(cssHeight * exportScale));
+
+            const ctx = exportCanvas.getContext('2d');
+            if (!ctx) {
+                alert('Unable to create export image context.');
+                return;
+            }
+
+            // Use a white background so the PNG is publication-ready outside the page.
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(sourceCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+
+            const dataUrl = exportCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.href = dataUrl;
+            link.download = `shown_graph_${exportScale}x_${stamp}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function getRankingMethod() {
             const el = document.getElementById('rank-method-selector');
             return el ? el.value : 'score';
@@ -1398,6 +1482,10 @@
             downloadCurrentGraph();
         });
 
+        document.getElementById('download-graph-figure').addEventListener('click', function() {
+            downloadHighResGraphFigure();
+        });
+
         document.getElementById('decrease-node-font').addEventListener('click', function() {
             changeNodeFontSize(-1);
         });
@@ -1606,6 +1694,7 @@
                 }))
             };
             document.getElementById('download-graph').disabled = false;
+            document.getElementById('download-graph-figure').disabled = false;
         }
 
         function updateNetworkView(viewKeys) {
@@ -1811,6 +1900,7 @@
                 }))
             };
             document.getElementById('download-graph').disabled = false;
+            document.getElementById('download-graph-figure').disabled = false;
 
             // Returning to ALL should restore the initial full-graph layout.
             if (network && isAllOnlySelection) {
