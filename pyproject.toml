@@ -22,25 +22,23 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "requests",
-    "jsons",
     "pandas",
-    "seaborn",
-    "matplotlib",
-    "ipycytoscape",
-    "networkx",
     "numpy",
-    "openai",
-    "ipykernel",
-    'networkx',
-    'igraph',
-    'pyvis',
-    'zstandard',
+    "igraph",
+    "pyvis",
+    "zstandard",
 ]
 
 [project.optional-dependencies]
+vision = [
+    "ipycytoscape",
+    "matplotlib",
+    "networkx",
+    "pyvis",
+    "seaborn",
+]
 mcp = [
     "fastmcp>=2.12.2",
-    "click>=8.2.1",
 ]
 
 [project.scripts]
@@ -58,6 +56,8 @@ dev = [
     "ruff>=0.1.0",
     "codespell>=2.2.0",
     "mypy>=1.14.1",
+    "jupyter>=1.1.1",
+    "ipykernel>=7.3.0",
 ]
 
 [tool.uv.sources]
