@@ -1,3 +1,4 @@
+# reviewed by yjzhang, 2026-08-19
 from collections import Counter
 
 import pandas as pd
@@ -18,12 +19,29 @@ from .TCT import (
 from .TCT_pathfinder import generate_score_results, build_query_graph
 
 def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
-        start_node_categories=None, end_node_categories=None,
-        get_node_info=True,
-        scoring_method='infores'):
+        start_node_categories:list|None=None, end_node_categories:list|None=None,
+        get_node_info:bool=True,
+        scoring_method:str='infores') -> dict:
     """
     Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.
-    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.
+
+    Params
+    ------
+    start_node_id : str
+        A CURIE id
+    results : dict
+        Results of a TRAPI query (e.g. parallel_api_query)
+    start_node_categories : list | None
+        Categories for the starting node.
+    end_node_categories : list | None
+        Categories for the ending nodes of the query.
+    get_node_info : bool
+    scoring_method : str
+        scoring_method is how the node scores are generated, and could be 'infores' or 'edges'. Default: 'infores'
+
+    Returns
+    -------
+    A dict of the format `{'query_graph': ..., 'knowledge_graph': ..., 'results':, 'auxiliary_graphs':...}`
     """
     # nodes
     node_info = {}
@@ -108,11 +126,10 @@ def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
     return output
 
 
-# TODO: can we use multiple input nodes?
 def parse_results_for_neighborhood_finder_multiple_inputs(start_node_ids:list[str], results:dict,
-        start_node_categories=None, end_node_categories=None,
-        get_node_info=True,
-        scoring_method='infores'):
+        start_node_categories:list|None=None, end_node_categories:list|None=None,
+        get_node_info:bool=True,
+        scoring_method:str='infores') -> dict:
     """
     Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.
     scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.

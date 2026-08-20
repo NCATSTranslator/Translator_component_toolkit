@@ -3,6 +3,7 @@ This is a wrapper around the Node Normalizer API.
 
 API docs: https://nodenorm.transltr.io/docs
 """
+# reviewed by yjzhang, 2026-08-19
 import urllib.parse
 
 import requests
@@ -19,6 +20,7 @@ def status():
     response = requests.get(f'{URL}status')
     response.raise_for_status()
     return response.json()
+
 
 def get_normalized_nodes(query: str | list[str],
         return_equivalent_identifiers:bool=False,
@@ -135,7 +137,7 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     return name_map
 
 
-def ID_convert_to_preferred_name_nodeNormalizer(id_list):
+def ID_convert_to_preferred_name_nodeNormalizer(id_list: list[str]) -> dict[str, str]:
     '''
     Convert a list of CURIEs to their preferred names using NodeNorm.
     Arg:

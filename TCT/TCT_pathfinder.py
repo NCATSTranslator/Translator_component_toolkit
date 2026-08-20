@@ -29,7 +29,7 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
         constraints=None
         ):
     """
-        format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.
+    Format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.
 
     Parameters
     ----------
