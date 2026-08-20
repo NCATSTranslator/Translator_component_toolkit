@@ -7,7 +7,7 @@
         "--extra",
         "mcp",
         "--directory",
-        "User_directory/Translator_component_toolkit",
+        "$PWD", # this is the directory for translator-component-toolkit, where the main.py exsits
         "python",
         "main.py"
       ],
