@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "translator-component-toolkit": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--extra",
+        "mcp",
+        "--directory",
+        "User_directory/Translator_component_toolkit",
+        "python",
+        "main.py"
+      ],
+      "timeout": 300000
+    }
+  }
+}
