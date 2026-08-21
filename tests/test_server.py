@@ -11,14 +11,14 @@ from TCT.server import mcp
 def test_mcp_server_exists():
     """Test that MCP server instance exists and has correct name."""
     assert mcp is not None
-    assert mcp.name == "translator-toolkit"
+    assert mcp.name == "TCT"
 
 
 def test_mcp_server_ready():
     """Test that MCP server is ready for orchestrating agent access."""
     # Check that the server has the FastMCP functionality needed for agents
     assert hasattr(mcp, 'run'), "MCP server should be runnable for agents"
-    assert mcp.name == "translator-toolkit", "MCP server should have correct name for agents"
+    assert mcp.name == "TCT", "MCP server should have correct name for agents"
 
 
 def test_mcp_tools_accessible():
