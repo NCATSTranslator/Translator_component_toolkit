@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "translator-component-toolkit": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--extra",
+        "mcp",
+        "--directory",
+        "$PWD", # this is the directory for translator-component-toolkit, where the main.py exsits
+        "python",
+        "main.py"
+      ],
+      "timeout": 300000
+    }
+  }
+}
