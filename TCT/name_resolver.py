@@ -3,6 +3,7 @@ This is a wrapper around the Name Resolver API.
 
 API docs: https://name-lookup.ci.transltr.io/docs
 """
+# reviewed by yjzhang, 2026-08-19
 import urllib.parse
 
 import requests
@@ -12,7 +13,7 @@ from .translator_node import TranslatorNode
 URL = 'https://name-lookup.ci.transltr.io/'
 """This is the root URL for the API."""
 
-def status():
+def status() -> str:
     """
     Returns the status of the Name Resolver API.
     """
@@ -21,7 +22,7 @@ def status():
     return response.json()
 
 
-def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False, limit:int=10, **kwargs):
+def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False, limit:int=10, **kwargs) -> TranslatorNode | list[TranslatorNode]:
     """
     A wrapper around the `lookup` api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.
 
@@ -72,7 +73,7 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
 
 
-def synonyms(query: str|list, **kwargs):
+def synonyms(query: str|list, **kwargs) -> dict[str, TranslatorNode]:
     """
     A wrapper around the `synonyms` api endpoint. Given a CURIE or a list of CURIEs, this returns a dict of CURIE id : TranslatorNode for all synonyms for the given query.
 
@@ -107,7 +108,7 @@ def synonyms(query: str|list, **kwargs):
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
 
 
-def chunk_list(data:list, size:int):
+def chunk_list(data:list, size:int) -> list:
     #Extra method to help chunk large files and avoid 504 error.
     chunks = []
     for i in range(0, len(data), size):
@@ -115,7 +116,7 @@ def chunk_list(data:list, size:int):
     return chunks
 
 
-def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True, return_synonyms:bool=False, **kwargs) -> dict:
+def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True, return_synonyms:bool=False, **kwargs) -> dict[str, TranslatorNode|list[TranslatorNode]]:
     """
     A wrapper around the `bulk-lookup` api endpoint. Given a list of query strings, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.
 
@@ -174,7 +175,7 @@ def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True,
     return curies
 
 
-def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict:
+def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict[str, TranslatorNode]:
     """
     A wrapper around the `synonyms` API endpoint, using POST. Given a list of CURIEs, this returns a dict of CURIE:TranslatorNode, where each TranslatorNode contains all synonyms for the given CURIE.
 

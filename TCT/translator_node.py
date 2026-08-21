@@ -1,3 +1,4 @@
+# reviewed by yjzhang, 2026-08-19
 # translator graph node
 from dataclasses import dataclass
 import typing
