@@ -82,12 +82,13 @@
 
 <div class="viewcode-block" id="build_attribute_constraint">
 <a class="viewcode-back" href="../../translator_query.html#TCT.translator_query.build_attribute_constraint">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_attribute_constraint</span><span class="p">(</span><span class="n">attribute_id</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_not</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_attribute_constraint</span><span class="p">(</span><span class="n">attribute_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_not</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    This creates an attribute constraint for a TRAPI query dict.</span>
 
 <span class="sd">    Example</span>
 <span class="sd">    -------</span>
+
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="s1">''</span>

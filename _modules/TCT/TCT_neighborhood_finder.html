@@ -31,7 +31,8 @@
           <div class="body" role="main">
             
   <h1>Source code for TCT.TCT_neighborhood_finder</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<span></span><span class="c1"># reviewed by yjzhang, 2026-08-19</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
@@ -53,12 +54,29 @@
 <div class="viewcode-block" id="parse_results_for_neighborhood_finder">
 <a class="viewcode-back" href="../../neighborhood.html#TCT.TCT.parse_results_for_neighborhood_finder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
-        <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+        <span class="n">start_node_categories</span><span class="p">:</span><span class="nb">list</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">:</span><span class="nb">list</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_node_info</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">scoring_method</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.</span>
-<span class="sd">    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    start_node_id : str</span>
+<span class="sd">        A CURIE id</span>
+<span class="sd">    results : dict</span>
+<span class="sd">        Results of a TRAPI query (e.g. parallel_api_query)</span>
+<span class="sd">    start_node_categories : list | None</span>
+<span class="sd">        Categories for the starting node.</span>
+<span class="sd">    end_node_categories : list | None</span>
+<span class="sd">        Categories for the ending nodes of the query.</span>
+<span class="sd">    get_node_info : bool</span>
+<span class="sd">    scoring_method : str</span>
+<span class="sd">        scoring_method is how the node scores are generated, and could be 'infores' or 'edges'. Default: 'infores'</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict of the format `{'query_graph': ..., 'knowledge_graph': ..., 'results':, 'auxiliary_graphs':...}`</span>
 <span class="sd">    """</span>
     <span class="c1"># nodes</span>
     <span class="n">node_info</span> <span class="o">=</span> <span class="p">{}</span>
@@ -144,13 +162,12 @@
 
 
 
-<span class="c1"># TODO: can we use multiple input nodes?</span>
 <div class="viewcode-block" id="parse_results_for_neighborhood_finder_multiple_inputs">
 <a class="viewcode-back" href="../../neighborhood.html#TCT.TCT.parse_results_for_neighborhood_finder_multiple_inputs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">parse_results_for_neighborhood_finder_multiple_inputs</span><span class="p">(</span><span class="n">start_node_ids</span><span class="p">:</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
-        <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">get_node_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">scoring_method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+        <span class="n">start_node_categories</span><span class="p">:</span><span class="nb">list</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="p">:</span><span class="nb">list</span><span class="o">|</span><span class="kc">None</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">get_node_info</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">scoring_method</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Converts the results of two TRAPI queries into the same general json format as the other pathfinder APIs.</span>
 <span class="sd">    scoring_method is how the node scores are generated, and could be 'infores' or 'edges'.</span>

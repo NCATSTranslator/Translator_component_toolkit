@@ -37,21 +37,27 @@
 <h1>TCT.TCT_pathfinder<a class="headerlink" href="#tct-tct-pathfinder" title="Link to this heading">¶</a></h1>
 <span class="target" id="module-TCT.TCT_pathfinder"></span><dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT_pathfinder.build_query_graph">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">build_query_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#build_query_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.build_query_graph" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">build_query_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_node_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_node_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#build_query_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.build_query_graph" title="Link to this definition">¶</a></dt>
 <dd><p>start_node_categories and end_node_categories are lists of categories.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT_pathfinder.format_pathfinder_query">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_pathfinder_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_pathfinder_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_pathfinder_query" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_pathfinder_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_pathfinder_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_pathfinder_query" title="Link to this definition">¶</a></dt>
+<dd><p>Formats a query to the Pathfinder API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A dict formatted as a JSON query to the Pathfinder API.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_query_json_for_pathfinder_with_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_query_json_for_pathfinder_with_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints" title="Link to this definition">¶</a></dt>
-<dd><blockquote>
-<div><p>format user’s input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</p>
-</div></blockquote>
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">format_query_json_for_pathfinder_with_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">object_categories</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predicates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#format_query_json_for_pathfinder_with_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.format_query_json_for_pathfinder_with_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>Format user’s input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -90,7 +96,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="TCT.TCT_pathfinder.generate_score_results">
-<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">generate_score_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#generate_score_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.generate_score_results" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">generate_score_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infores'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#generate_score_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.generate_score_results" title="Link to this definition">¶</a></dt>
 <dd><p>Generates a score dict, and a list of “analyses”.
 method can be ‘infores’ or ‘edges’</p>
 </dd></dl>
@@ -156,6 +162,58 @@ output dictionary.</p>
 </div>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.query_aragorn_pathfinder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">query_aragorn_pathfinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#query_aragorn_pathfinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.query_aragorn_pathfinder" title="Link to this definition">¶</a></dt>
+<dd><p>This queries the ARAGORN Pathfinder API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.query_aragorn_pathfinder_with_constraints">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">query_aragorn_pathfinder_with_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#query_aragorn_pathfinder_with_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.query_aragorn_pathfinder_with_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>This queries the ARAGORN Pathfinder API with a list of constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.query_arax_pathfinder">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">query_arax_pathfinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#query_arax_pathfinder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.query_arax_pathfinder" title="Link to this definition">¶</a></dt>
+<dd><p>This queries the ARAX Pathfinder API.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A string (which should be a JSON) representing the result of an ARAX pathfinder query.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="TCT.TCT_pathfinder.query_arax_pathfinder_with_constraints">
+<span class="sig-prename descclassname"><span class="pre">TCT.TCT_pathfinder.</span></span><span class="sig-name descname"><span class="pre">query_arax_pathfinder_with_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node1_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node1_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node2_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/TCT/TCT_pathfinder.html#query_arax_pathfinder_with_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#TCT.TCT_pathfinder.query_arax_pathfinder_with_constraints" title="Link to this definition">¶</a></dt>
+<dd><p>This queries the ARAX Pathfinder API with a list of constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>A string (which should be a JSON) representing the result of an ARAX pathfinder query.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -203,6 +261,10 @@ output dictionary.</p>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.generate_score_results"><code class="docutils literal notranslate"><span class="pre">generate_score_results()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.parse_results_for_pathfinder"><code class="docutils literal notranslate"><span class="pre">parse_results_for_pathfinder()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.query_TCT_pathfinder"><code class="docutils literal notranslate"><span class="pre">query_TCT_pathfinder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.query_aragorn_pathfinder"><code class="docutils literal notranslate"><span class="pre">query_aragorn_pathfinder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.query_aragorn_pathfinder_with_constraints"><code class="docutils literal notranslate"><span class="pre">query_aragorn_pathfinder_with_constraints()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.query_arax_pathfinder"><code class="docutils literal notranslate"><span class="pre">query_arax_pathfinder()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#TCT.TCT_pathfinder.query_arax_pathfinder_with_constraints"><code class="docutils literal notranslate"><span class="pre">query_arax_pathfinder_with_constraints()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="network_annotator.html">TCT.TCT_network_annotator</a></li>

@@ -41,8 +41,8 @@
 
 <div class="viewcode-block" id="network_annotator">
 <a class="viewcode-back" href="../../network_annotator.html#TCT.TCT_network_annotator.network_annotator">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">network_annotator</span><span class="p">(</span><span class="n">gene_list</span><span class="p">,</span> 
-                      <span class="n">select_APIs</span><span class="p">,</span> 
+<span class="k">def</span><span class="w"> </span><span class="nf">network_annotator</span><span class="p">(</span><span class="n">gene_list</span><span class="p">,</span>
+                      <span class="n">select_APIs</span><span class="p">,</span>
                       <span class="n">node2_categories</span><span class="p">,</span> 
                       <span class="n">select_metaKG</span><span class="p">,</span> 
                       <span class="n">API_predicates</span><span class="p">,</span> 
@@ -63,7 +63,6 @@
 <span class="sd">    dict</span>
 <span class="sd">        Merged TRAPI JSON object.</span>
 <span class="sd">    """</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
     <span class="n">TCT_neighborhood_finder_result</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">gene</span> <span class="ow">in</span> <span class="n">gene_list</span><span class="p">:</span>
         <span class="n">input_identifiers</span> <span class="o">=</span> <span class="n">name_resolver</span><span class="o">.</span><span class="n">lookup</span><span class="p">(</span><span class="n">gene</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">'NCBITaxon:9606'</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s1">'biolink:Gene'</span><span class="p">)</span><span class="o">.</span><span class="n">curie</span>

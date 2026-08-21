@@ -32,6 +32,7 @@
             
   <h1>Source code for TCT.TCT_pathfinder</h1><div class="highlight"><pre>
 <span></span><span class="c1"># TCT Pathfinder...</span>
+<span class="c1"># reviewed by yjzhang, 2026-08-20</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -56,15 +57,15 @@
 
 <div class="viewcode-block" id="format_query_json_for_pathfinder_with_constraints">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.format_query_json_for_pathfinder_with_constraints">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">,</span> 
-                                     <span class="n">object_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span><span class="n">subject_ids</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">object_ids</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">subject_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">object_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">predicates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span>
-        <span class="p">):</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""</span>
-<span class="sd">        format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</span>
+<span class="sd">    Format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -150,7 +151,7 @@
 
 <div class="viewcode-block" id="build_query_graph">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.build_query_graph">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_query_graph</span><span class="p">(</span><span class="n">start_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">end_node_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">start_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end_node_categories</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    start_node_categories and end_node_categories are lists of categories.</span>
 <span class="sd">    """</span>
@@ -192,7 +193,7 @@
 
 <div class="viewcode-block" id="generate_score_results">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.generate_score_results">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">generate_score_results</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_score_results</span><span class="p">(</span><span class="n">results</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'infores'</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generates a score dict, and a list of "analyses".</span>
 <span class="sd">    method can be 'infores' or 'edges'</span>
@@ -359,9 +360,20 @@
 <span class="c1"># define a function that uses the query_json as an template and change the ids and categories of the nodes</span>
 <div class="viewcode-block" id="format_pathfinder_query">
 <a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.format_pathfinder_query">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">'''</span>
-<span class="sd">    </span>
+<span class="sd">    Formats a query to the Pathfinder API.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    node1_id : str</span>
+<span class="sd">    node1_category : str</span>
+<span class="sd">    node2_id : str</span>
+<span class="sd">    node2_category : str</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A dict formatted as a JSON query to the Pathfinder API.</span>
 <span class="sd">    '''</span>
     <span class="n">query_json</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"message"</span><span class="p">:</span> <span class="p">{</span>
@@ -398,15 +410,49 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
+<div class="viewcode-block" id="query_aragorn_pathfinder">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.query_aragorn_pathfinder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This queries the ARAGORN Pathfinder API.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    node1_id : str</span>
+<span class="sd">    node1_category : str</span>
+<span class="sd">    node2_id : str</span>
+<span class="sd">    node2_category : str</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</span>
+<span class="sd">    """</span>
     <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
     <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span>
+    <span class="k">return</span> <span class="n">response</span></div>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+
+<div class="viewcode-block" id="query_aragorn_pathfinder_with_constraints">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.query_aragorn_pathfinder_with_constraints">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_aragorn_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This queries the ARAGORN Pathfinder API with a list of constraints.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    node1_id : str</span>
+<span class="sd">    node1_category : str</span>
+<span class="sd">    node2_id : str</span>
+<span class="sd">    node2_category : str</span>
+<span class="sd">    constraints : list</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</span>
+<span class="sd">    """</span>
     <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
     <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
@@ -417,15 +463,50 @@
         <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span>
     <span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span>
+    <span class="k">return</span> <span class="n">response</span></div>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">):</span>
+
+<div class="viewcode-block" id="query_arax_pathfinder">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.query_arax_pathfinder">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder</span><span class="p">(</span><span class="n">node1_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This queries the ARAX Pathfinder API.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    node1_id : str</span>
+<span class="sd">    node1_category : str</span>
+<span class="sd">    node2_id : str</span>
+<span class="sd">    node2_category : str</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A string (which should be a JSON) representing the result of an ARAX pathfinder query.</span>
+<span class="sd">    """</span>
     <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ARAX_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span>
+    <span class="k">return</span> <span class="n">response</span></div>
 
-<span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">,</span> <span class="n">constraints</span><span class="p">):</span>
+
+<div class="viewcode-block" id="query_arax_pathfinder_with_constraints">
+<a class="viewcode-back" href="../../pathfinder.html#TCT.TCT.query_arax_pathfinder_with_constraints">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_arax_pathfinder_with_constraints</span><span class="p">(</span><span class="n">node1_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">constraints</span><span class="p">:</span><span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    This queries the ARAX Pathfinder API with a list of constraints.</span>
+
+<span class="sd">    Params</span>
+<span class="sd">    ------</span>
+<span class="sd">    node1_id : str</span>
+<span class="sd">    node1_category : str</span>
+<span class="sd">    node2_id : str</span>
+<span class="sd">    node2_category : str</span>
+<span class="sd">    constraints : list</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A string (which should be a JSON) representing the result of an ARAX pathfinder query.</span>
+<span class="sd">    """</span>
     <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
         <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
@@ -435,7 +516,8 @@
         <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span>
     <span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ARAX_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">response</span>
+    <span class="k">return</span> <span class="n">response</span></div>
+
 
 
 <div class="viewcode-block" id="query_TCT_pathfinder">
