@@ -1,4 +1,5 @@
 # TCT Pathfinder...
+# reviewed by yjzhang, 2026-08-20
 import requests
 
 import pandas as pd
@@ -21,13 +22,13 @@ from .TCT import (
 
 
 
-def format_query_json_for_pathfinder_with_constraints(subject_ids, 
-                                     object_ids=None,
+def format_query_json_for_pathfinder_with_constraints(subject_ids:str,
+        object_ids:str,
         subject_categories=None,
         object_categories=None,
         predicates=None,
         constraints=None
-        ):
+        ) -> dict:
     """
     Format user's input into a query json for pathfinder pipeline with constraints on the intermediate node categories.
 
@@ -112,7 +113,7 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids,
   
     return q
 
-def build_query_graph(start_node_id, end_node_id, start_node_categories=None, end_node_categories=None, constraints_path=None):
+def build_query_graph(start_node_id:str, end_node_id:str, start_node_categories=None, end_node_categories=None, constraints_path=None):
     """
     start_node_categories and end_node_categories are lists of categories.
     """
@@ -151,7 +152,7 @@ def build_query_graph(start_node_id, end_node_id, start_node_categories=None, en
     return q
 
 
-def generate_score_results(results, method='infores'):
+def generate_score_results(results:dict, method='infores'):
     """
     Generates a score dict, and a list of "analyses".
     method can be 'infores' or 'edges'
@@ -312,9 +313,20 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
 
 
 # define a function that uses the query_json as an template and change the ids and categories of the nodes
-def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
+def format_pathfinder_query(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> dict:
     '''
-    
+    Formats a query to the Pathfinder API.
+
+    Params
+    ------
+    node1_id : str
+    node1_category : str
+    node2_id : str
+    node2_category : str
+
+    Returns
+    -------
+    A dict formatted as a JSON query to the Pathfinder API.
     '''
     query_json = {
         "message": {
@@ -350,7 +362,21 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
     return query_json
 
 
-def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category):
+def query_aragorn_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
+    """
+    This queries the ARAGORN Pathfinder API.
+
+    Params
+    ------
+    node1_id : str
+    node1_category : str
+    node2_id : str
+    node2_category : str
+
+    Returns
+    -------
+    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.
+    """
     #aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint
     aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
@@ -358,7 +384,22 @@ def query_aragorn_pathfinder(node1_id, node1_category, node2_id, node2_category)
     return response
 
 
-def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
+def query_aragorn_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
+    """
+    This queries the ARAGORN Pathfinder API with a list of constraints.
+
+    Params
+    ------
+    node1_id : str
+    node1_category : str
+    node2_id : str
+    node2_category : str
+    constraints : list
+
+    Returns
+    -------
+    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.
+    """
     #aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint
     aragorn_endpoint = 'https://shepherd.ci.transltr.io/aragorn/query' # new ci endpoint
     query_current = format_query_json_for_pathfinder_with_constraints(
@@ -371,13 +412,42 @@ def query_aragorn_pathfinder_with_constraints(node1_id, node1_category, node2_id
     response = requests.post(aragorn_endpoint, json=query_current)
     return response
 
-def query_arax_pathfinder(node1_id, node1_category, node2_id, node2_category):
+def query_arax_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
+    """
+    This queries the ARAX Pathfinder API.
+
+    Params
+    ------
+    node1_id : str
+    node1_category : str
+    node2_id : str
+    node2_category : str
+
+    Returns
+    -------
+    A string (which should be a JSON) representing the result of an ARAX pathfinder query.
+    """
     ARAX_endpoint = 'https://arax.ci.transltr.io/api/arax/v1.4/query'
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
     response = requests.post(ARAX_endpoint, json=query_current)
     return response
 
-def query_arax_pathfinder_with_constraints(node1_id, node1_category, node2_id, node2_category, constraints):
+def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
+    """
+    This queries the ARAX Pathfinder API with a list of constraints.
+
+    Params
+    ------
+    node1_id : str
+    node1_category : str
+    node2_id : str
+    node2_category : str
+    constraints : list
+
+    Returns
+    -------
+    A string (which should be a JSON) representing the result of an ARAX pathfinder query.
+    """
     ARAX_endpoint = 'https://arax.ci.transltr.io/api/arax/v1.4/query'
     query_current = format_query_json_for_pathfinder_with_constraints(
         subject_ids=node1_id,

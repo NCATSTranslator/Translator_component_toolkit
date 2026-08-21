@@ -6,8 +6,8 @@ from . import name_resolver
 from . import TCT_neighborhood_finder
 
 
-def network_annotator(gene_list, 
-                      select_APIs, 
+def network_annotator(gene_list,
+                      select_APIs,
                       node2_categories, 
                       select_metaKG, 
                       API_predicates, 
@@ -28,7 +28,6 @@ def network_annotator(gene_list,
     dict
         Merged TRAPI JSON object.
     """
-    import json
     TCT_neighborhood_finder_result = {}
     for gene in gene_list:
         input_identifiers = name_resolver.lookup(gene, only_taxa='NCBITaxon:9606', biolink_type='biolink:Gene').curie
