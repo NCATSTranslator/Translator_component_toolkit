@@ -284,6 +284,7 @@ def trapi_query_endpoint(url: str):
 def neighborhood_finder(node: list[str], neighbor_categories: list[str]):
     """
     Find neighbors of a given node using the neighborhood finder tool using TCT.
+    The 
     
     Args:
         node: List of CURIEs to find neighbors for

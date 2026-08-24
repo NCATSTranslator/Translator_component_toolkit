@@ -109,7 +109,7 @@ An example notebook for add a user's API can be found [here](https://github.com/
 **Note: It does not work if no user' API is established**<br>
 
 ### Visualize the results
-After each pipeline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.
+After each pipeline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visualize_TCT_results.html)** file to visulaize the results.
 
 ## Key Translator components
 Connecting to key Translator components can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/TranslatorComponentsIntroduction.md)
