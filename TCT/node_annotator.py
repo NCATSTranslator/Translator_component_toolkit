@@ -3,6 +3,7 @@ This is a wrapper around the Node Annotator API.
 
 API docs: https://annotator.transltr.io/
 """
+# reviewed by yjzhang, 2026-08-19
 import urllib.parse
 
 import requests
@@ -25,7 +26,7 @@ def lookup_curie(curie: str, **kwargs):
     return lookup_curies([curie], **kwargs)[curie]
 
 
-def lookup_curies(curies: list[str], **kwargs):
+def lookup_curies(curies: list[str], **kwargs) -> dict[str, dict]:
     """
     A wrapper around the `curies` API endpoint. Given a list of CURIEs, this returns a dictionary where each
     CURIE is mapped to a list of annotations.
