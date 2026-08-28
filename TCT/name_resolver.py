@@ -22,7 +22,7 @@ def status() -> str:
     return response.json()
 
 
-def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False, limit:int=10, **kwargs) -> TranslatorNode | list[TranslatorNode]:
+def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False,  limit:int=10, **kwargs) -> TranslatorNode | list[TranslatorNode]:
     """
     A wrapper around the `lookup` api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.
 
@@ -34,10 +34,17 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
         If true, this returns only the top response. If false, this returns a list of all responses. Default: True
     return_synonyms : bool
         If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False
+    only_taxa : str
+        The taxonomic restriction for the query. Default: 'NCBITaxon:9606'
     limit : int
         The number of results to return.
     **kwargs
-        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type="biolink:Disease"` indicates that all returned results should be diseases. `only_taxa='NCBITaxon:9606` indicates that only Homo sapiens results should be returned. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).
+        Other arguments to `lookup`. Some possible arguments: 
+        `limit=20` would limit the results to 20. 
+        `autocomplete=True` indicates that the query string can be incomplete. 
+        `biolink_type="biolink:Disease"` indicates that all returned results should be diseases. 
+        `only_taxa='NCBITaxon:9606` indicates that only Homo sapiens results should be returned.
+        For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).
 
     Returns
     -------
@@ -47,7 +54,7 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
     --------
     >>> lookup('AML')
     TranslatorNode(curie='MONDO:0018874', label='acute myeloid leukemia', types=['biolink:Disease', 'biolink:DiseaseOrPhenotypicFeature', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity'], synonyms=None, curie_synonyms=None)
-    >>> lookup('IFNG', only_taxa='NCBITaxon:9606')
+    >>> lookup('IFNG', only_taxa='NCBITaxon:9606') # It provides the human gene for IFNG
     TranslatorNode(curie='NCBIGene:3458', label='IFNG', types=['biolink:Gene', 'biolink:GeneOrGeneProduct', 'biolink:GenomicEntity', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:PhysicalEssence', 'biolink:OntologyClass', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity', 'biolink:PhysicalEssenceOrOccurrent', 'biolink:MacromolecularMachineMixin', 'biolink:Protein', 'biolink:GeneProductMixin', 'biolink:Polypeptide', 'biolink:ChemicalEntityOrProteinOrPolypeptide'], synonyms=None, curie_synonyms=None, attributes=None, taxa=['NCBITaxon:9606'])
     >>> lookup('AML', return_top_response=False, biolink_type="biolink:Disease")
     """

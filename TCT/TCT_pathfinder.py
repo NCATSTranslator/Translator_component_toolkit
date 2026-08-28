@@ -459,7 +459,6 @@ def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, nod
     response = requests.post(ARAX_endpoint, json=query_current)
     return response
 
-
 def query_TCT_pathfinder(
     start: NodeInput,
     end: NodeInput,
