@@ -110,9 +110,16 @@
 </dd>
 <dt><strong>return_synonyms</strong><span class="classifier">bool</span></dt><dd><p>If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</p>
 </dd>
+<dt><strong>only_taxa</strong><span class="classifier">str</span></dt><dd><p>The taxonomic restriction for the query. Default: ‘NCBITaxon:9606’</p>
+</dd>
 <dt><strong>limit</strong><span class="classifier">int</span></dt><dd><p>The number of results to return.</p>
 </dd>
-<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>lookup</cite>. Some possible arguments: <cite>limit=20</cite> would limit the results to 20. <cite>autocomplete=True</cite> indicates that the query string can be incomplete. <cite>biolink_type=”biolink:Disease”</cite> indicates that all returned results should be diseases. <cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned. For more examples, see [this](<a class="reference external" href="https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get">https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get</a>).</p>
+<dt><strong>**kwargs</strong></dt><dd><p>Other arguments to <cite>lookup</cite>. Some possible arguments: 
+<cite>limit=20</cite> would limit the results to 20. 
+<cite>autocomplete=True</cite> indicates that the query string can be incomplete. 
+<cite>biolink_type=”biolink:Disease”</cite> indicates that all returned results should be diseases. 
+<cite>only_taxa=’NCBITaxon:9606</cite> indicates that only Homo sapiens results should be returned.
+For more examples, see [this](<a class="reference external" href="https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get">https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get</a>).</p>
 </dd>
 </dl>
 </dd>
@@ -125,7 +132,7 @@
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">'AML'</span><span class="p">)</span>
 <span class="go">TranslatorNode(curie='MONDO:0018874', label='acute myeloid leukemia', types=['biolink:Disease', 'biolink:DiseaseOrPhenotypicFeature', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity'], synonyms=None, curie_synonyms=None)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">'IFNG'</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">'NCBITaxon:9606'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">'IFNG'</span><span class="p">,</span> <span class="n">only_taxa</span><span class="o">=</span><span class="s1">'NCBITaxon:9606'</span><span class="p">)</span> <span class="c1"># It provides the human gene for IFNG</span>
 <span class="go">TranslatorNode(curie='NCBIGene:3458', label='IFNG', types=['biolink:Gene', 'biolink:GeneOrGeneProduct', 'biolink:GenomicEntity', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:PhysicalEssence', 'biolink:OntologyClass', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity', 'biolink:PhysicalEssenceOrOccurrent', 'biolink:MacromolecularMachineMixin', 'biolink:Protein', 'biolink:GeneProductMixin', 'biolink:Polypeptide', 'biolink:ChemicalEntityOrProteinOrPolypeptide'], synonyms=None, curie_synonyms=None, attributes=None, taxa=['NCBITaxon:9606'])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lookup</span><span class="p">(</span><span class="s1">'AML'</span><span class="p">,</span> <span class="n">return_top_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">biolink_type</span><span class="o">=</span><span class="s2">"biolink:Disease"</span><span class="p">)</span>
 </pre></div>

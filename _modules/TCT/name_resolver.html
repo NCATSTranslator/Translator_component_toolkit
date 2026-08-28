@@ -60,7 +60,7 @@
 
 <div class="viewcode-block" id="lookup">
 <a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.lookup">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">lookup</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">return_top_response</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranslatorNode</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">TranslatorNode</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">lookup</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">return_top_response</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_synonyms</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="n">limit</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TranslatorNode</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">TranslatorNode</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A wrapper around the `lookup` api endpoint. Given a query string, this returns a TranslatorNode object or a list of TranslatorNode objects corresponding to the given name.</span>
 
@@ -72,10 +72,17 @@
 <span class="sd">        If true, this returns only the top response. If false, this returns a list of all responses. Default: True</span>
 <span class="sd">    return_synonyms : bool</span>
 <span class="sd">        If true, the resulting TranslatorNode objects contain a list of synonyms. If false, they do not include synonyms. Default: False</span>
+<span class="sd">    only_taxa : str</span>
+<span class="sd">        The taxonomic restriction for the query. Default: 'NCBITaxon:9606'</span>
 <span class="sd">    limit : int</span>
 <span class="sd">        The number of results to return.</span>
 <span class="sd">    **kwargs</span>
-<span class="sd">        Other arguments to `lookup`. Some possible arguments: `limit=20` would limit the results to 20. `autocomplete=True` indicates that the query string can be incomplete. `biolink_type="biolink:Disease"` indicates that all returned results should be diseases. `only_taxa='NCBITaxon:9606` indicates that only Homo sapiens results should be returned. For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
+<span class="sd">        Other arguments to `lookup`. Some possible arguments: </span>
+<span class="sd">        `limit=20` would limit the results to 20. </span>
+<span class="sd">        `autocomplete=True` indicates that the query string can be incomplete. </span>
+<span class="sd">        `biolink_type="biolink:Disease"` indicates that all returned results should be diseases. </span>
+<span class="sd">        `only_taxa='NCBITaxon:9606` indicates that only Homo sapiens results should be returned.</span>
+<span class="sd">        For more examples, see [this](https://name-lookup.ci.transltr.io/docs#/lookup/lookup_curies_get_lookup_get).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -85,7 +92,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    &gt;&gt;&gt; lookup('AML')</span>
 <span class="sd">    TranslatorNode(curie='MONDO:0018874', label='acute myeloid leukemia', types=['biolink:Disease', 'biolink:DiseaseOrPhenotypicFeature', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity'], synonyms=None, curie_synonyms=None)</span>
-<span class="sd">    &gt;&gt;&gt; lookup('IFNG', only_taxa='NCBITaxon:9606')</span>
+<span class="sd">    &gt;&gt;&gt; lookup('IFNG', only_taxa='NCBITaxon:9606') # It provides the human gene for IFNG</span>
 <span class="sd">    TranslatorNode(curie='NCBIGene:3458', label='IFNG', types=['biolink:Gene', 'biolink:GeneOrGeneProduct', 'biolink:GenomicEntity', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:PhysicalEssence', 'biolink:OntologyClass', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity', 'biolink:PhysicalEssenceOrOccurrent', 'biolink:MacromolecularMachineMixin', 'biolink:Protein', 'biolink:GeneProductMixin', 'biolink:Polypeptide', 'biolink:ChemicalEntityOrProteinOrPolypeptide'], synonyms=None, curie_synonyms=None, attributes=None, taxa=['NCBITaxon:9606'])</span>
 <span class="sd">    &gt;&gt;&gt; lookup('AML', return_top_response=False, biolink_type="biolink:Disease")</span>
 <span class="sd">    """</span>
