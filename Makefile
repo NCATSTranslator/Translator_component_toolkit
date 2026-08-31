@@ -1,4 +1,4 @@
-.PHONY: test spell spell-fix lint lint-fix lint-notebooks format check install
+.PHONY: test spell spell-fix lint lint-fix lint-notebooks format check install trace-check
 
 # Install development dependencies
 install:
@@ -35,6 +35,10 @@ format:
 # Run all checks (lint, spell, test)
 check: lint spell test
 
+# Verify Langfuse tracing credentials reach the configured host
+trace-check:
+	uv run --extra tracing python -c "from TCT import tracing; import sys; ok = tracing.check_connection(); print('Langfuse tracing:', 'CONNECTED' if ok else 'NOT CONFIGURED (see .env.example)'); sys.exit(0 if ok else 1)"
+
 # Help target
 help:
 	@echo "Available targets:"
@@ -47,4 +51,5 @@ help:
 	@echo "  lint-notebooks - Run code linting on notebooks (informational)"
 	@echo "  format   - Format code"
 	@echo "  check    - Run all checks (lint, spell, test)"
+	@echo "  trace-check - Verify Langfuse tracing is configured and reachable"
 	@echo "  help     - Show this help message"

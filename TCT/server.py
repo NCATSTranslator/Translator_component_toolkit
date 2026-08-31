@@ -26,9 +26,16 @@ from .trapi import query as trapi_query
 from .TCT_neighborhood_finder import neighborhood_finder as tct_neighborhood_finder
 from .TCT_pathfinder import query_TCT_pathfinder
 from .TCT import get_translator_resources as _get_translator_resources
+from . import tracing
 
 # Create unified MCP server
 mcp = FastMCP("TCT")
+
+# Optional Langfuse tracing. This is a no-op unless langfuse is installed and
+# LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY are set; see TCT/tracing.py.
+_tracing_middleware = tracing.build_middleware()
+if _tracing_middleware is not None:
+    mcp.add_middleware(_tracing_middleware)
 
 # get_translator_resources function
 @mcp.tool()

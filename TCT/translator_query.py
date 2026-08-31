@@ -3,6 +3,7 @@ from copy import deepcopy
 import pandas
 from TCT import translator_metakg
 from TCT import translator_kpinfo
+from TCT import tracing
 
 def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
     '''
@@ -223,7 +224,11 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # copy the query_json for each API to avoid modifying the original query_json
         query_json_cur = deepcopy(query_json)
-        future_to_url = {executor.submit(query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
+        # Worker threads do not inherit the OpenTelemetry context, so the
+        # per-KP spans would otherwise start their own disconnected traces
+        # instead of nesting under the caller. No-op when tracing is off.
+        traced_query_KP = tracing.propagate_to_threads(query_KP)
+        future_to_url = {executor.submit(traced_query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
 
         for future in as_completed(future_to_url):
             url = future_to_url[future]

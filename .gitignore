@@ -31,3 +31,6 @@ notebooks/PathFinder_results/
 
 # agent-of-empires artifacts
 /.agent-of-empires/
+
+# local Langfuse credentials
+.env

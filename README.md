@@ -111,6 +111,82 @@ An example notebook for add a user's API can be found [here](https://github.com/
 ### Visualize the results
 After each pipeline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visualize_TCT_results.html)** file to visulaize the results.
 
+## Tracing the MCP server with Langfuse (optional)
+
+TCT can emit an OpenTelemetry trace for every MCP tool call an agent makes, viewable in
+[Langfuse](https://langfuse.com). This is off by default and adds no runtime cost when unconfigured.
+
+**What you get.** One trace per MCP tool call, with the agent's arguments and the tool's result,
+and — nested underneath — a child span for every Translator API request that call triggered
+(Name Resolver, NodeNorm, ARAX, Aragorn, Plover, SmartAPI), each with its URL, status code and
+duration. Tool calls from one agent conversation are grouped into a Langfuse session. Failures are
+recorded with the underlying exception, so a `parallel_api_query` that returns nothing shows you
+exactly which KP timed out or 500'd.
+
+**What you do not get.** TCT makes no LLM calls of its own — the model lives in the MCP *client*
+(Claude Desktop, Claude Code), which is a separate process. These traces cover the server side
+only: the tool calls and their fan-out, not the agent's prompts, completions or token usage. To
+capture those too, instrument the client separately and share the session ID.
+
+### Setup
+
+Langfuse is a server plus a web UI, not a static analysis tool — traces are recorded as your code
+runs and are read in a browser. Pick either backend:
+
+```bash
+# Option A: Langfuse Cloud. Sign up, create a project, copy the API keys.
+#           https://cloud.langfuse.com (EU) or https://us.cloud.langfuse.com (US)
+
+# Option B: self-host locally. Needs ~4 cores / 16 GiB.
+git clone https://github.com/langfuse/langfuse.git && cd langfuse && docker compose up
+# UI at http://localhost:3000 after 2-3 minutes; create a project there to get keys.
+```
+
+Then install the extra and set credentials:
+
+```bash
+uv sync --extra mcp --extra tracing     # or: pip install 'TCT[tracing]'
+cp .env.example .env                    # fill in your keys; .env is gitignored
+make trace-check                        # verifies the keys reach the host
+```
+
+Because an MCP server is spawned by its client rather than from your shell, it will not inherit
+exported variables. TCT loads a local `.env` automatically; alternatively set them in your client
+config:
+
+```json
+{
+  "mcpServers": {
+    "translator-component-toolkit": {
+      "command": "uv",
+      "args": ["run", "--extra", "mcp", "--extra", "tracing",
+               "--directory", "$PWD", "python", "main.py"],
+      "env": {
+        "LANGFUSE_PUBLIC_KEY": "pk-lf-...",
+        "LANGFUSE_SECRET_KEY": "sk-lf-...",
+        "LANGFUSE_BASE_URL": "https://us.cloud.langfuse.com"
+      },
+      "timeout": 300000
+    }
+  }
+}
+```
+
+Set `TCT_TRACING=0` to hard-disable tracing even when credentials are present.
+
+### Tracing your own functions
+
+Library code that is not an MCP tool can be instrumented with a decorator that is a pass-through
+when tracing is off, so it stays safe to use without Langfuse installed:
+
+```python
+from TCT import tracing
+
+@tracing.traced(as_type="tool")
+def my_analysis(curie: str):
+    ...
+```
+
 ## Key Translator components
 Connecting to key Translator components can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/TranslatorComponentsIntroduction.md)
 

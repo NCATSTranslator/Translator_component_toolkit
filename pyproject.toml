@@ -40,6 +40,11 @@ vision = [
 mcp = [
     "fastmcp>=2.12.2",
 ]
+tracing = [
+    "langfuse>=4.0.0",
+    "opentelemetry-instrumentation-requests>=0.50b0",
+    "python-dotenv>=1.0.0",
+]
 
 [project.scripts]
 tct-server = "main:main"
