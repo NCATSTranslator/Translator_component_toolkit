@@ -41,10 +41,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.translator_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">TranslatorNode</span>
-
-<span class="n">URL</span> <span class="o">=</span> <span class="s1">'https://name-lookup.ci.transltr.io/'</span>
-<span class="sd">"""This is the root URL for the API."""</span>
 
 <div class="viewcode-block" id="status">
 <a class="viewcode-back" href="../../name_resolver.html#TCT.name_resolver.status">[docs]</a>
@@ -52,7 +50,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the status of the Name Resolver API.</span>
 <span class="sd">    """</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">URL</span> <span class="o">+</span> <span class="s1">'status'</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">),</span> <span class="s2">"status"</span><span class="p">))</span>
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
@@ -96,7 +94,7 @@
 <span class="sd">    TranslatorNode(curie='NCBIGene:3458', label='IFNG', types=['biolink:Gene', 'biolink:GeneOrGeneProduct', 'biolink:GenomicEntity', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:PhysicalEssence', 'biolink:OntologyClass', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity', 'biolink:PhysicalEssenceOrOccurrent', 'biolink:MacromolecularMachineMixin', 'biolink:Protein', 'biolink:GeneProductMixin', 'biolink:Polypeptide', 'biolink:ChemicalEntityOrProteinOrPolypeptide'], synonyms=None, curie_synonyms=None, attributes=None, taxa=['NCBITaxon:9606'])</span>
 <span class="sd">    &gt;&gt;&gt; lookup('AML', return_top_response=False, biolink_type="biolink:Disease")</span>
 <span class="sd">    """</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'lookup'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">),</span> <span class="s1">'lookup'</span><span class="p">)</span>
     <span class="c1"># set autocomplete to be false by default</span>
     <span class="k">if</span> <span class="s1">'autocomplete'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s1">'autocomplete'</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
@@ -136,7 +134,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    Dict of CURIE id : TranslatorNode</span>
 <span class="sd">    """</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'synonyms'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">),</span> <span class="s1">'synonyms'</span><span class="p">)</span>
     <span class="c1"># set autocomplete to be false by default</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="s1">'preferred_curies'</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
     <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span><span class="p">:</span>
@@ -194,7 +192,7 @@
 <span class="sd">    {'AML': TranslatorNode(curie='MONDO:0018874', label='acute myeloid leukemia',...),</span>
 <span class="sd">     'CML': TranslatorNode(curie='MONDO:0010809', label='familial chronic myelocytic leukemia-like syndrome',...)}</span>
 <span class="sd">    """</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'bulk-lookup'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">),</span> <span class="s1">'bulk-lookup'</span><span class="p">)</span>
     <span class="n">curies</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunk_list</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
@@ -245,7 +243,7 @@
 <span class="sd">    Dict of CURIE : TranslatorNode</span>
 <span class="sd">    """</span>
     <span class="n">chunks</span> <span class="o">=</span> <span class="n">chunk_list</span><span class="p">(</span><span class="n">strings</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'synonyms'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">),</span> <span class="s1">'synonyms'</span><span class="p">)</span>
     <span class="n">curies</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">chunks</span><span class="p">:</span>
         <span class="c1"># set autocomplete to be false by default</span>
@@ -264,7 +262,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span><span class="p">(</span><span class="s1">'Response from server had error, code '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">)</span> <span class="o">+</span> <span class="s1">' '</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">response</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">curies</span></div>
-
 
 
 </pre></div>

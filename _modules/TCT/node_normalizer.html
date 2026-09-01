@@ -41,10 +41,8 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.translator_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">TranslatorNode</span>
-
-
-<span class="n">URL</span> <span class="o">=</span> <span class="s1">'https://nodenorm.transltr.io/'</span>
 
 <div class="viewcode-block" id="status">
 <a class="viewcode-back" href="../../node_normalizer.html#TCT.node_normalizer.status">[docs]</a>
@@ -52,7 +50,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the status of the Node Normalizer API.</span>
 <span class="sd">    """</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">URL</span><span class="si">}</span><span class="s1">status'</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"node_normalizer"</span><span class="p">),</span> <span class="s2">"status"</span><span class="p">))</span>
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
@@ -90,7 +88,7 @@
 <span class="sd">    TranslatorNode(curie='CHEBI:15377', label='Water', types=['biolink:SmallMolecule', 'biolink:MolecularEntity', 'biolink:ChemicalEntity', 'biolink:PhysicalEssence', 'biolink:ChemicalOrDrugOrTreatment', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:ChemicalEntityOrProteinOrPolypeptide', 'biolink:NamedThing', 'biolink:PhysicalEssenceOrOccurrent'], synonyms=None, curie_synonyms=None)</span>
 <span class="sd">    """</span>
     <span class="c1"># default parameters: true for gene-protein conflation, false for drug-chemical conflation</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'get_normalized_nodes'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"node_normalizer"</span><span class="p">),</span> <span class="s1">'get_normalized_nodes'</span><span class="p">)</span>
     <span class="c1"># TODO: batch the query?</span>
     <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">'post'</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -196,7 +194,7 @@
     <span class="n">recoglized_ids</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># To convert a CURIE to a preferred name, you don't need NameLookup at all -- NodeNorm can</span>
     <span class="c1"># do this by itself!</span>
-    <span class="n">NODENORM_BASE_URL</span> <span class="o">=</span> <span class="s2">"https://nodenorm.transltr.io"</span>  <span class="c1"># Adjust this if you need NodeNorm TEST, CI or DEV.</span>
+    <span class="n">nodenorm_base_url</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"node_normalizer"</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
     <span class="n">NODENORM_BATCH_LIMIT</span> <span class="o">=</span> <span class="mi">900</span>                          <span class="c1"># Adjust this if you start getting errors from NodeNorm.</span>
     <span class="n">NODENORM_GENE_PROTEIN_CONFLATION</span> <span class="o">=</span> <span class="kc">True</span>             <span class="c1"># Change to False if you don't want gene/protein conflation.</span>
     <span class="n">NODENORM_DRUG_CHEMICAL_CONFLATION</span> <span class="o">=</span> <span class="kc">False</span>           <span class="c1"># Change to True if you want drug/chemical conflation.</span>
@@ -208,7 +206,7 @@
         <span class="c1"># print(f"id_sublist: {id_sublist}")</span>
 
         <span class="c1"># Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">NODENORM_BASE_URL</span> <span class="o">+</span> <span class="s1">'/get_normalized_nodes'</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">nodenorm_base_url</span> <span class="o">+</span> <span class="s1">'/get_normalized_nodes'</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">"curies"</span><span class="p">:</span> <span class="n">id_sublist</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>   <span class="c1"># Change to True if you want descriptions from any identifiers we know about.</span>
             <span class="s2">"conflate"</span><span class="p">:</span> <span class="n">NODENORM_GENE_PROTEIN_CONFLATION</span><span class="p">,</span>

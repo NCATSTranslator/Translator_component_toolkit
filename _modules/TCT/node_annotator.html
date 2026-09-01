@@ -41,10 +41,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.translator_node</span><span class="w"> </span><span class="kn">import</span> <span class="n">TranslatorNode</span>
-
-<span class="n">URL</span> <span class="o">=</span> <span class="s1">'https://annotator.transltr.io/'</span>
-<span class="sd">"""This is the root URL for the API."""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_url</span>
 
 <div class="viewcode-block" id="status">
 <a class="viewcode-back" href="../../node_annotator.html#TCT.node_annotator.status">[docs]</a>
@@ -52,7 +49,7 @@
 <span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the status of the Node Annotator API.</span>
 <span class="sd">    """</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'</span><span class="si">{</span><span class="n">URL</span><span class="si">}</span><span class="s1">status'</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"node_annotator"</span><span class="p">),</span> <span class="s2">"status"</span><span class="p">))</span>
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span></div>
 
@@ -87,7 +84,7 @@
 <span class="sd">    &gt;&gt;&gt; lookup_curies(['MESH:D014867'])</span>
 <span class="sd">    &gt;&gt;&gt; lookup_curies(['NCIT:C34373', 'NCBIGene:1756'])</span>
 <span class="sd">    """</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">'curie'</span><span class="p">)</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urljoin</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"node_annotator"</span><span class="p">),</span> <span class="s1">'curie'</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">'ids'</span><span class="p">:</span> <span class="n">curies</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">})</span>
     <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
 

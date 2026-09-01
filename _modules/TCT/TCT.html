@@ -35,11 +35,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="c1">#import openai</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span><span class="p">,</span> <span class="n">node_normalizer</span><span class="p">,</span> <span class="n">translator_query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">name_resolver</span><span class="p">,</span> <span class="n">node_normalizer</span><span class="p">,</span> <span class="n">translator_kpinfo</span><span class="p">,</span> <span class="n">translator_query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_url</span>
 
 <span class="c1"># plt.switch_backend('module://ipykernel.pylab.backend_inline')</span>
 
@@ -112,8 +112,7 @@
 <span class="sd">    &gt;&gt;&gt; Translator_KP_info,APInames= TCT.get_SmartAPI_Translator_KP_info()</span>
 <span class="sd">    '''</span>
     <span class="n">Translator_APIs</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="c1">#Translator_apps_url = "https://smart-api.info/api/query?q=tags.name:translator&amp;fields=info,_meta,tags&amp;meta=1&amp;size=500"</span>
-    <span class="n">Translator_apps_url</span> <span class="o">=</span> <span class="s2">"https://dev.smart-api.info/api/query?q=tags.name:translator&amp;fields=info,_meta,tags&amp;meta=1&amp;size=500"</span>
+    <span class="n">Translator_apps_url</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"smartapi_catalog"</span><span class="p">)</span>
     <span class="n">Translator_apps</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">Translator_apps_url</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">'hits'</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">app</span> <span class="ow">in</span> <span class="n">Translator_apps</span><span class="p">:</span>
         <span class="n">Translator_APIs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">app</span><span class="p">[</span><span class="s1">'info'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">])</span>
@@ -139,127 +138,7 @@
 
 <span class="sd">    """</span>
 
-    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
-    <span class="c1"># several APIs should be excluded:</span>
-    <span class="c1">#https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1</span>
-
-    <span class="c1"># Get x-bte smartapi specs</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&amp;size=1000&amp;sort=_seq_no&amp;raw=1&amp;fields=paths,servers,tags,components.x-bte*,info,_meta"</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
-    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"error downloading smartapi specs: </span><span class="si">{</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="n">exit</span><span class="p">()</span>
-
-    <span class="n">content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-    <span class="n">smartapis</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s2">"hits"</span><span class="p">]</span>
-
-    <span class="n">id_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">title_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">prod_url_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">ci_url_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">test_url_list</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="n">smartapis</span><span class="p">:</span>
-
-
-        <span class="n">ci_found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">test_found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'servers'</span><span class="p">])):</span>
-
-            <span class="n">server</span> <span class="o">=</span> <span class="n">api</span><span class="p">[</span><span class="s1">'servers'</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
-            <span class="k">if</span> <span class="s1">'x-maturity'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">server</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping server without x-maturity: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'production'</span><span class="p">:</span>
-                    <span class="c1"># if prod_ur is not ars-prod.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars-prod.transltr.io'</span><span class="p">:</span>
-                        <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if prod_url does not end with /, add '/query/' to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
-                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if prod_url does not end with /, add '/query/' to the end</span>
-                            <span class="n">prod_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
-
-                    <span class="n">prod_found</span> <span class="o">=</span> <span class="kc">True</span>
-
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'staging'</span> <span class="ow">or</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'development'</span><span class="p">:</span>
-                    <span class="c1"># if ci_url is not ars.ci.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars.ci.transltr.io'</span><span class="p">:</span>
-                        <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if ci_url does not end with /, add '/query/' to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
-                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if ci_url does not end with /, add '/query/' to the end</span>
-                            <span class="n">ci_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
-                    <span class="n">ci_found</span> <span class="o">=</span> <span class="kc">True</span>
-
-                <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'x-maturity'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'testing'</span><span class="p">:</span>
-                    <span class="c1"># if test_url is not ars-test.transltr.io</span>
-                    <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'https://ars.test.transltr.io'</span><span class="p">:</span>
-                        <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/ars/api/submit/'</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="c1"># if test_url does not end with /, add '/query/' to the end</span>
-                        <span class="k">if</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">'/'</span><span class="p">):</span>
-                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'query/'</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="c1"># if test_url does not end with /, add '/query/' to the end</span>
-                            <span class="n">test_url</span> <span class="o">=</span> <span class="n">server</span><span class="p">[</span><span class="s1">'url'</span><span class="p">]</span> <span class="o">+</span> <span class="s1">'/query/'</span>
-
-                    <span class="n">test_found</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">prod_found</span> <span class="ow">or</span> <span class="n">ci_found</span> <span class="ow">or</span> <span class="n">test_found</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'info'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">])</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping server without production, staging or testing: </span><span class="si">{</span><span class="n">server</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">'https://smart-api.info/ui/'</span><span class="o">+</span><span class="n">api</span><span class="p">[</span><span class="s1">'_id'</span><span class="p">])</span>
-            <span class="n">title_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">api</span><span class="p">[</span><span class="s1">'info'</span><span class="p">][</span><span class="s1">'title'</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">prod_found</span><span class="p">:</span>
-                <span class="n">prod_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prod_url</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">prod_url</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">ci_found</span><span class="p">:</span>
-                <span class="n">ci_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ci_url</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">ci_url</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">test_found</span><span class="p">:</span>
-                <span class="n">test_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_url</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">test_url</span> <span class="o">=</span> <span class="n">test_url_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-
-    <span class="c1"># write all the smartapis to a dataframe</span>
-
-    <span class="n">smartapi_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-        <span class="s1">'id'</span><span class="p">:</span> <span class="n">id_list</span><span class="p">,</span>
-        <span class="s1">'title'</span><span class="p">:</span> <span class="n">title_list</span><span class="p">,</span>
-        <span class="s1">'prod_url'</span><span class="p">:</span> <span class="n">prod_url_list</span><span class="p">,</span>
-        <span class="s1">'ci_url'</span><span class="p">:</span> <span class="n">ci_url_list</span><span class="p">,</span>
-        <span class="s1">'test_url'</span><span class="p">:</span> <span class="n">test_url_list</span><span class="p">,</span>
-    <span class="p">})</span>
-    <span class="c1">#smartapi_df = smartapi_df.set_index('id')</span>
-
-    <span class="c1"># remove the excluded APIs from the dataframe</span>
-    <span class="c1">#excluded_APIs = ['https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1',#RaMP]</span>
-
-    <span class="c1">#smartapi_df = smartapi_df[~smartapi_df['id'].isin(excluded_APIs)]</span>
-
-    <span class="n">API_names</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">smartapi_df</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1">#API_names[smartapi_df['title'][i]] = smartapi_df['prod_url'][i] + 'query/'</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">smartapi_df</span><span class="p">,</span> <span class="n">API_names</span></div>
+    <span class="k">return</span> <span class="n">translator_kpinfo</span><span class="o">.</span><span class="n">get_translator_kp_info</span><span class="p">()</span></div>
 
 
 <span class="c1"># used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
@@ -622,7 +501,7 @@
     <span class="n">recoglized_ids</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1"># To convert a CURIE to a preferred name, you don't need NameLookup at all -- NodeNorm can</span>
     <span class="c1"># do this by itself!</span>
-    <span class="n">NODENORM_BASE_URL</span> <span class="o">=</span> <span class="s2">"https://nodenorm.transltr.io"</span>  <span class="c1"># Adjust this if you need NodeNorm TEST, CI or DEV.</span>
+    <span class="n">nodenorm_base_url</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"node_normalizer"</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
     <span class="n">NODENORM_BATCH_LIMIT</span> <span class="o">=</span> <span class="mi">900</span>                          <span class="c1"># Adjust this if you start getting errors from NodeNorm.</span>
     <span class="n">NODENORM_GENE_PROTEIN_CONFLATION</span> <span class="o">=</span> <span class="kc">True</span>             <span class="c1"># Change to False if you don't want gene/protein conflation.</span>
     <span class="n">NODENORM_DRUG_CHEMICAL_CONFLATION</span> <span class="o">=</span> <span class="kc">False</span>           <span class="c1"># Change to True if you want drug/chemical conflation.</span>
@@ -634,7 +513,7 @@
         <span class="c1"># print(f"id_sublist: {id_sublist}")</span>
 
         <span class="c1"># Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">NODENORM_BASE_URL</span> <span class="o">+</span> <span class="s1">'/get_normalized_nodes'</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">nodenorm_base_url</span> <span class="o">+</span> <span class="s1">'/get_normalized_nodes'</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span>
             <span class="s2">"curies"</span><span class="p">:</span> <span class="n">id_sublist</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>   <span class="c1"># Change to True if you want descriptions from any identifiers we know about.</span>
             <span class="s2">"conflate"</span><span class="p">:</span> <span class="n">NODENORM_GENE_PROTEIN_CONFLATION</span><span class="p">,</span>
@@ -1799,7 +1678,7 @@
 
 <span class="c1"># Sri-name-resolver  Used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_curie</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"https://name-lookup.transltr.io/lookup"</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">service_url</span><span class="p">(</span><span class="s2">"name_resolver"</span><span class="p">)</span> <span class="o">+</span> <span class="s2">"lookup"</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">{</span>
         <span class="s1">'string'</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
         <span class="s1">'autocomplete'</span><span class="p">:</span> <span class="kc">False</span>
     <span class="p">})</span>
@@ -2472,7 +2351,6 @@
 <span class="c1"># ---------------------------------------------------------------------------</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.TCT_pathfinder</span><span class="w"> </span><span class="kn">import</span> <span class="n">query_TCT_pathfinder</span>  <span class="c1"># noqa: E402</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.TCT_neighborhood_finder</span><span class="w"> </span><span class="kn">import</span> <span class="n">neighborhood_finder</span>  <span class="c1"># noqa: E402</span>
-
 </pre></div>
 
           </div>

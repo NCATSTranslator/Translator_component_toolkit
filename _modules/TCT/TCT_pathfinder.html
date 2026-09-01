@@ -41,6 +41,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">translator_query</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">service_url</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.TCT</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CategoryList</span><span class="p">,</span>
     <span class="n">FinderResult</span><span class="p">,</span>
@@ -427,8 +428,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</span>
 <span class="sd">    """</span>
-    <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
-    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
+    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"aragorn"</span><span class="p">)</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">aragorn_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span></div>
@@ -453,8 +453,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.</span>
 <span class="sd">    """</span>
-    <span class="c1">#aragorn_endpoint = 'https://shepherd.renci.org/aragorn/query' # dev endpoint</span>
-    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="s1">'https://shepherd.ci.transltr.io/aragorn/query'</span> <span class="c1"># new ci endpoint</span>
+    <span class="n">aragorn_endpoint</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"aragorn"</span><span class="p">)</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
         <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
         <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>
@@ -483,7 +482,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    A string (which should be a JSON) representing the result of an ARAX pathfinder query.</span>
 <span class="sd">    """</span>
-    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
+    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"arax"</span><span class="p">)</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_pathfinder_query</span><span class="p">(</span><span class="n">node1_id</span><span class="p">,</span> <span class="n">node1_category</span><span class="p">,</span> <span class="n">node2_id</span><span class="p">,</span> <span class="n">node2_category</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">ARAX_endpoint</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">query_current</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">response</span></div>
@@ -507,7 +506,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    A string (which should be a JSON) representing the result of an ARAX pathfinder query.</span>
 <span class="sd">    """</span>
-    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="s1">'https://arax.ci.transltr.io/api/arax/v1.4/query'</span>
+    <span class="n">ARAX_endpoint</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"arax"</span><span class="p">)</span>
     <span class="n">query_current</span> <span class="o">=</span> <span class="n">format_query_json_for_pathfinder_with_constraints</span><span class="p">(</span>
         <span class="n">subject_ids</span><span class="o">=</span><span class="n">node1_id</span><span class="p">,</span>
         <span class="n">object_ids</span><span class="o">=</span><span class="n">node2_id</span><span class="p">,</span>

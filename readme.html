@@ -85,11 +85,33 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 uv<span class="w"> </span>sync
 </pre></div>
 </div>
+</section>
+</section>
+<section id="service-environment">
+<h3>Service environment<a class="headerlink" href="#service-environment" title="Link to this heading">¶</a></h3>
+<p>TCT uses production service URLs by default. Select CI for services that have a
+CI deployment either in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">TCT</span>
+
+<span class="n">TCT</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">environment</span><span class="o">=</span><span class="s2">"ci"</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or when starting a process such as the MCP server:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TCT_ENVIRONMENT</span><span class="o">=</span>ci<span class="w"> </span>tct-server
+</pre></div>
+</div>
+<p>Services without a separate CI deployment continue to use their shared URL.
+For local testing, individual known services can be replaced explicitly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TCT</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s2">"ci"</span><span class="p">,</span>
+    <span class="n">overrides</span><span class="o">=</span><span class="p">{</span><span class="s2">"arax"</span><span class="p">:</span> <span class="s2">"http://localhost:8080/query"</span><span class="p">},</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 <p>To include visualization support in the UV environment:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>vision
 </pre></div>
 </div>
-</section>
 <section id="building-and-deployment">
 <h4>Building and Deployment<a class="headerlink" href="#building-and-deployment" title="Link to this heading">¶</a></h4>
 <p><strong>Using pip:</strong></p>

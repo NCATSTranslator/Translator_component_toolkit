@@ -38,9 +38,21 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="sd">"""This is the root URL for the resource."""</span>
-<span class="n">URL</span> <span class="o">=</span> <span class="s1">'https://smart-api.info/api/query?q=tags.name:translator'</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_runtime_config</span><span class="p">,</span> <span class="n">service_url</span>
 
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_select_provider_url</span><span class="p">(</span>
+    <span class="n">prod_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ci_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">environment</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Select CI when requested, preserving prod's existing CI-only fallback."""</span>
+    <span class="k">if</span> <span class="n">environment</span> <span class="o">==</span> <span class="s2">"ci"</span> <span class="ow">and</span> <span class="n">ci_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ci_url</span>
+    <span class="k">return</span> <span class="n">prod_url</span> <span class="ow">or</span> <span class="n">ci_url</span>
+
+
+<span class="sd">"""This is the root URL for the resource."""</span>
 <div class="viewcode-block" id="get_translator_kp_info">
 <a class="viewcode-back" href="../../translator_kpinfo.html#TCT.translator_kpinfo.get_translator_kp_info">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_translator_kp_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
@@ -63,7 +75,7 @@
 <span class="sd">    &gt;&gt;&gt; print(Translator_KP_info.head())</span>
 <span class="sd">    """</span>
     <span class="c1"># Get x-bte smartapi specs</span>
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">"https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&amp;size=1000&amp;sort=_seq_no&amp;raw=1&amp;fields=paths,servers,tags,components.x-bte*,info,_meta"</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">service_url</span><span class="p">(</span><span class="s2">"smartapi_registry"</span><span class="p">)</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
@@ -163,13 +175,16 @@
         <span class="s1">'test_url'</span><span class="p">:</span> <span class="n">test_url_list</span><span class="p">,</span>
     <span class="p">})</span>
     
+    <span class="n">environment</span> <span class="o">=</span> <span class="n">get_runtime_config</span><span class="p">()</span><span class="o">.</span><span class="n">environment</span>
     <span class="n">API_names</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">smartapi_df</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1">#API_names[smartapi_df['title'][i]] = smartapi_df['prod_url'][i] + 'query/'</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> 
+        <span class="n">selected_url</span> <span class="o">=</span> <span class="n">_select_provider_url</span><span class="p">(</span>
+            <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">environment</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">selected_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">API_names</span><span class="p">[</span><span class="n">smartapi_df</span><span class="p">[</span><span class="s1">'title'</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">selected_url</span>
     <span class="k">return</span> <span class="n">smartapi_df</span><span class="p">,</span> <span class="n">API_names</span></div>
 
 </pre></div>
