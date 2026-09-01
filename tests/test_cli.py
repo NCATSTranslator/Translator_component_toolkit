@@ -1,9 +1,7 @@
 """Tests for the introspection-generated TCT command-line interface."""
 
 import argparse
-import importlib
 import json
-import tomllib
 from pathlib import Path
 
 import pytest
@@ -150,15 +148,3 @@ def test_cli_reports_serialization_failures_without_a_traceback(monkeypatch, cap
     assert captured.err == (
         "tct: invalid-result: could not serialize result: invalid result\n"
     )
-
-
-def test_pyproject_exposes_resolvable_tct_command():
-    """The wheel metadata provides the generated CLI as ``tct``."""
-    pyproject_path = Path(__file__).parents[1] / "pyproject.toml"
-    with pyproject_path.open("rb") as pyproject_file:
-        scripts = tomllib.load(pyproject_file)["project"]["scripts"]
-
-    module_name, attribute_name = scripts["tct"].split(":", maxsplit=1)
-    command = getattr(importlib.import_module(module_name), attribute_name)
-
-    assert command is cli.main

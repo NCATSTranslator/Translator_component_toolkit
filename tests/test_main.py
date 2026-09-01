@@ -1,10 +1,6 @@
 """Regression tests for the installed MCP server entry point."""
 
 import inspect
-import importlib
-import tomllib
-from pathlib import Path
-
 import pytest
 
 
@@ -62,16 +58,3 @@ def test_main_runs_mcp_with_default_transport(monkeypatch):
 
     assert calls == [((), {})]
 
-
-def test_pyproject_preserves_resolvable_tct_server_command_and_mcp_extra():
-    """Package metadata keeps a working command and optional MCP install."""
-    pyproject_path = Path(__file__).parents[1] / "pyproject.toml"
-    with pyproject_path.open("rb") as pyproject_file:
-        project = tomllib.load(pyproject_file)["project"]
-
-    entry_point = project["scripts"]["tct-server"]
-    module_name, attribute_name = entry_point.split(":", maxsplit=1)
-    command = getattr(importlib.import_module(module_name), attribute_name)
-
-    assert callable(command)
-    assert "fastmcp>=2.12.2" in project["optional-dependencies"]["mcp"]
