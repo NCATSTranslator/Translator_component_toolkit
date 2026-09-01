@@ -38,7 +38,7 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",
         ci="https://annotator.ci.transltr.io/",
-        test="https://annotator.test.transltr.io/"
+        test="https://annotator.test.transltr.io/",
     ),
     "smartapi_registry": ServiceEndpoint(
         prod="https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&size=1000&sort=_seq_no&raw=1&fields=paths,servers,tags,components.x-bte*,info,_meta",
@@ -51,12 +51,12 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         # ARAX should only be accessed through Shepherd
         prod="https://arax.transltr.io/api/arax/v1.4/query",
         ci="https://shepherd.ci.transltr.io/arax/query",
-        test="https://shepherd.test.transltr.io/arax/query"
+        test="https://shepherd.test.transltr.io/arax/query",
     ),
     "aragorn": ServiceEndpoint(
         prod="https://shepherd.prod.transltr.io/aragorn/query",
         ci="https://shepherd.ci.transltr.io/aragorn/query",
-        test="https://shepherd.test.transltr.io/aragorn/query"
+        test="https://shepherd.test.transltr.io/aragorn/query",
     ),
 }
 
@@ -69,8 +69,8 @@ class RuntimeConfig:
     overrides: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if self.environment not in ("prod", "ci"):
-            raise ValueError("environment must be 'prod' or 'ci'")
+        if self.environment not in ("prod", "ci", "test"):
+            raise ValueError("environment must be 'prod', 'ci', or 'test'")
         unknown = set(self.overrides) - set(SERVICE_ENDPOINTS)
         if unknown:
             names = ", ".join(sorted(unknown))
