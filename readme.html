@@ -35,7 +35,7 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
 <section id="what-is-tct">
 <h2>What is TCT?<a class="headerlink" href="#what-is-tct" title="Link to this heading">¶</a></h2>
-<p>Translator Component Toolkit is a python library that allowing users to explore and use KGs in the Translator ecosystem.
+<p>Translator Component Toolkit (TCT) is a Python library for exploring and using knowledge graphs in the Translator ecosystem.
 Users can check out the key function documentations here: <a class="reference external" href="https://ncatstranslator.github.io/Translator_component_toolkit/">https://ncatstranslator.github.io/Translator_component_toolkit/</a></p>
 <p><a class="reference external" href="https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main">TCT Github repo</a></p>
 </section>
@@ -66,6 +66,12 @@ Connecting user’s API with Translator API <br>
 </pre></div>
 </div>
 <p><strong>This is the recommended approach for a minimal installation.</strong></p>
+<p>The minimal installation includes both the Python library and the <code class="docutils literal notranslate"><span class="pre">tct</span></code>
+command-line interface. Install the optional MCP dependencies when an agent or
+MCP client will run TCT as a server:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"TCT[mcp]"</span>
+</pre></div>
+</div>
 <p>Visualization support is optional. Install it with the <code class="docutils literal notranslate"><span class="pre">vision</span></code> extra when you need the plotting and graph-rendering utilities:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"TCT[vision]"</span>
 </pre></div>
@@ -112,6 +118,124 @@ For local testing, individual known services can be replaced explicitly:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>vision
 </pre></div>
 </div>
+<p>To develop or run the MCP server from a source checkout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>mcp
+</pre></div>
+</div>
+</section>
+</section>
+<section id="python-cli-and-mcp-interfaces">
+<h2>Python, CLI, and MCP interfaces<a class="headerlink" href="#python-cli-and-mcp-interfaces" title="Link to this heading">¶</a></h2>
+<p>TCT exposes one curated set of well-documented operations through three
+interfaces:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Interface</p></th>
+<th class="head"><p>Intended use</p></th>
+<th class="head"><p>Starting point</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python</p></td>
+<td><p>Application and notebook development</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">TCT</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>CLI</p></td>
+<td><p>Shell scripts, exploration, and agent command execution</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tct</span> <span class="pre">--help</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>MCP</p></td>
+<td><p>Tool discovery and invocation by MCP clients</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tct-server</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>The CLI and MCP server are generated from the same functions in
+<code class="docutils literal notranslate"><span class="pre">TCT.interfaces.tools</span></code>. Function names, signatures, annotations, defaults, and
+docstrings therefore provide the common tool contract. The MCP server remains
+available from the existing <code class="docutils literal notranslate"><span class="pre">tct-server</span></code> command and from the compatibility
+imports in <code class="docutils literal notranslate"><span class="pre">TCT.server</span></code>.</p>
+<section id="explore-the-cli">
+<h3>Explore the CLI<a class="headerlink" href="#explore-the-cli" title="Link to this heading">¶</a></h3>
+<p>Start at the root help, then ask for help on any listed command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tct<span class="w"> </span>--help
+
+<span class="se">\\\\</span>
+tct<span class="w"> </span>name-lookup<span class="w"> </span>--help
+tct<span class="w"> </span>normalize-nodes<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>Commands use kebab-case names and long options. List options accept one or
+more space-separated values, structured options accept JSON, and boolean
+options support both <code class="docutils literal notranslate"><span class="pre">--option</span></code> and <code class="docutils literal notranslate"><span class="pre">--no-option</span></code>. Results are written as JSON
+so they can be inspected directly or piped to another program. Common TCT
+results such as dataclasses, mappings, collections, and tables are converted
+recursively. Tool failures are written concisely to standard error and return
+a nonzero exit status.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tct<span class="w"> </span>name-lookup<span class="w"> </span>--query<span class="w"> </span>aspirin
+tct<span class="w"> </span>normalize-nodes<span class="w"> </span>--query<span class="w"> </span>CHEBI:15365<span class="w"> </span>CHEBI:6801<span class="w"> </span>--no-conflate
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="#EXAMPLES.md"><span class="xref myst">EXAMPLES.md</span></a> for CLI discovery, structured inputs, finder
+commands, Python use, and MCP client configuration.</p>
+</section>
+<section id="run-the-mcp-server">
+<h3>Run the MCP server<a class="headerlink" href="#run-the-mcp-server" title="Link to this heading">¶</a></h3>
+<p>After installing the <code class="docutils literal notranslate"><span class="pre">mcp</span></code> extra, start the stdio server with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tct-server
+</pre></div>
+</div>
+<p>MCP clients discover the same tool names, descriptions, input types, required
+parameters, and defaults shown by the CLI. A typical client configuration is:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"mcpServers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"tct"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tct-server"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>When running from a source checkout, run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span> <span class="pre">--extra</span> <span class="pre">mcp</span></code> first and use
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">tct-server</span></code>.</p>
+</section>
+<section id="shared-tool-capabilities">
+<h3>Shared tool capabilities<a class="headerlink" href="#shared-tool-capabilities" title="Link to this heading">¶</a></h3>
+<p>The table uses CLI kebab-case spellings; MCP publishes the corresponding
+Python names in snake_case.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Area</p></th>
+<th class="head"><p>Commands</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Translator resources</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">get-translator-resources</span></code>, <code class="docutils literal notranslate"><span class="pre">get-kp-info</span></code>, <code class="docutils literal notranslate"><span class="pre">get-metakg-data</span></code>, <code class="docutils literal notranslate"><span class="pre">get-api-predicates</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Name resolution</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">name-lookup</span></code>, <code class="docutils literal notranslate"><span class="pre">get-name-synonyms</span></code>, <code class="docutils literal notranslate"><span class="pre">batch-name-lookup</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Node normalization</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">normalize-nodes</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>MetaKG extension</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">add-custom-api-to-metakg</span></code>, <code class="docutils literal notranslate"><span class="pre">add-plover-apis-to-metakg</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>TRAPI query preparation and execution</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">optimize-query-for-api</span></code>, <code class="docutils literal notranslate"><span class="pre">query-knowledge-provider</span></code>, <code class="docutils literal notranslate"><span class="pre">parallel-query-apis</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Graph finding</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">neighborhood-finder</span></code>, <code class="docutils literal notranslate"><span class="pre">path-finder</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Legacy compatibility</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">trapi-query-endpoint</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">trapi-query-endpoint</span></code> preserves the existing public tool contract but is a
+legacy placeholder in this release; its underlying operation also requires a
+query body that is not present in the public command signature.</p>
 <section id="building-and-deployment">
 <h4>Building and Deployment<a class="headerlink" href="#building-and-deployment" title="Link to this heading">¶</a></h4>
 <p><strong>Using pip:</strong></p>
