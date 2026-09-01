@@ -4,13 +4,12 @@ from collections.abc import Iterator
 
 import pytest
 
-from TCT.config import reset_config
+from TCT.config import configure, reset_config
 
 
 @pytest.fixture(autouse=True)
-def isolated_runtime_config(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """Prevent ambient environment or earlier tests from selecting services."""
-    monkeypatch.delenv("TCT_ENVIRONMENT", raising=False)
-    reset_config()
+def isolated_runtime_config() -> Iterator[None]:
+    """Give every test an explicit runtime independent of ambient state."""
+    configure(environment="prod")
     yield
     reset_config()

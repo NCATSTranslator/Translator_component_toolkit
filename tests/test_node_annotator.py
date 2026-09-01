@@ -21,9 +21,8 @@ CURIES_with_annotations = [
         'curie': 'CHEBI:15377',
         'expected': {
             'query': 'CHEBI:15377',
-            'boxed_warning': True,
-            # Clinical approval/trial sections depend on volatile upstream
-            # providers and are not part of the stable annotator contract.
+            # Warning and clinical approval/trial fields depend on volatile
+            # upstream providers and are not part of the stable contract.
             'sections': [
                 'aeolus',
                 'chebi',

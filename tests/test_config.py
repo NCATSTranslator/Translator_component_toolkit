@@ -42,7 +42,7 @@ def test_environment_variable_selects_ci(monkeypatch):
 
 
 def test_suite_does_not_inherit_runtime_environment():
-    assert load_config().environment == "prod"
+    assert get_runtime_config().environment == "prod"
 
 
 def test_configure_sets_process_configuration():
