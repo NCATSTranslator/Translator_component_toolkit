@@ -56,7 +56,7 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
 class RuntimeConfig:
     """Runtime environment and explicit service URL replacements."""
 
-    environment: Environment = "prod"
+    environment: Environment = "ci"
     overrides: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -85,7 +85,7 @@ def load_config(
     overrides: Mapping[str, str] | None = None,
 ) -> RuntimeConfig:
     """Build configuration from explicit values and ``TCT_ENVIRONMENT``."""
-    selected_environment = environment or os.getenv("TCT_ENVIRONMENT", "prod")
+    selected_environment = environment or os.getenv("TCT_ENVIRONMENT", "ci")
     return RuntimeConfig(
         environment=selected_environment,  # type: ignore[arg-type]
         overrides=overrides or {},
