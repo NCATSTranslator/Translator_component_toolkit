@@ -226,6 +226,12 @@ CLI or MCP adapter converts it to its stable interface error. Because this can
 record biomedical queries and service responses, configure Langfuse according
 to the data-handling requirements of the deployment.
 
+MCP clients can link these tool observations to an instrumented agent turn by
+injecting W3C trace context into request `_meta`. TCT restores the context in
+MCP middleware without adding trace parameters to the published tool schema.
+See [TCT/interfaces/LANGFUSE.md](TCT/interfaces/LANGFUSE.md) for the request
+shape, compatibility fallback, and telemetry field contract.
+
 ### Shared tool capabilities
 
 The table uses CLI kebab-case spellings; MCP publishes the corresponding

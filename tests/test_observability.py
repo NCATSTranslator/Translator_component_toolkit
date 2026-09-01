@@ -84,6 +84,7 @@ def test_invoke_records_tool_input_output_and_interface(monkeypatch):
         "tct.interface": "mcp",
         "tct.module": __name__,
         "tct.tool": "combine",
+        "tct.trace.propagated": False,
         **invocation._input_metadata(captured["input"]),
     }
     assert captured["update"] == {
@@ -180,3 +181,61 @@ def test_disabled_observability_does_not_evaluate_trace_input(monkeypatch):
 
     value = Value()
     assert invocation.invoke(identity, value) is value
+
+
+def test_incoming_w3c_context_is_scoped_and_filters_unrelated_metadata(monkeypatch):
+    """Only standard propagation fields are attached for one MCP dispatch."""
+    calls = []
+
+    class FakeContext:
+        @staticmethod
+        def attach(value):
+            calls.append(("attach", value))
+            return "otel-token"
+
+        @staticmethod
+        def detach(value):
+            calls.append(("detach", value))
+
+    class FakePropagate:
+        @staticmethod
+        def extract(carrier):
+            calls.append(("extract", carrier))
+            return "extracted-context"
+
+    modules = {
+        "opentelemetry.context": FakeContext,
+        "opentelemetry.propagate": FakePropagate,
+    }
+    monkeypatch.setattr(observability, "langfuse_enabled", lambda: True)
+    monkeypatch.setattr(
+        observability.importlib,
+        "import_module",
+        lambda name: modules[name],
+    )
+
+    assert observability.trace_context_was_propagated() is False
+    with observability.use_incoming_trace_context(
+        {
+            "traceparent": "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01",
+            "baggage": "session.id=conversation-123",
+            "private": "ignored",
+        }
+    ):
+        assert observability.trace_context_was_propagated() is True
+
+    assert observability.trace_context_was_propagated() is False
+    assert calls == [
+        (
+            "extract",
+            {
+                "traceparent": (
+                    "00-0123456789abcdef0123456789abcdef-"
+                    "0123456789abcdef-01"
+                ),
+                "baggage": "session.id=conversation-123",
+            },
+        ),
+        ("attach", "extracted-context"),
+        ("detach", "otel-token"),
+    ]

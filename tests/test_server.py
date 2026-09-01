@@ -1,6 +1,7 @@
 """Simple tests for TCT MCP Server functionality."""
 
 import asyncio
+from contextlib import contextmanager
 
 import pytest
 
@@ -88,4 +89,75 @@ def test_mcp_adapter_uses_shared_invocation_boundary(monkeypatch):
                 "_interface": "mcp",
             },
         )
+    ]
+
+
+def test_mcp_middleware_restores_protocol_context_without_schema_arguments(
+    monkeypatch,
+):
+    """Trace metadata surrounds dispatch and never reaches the shared tool."""
+    from fastmcp.server.middleware import MiddlewareContext
+    from mcp.types import CallToolRequestParams
+
+    from TCT.interfaces import mcp as adapter
+
+    calls = []
+
+    @contextmanager
+    def fake_trace_context(metadata):
+        calls.append(("enter", metadata))
+        try:
+            yield
+        finally:
+            calls.append(("exit", metadata))
+
+    async def call_next(context):
+        calls.append(("arguments", context.message.arguments))
+        return "result"
+
+    monkeypatch.setattr(adapter, "use_incoming_trace_context", fake_trace_context)
+    params = CallToolRequestParams(
+        name="name_lookup",
+        arguments={
+            "query": "aspirin",
+            "_meta": {
+                "traceparent": (
+                    "00-0123456789abcdef0123456789abcdef-"
+                    "0123456789abcdef-01"
+                )
+            },
+        },
+        _meta={"baggage": "session.id=conversation-123"},
+    )
+
+    result = asyncio.run(
+        adapter._TraceContextMiddleware().on_call_tool(
+            MiddlewareContext(message=params),
+            call_next,
+        )
+    )
+
+    assert result == "result"
+    assert calls == [
+        (
+            "enter",
+            {
+                "traceparent": (
+                    "00-0123456789abcdef0123456789abcdef-"
+                    "0123456789abcdef-01"
+                ),
+                "baggage": "session.id=conversation-123",
+            },
+        ),
+        ("arguments", {"query": "aspirin"}),
+        (
+            "exit",
+            {
+                "traceparent": (
+                    "00-0123456789abcdef0123456789abcdef-"
+                    "0123456789abcdef-01"
+                ),
+                "baggage": "session.id=conversation-123",
+            },
+        ),
     ]

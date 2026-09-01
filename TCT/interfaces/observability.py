@@ -11,12 +11,18 @@ import importlib
 import os
 from collections.abc import Callable, Generator, Mapping
 from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any
 
 
 _ENABLED_VARIABLE = "TCT_LANGFUSE_ENABLED"
 _TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 _FALSE_VALUES = frozenset({"0", "false", "no", "off"})
+_TRACE_CONTEXT_FIELDS = frozenset({"traceparent", "tracestate", "baggage"})
+_PROPAGATED_TRACE_CONTEXT: ContextVar[bool] = ContextVar(
+    "tct_propagated_trace_context",
+    default=False,
+)
 
 
 class ObservabilityConfigurationError(RuntimeError):
@@ -61,6 +67,41 @@ def _get_langfuse_client() -> Any | None:
 
 
 @contextmanager
+def use_incoming_trace_context(
+    metadata: Mapping[str, Any] | None,
+) -> Generator[None, None, None]:
+    """Restore W3C trace context supplied by an MCP client when tracing.
+
+    Imports remain lazy so MCP and core installations do not acquire a hard
+    OpenTelemetry dependency. Unknown MCP metadata is deliberately ignored.
+    """
+    carrier = {
+        key: value
+        for key, value in (metadata or {}).items()
+        if key in _TRACE_CONTEXT_FIELDS and isinstance(value, str)
+    }
+    if not carrier or not langfuse_enabled():
+        yield
+        return
+
+    otel_context = importlib.import_module("opentelemetry.context")
+    otel_propagate = importlib.import_module("opentelemetry.propagate")
+    extracted = otel_propagate.extract(carrier)
+    otel_token = otel_context.attach(extracted)
+    propagated_token = _PROPAGATED_TRACE_CONTEXT.set(True)
+    try:
+        yield
+    finally:
+        _PROPAGATED_TRACE_CONTEXT.reset(propagated_token)
+        otel_context.detach(otel_token)
+
+
+def trace_context_was_propagated() -> bool:
+    """Return whether the current invocation inherited client trace context."""
+    return _PROPAGATED_TRACE_CONTEXT.get()
+
+
+@contextmanager
 def observe_tool(
     *,
     name: str,
@@ -99,4 +140,6 @@ __all__ = [
     "flush_observability",
     "langfuse_enabled",
     "observe_tool",
+    "trace_context_was_propagated",
+    "use_incoming_trace_context",
 ]

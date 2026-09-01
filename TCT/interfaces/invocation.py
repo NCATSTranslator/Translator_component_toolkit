@@ -11,7 +11,7 @@ from dataclasses import fields, is_dataclass
 from enum import Enum
 from typing import Any
 
-from .observability import observe_tool
+from .observability import observe_tool, trace_context_was_propagated
 
 
 class ToolInvocationError(RuntimeError):
@@ -151,6 +151,7 @@ def invoke(
             "tct.interface": _interface or "shared",
             "tct.module": tool.__module__,
             "tct.tool": tool.__name__,
+            "tct.trace.propagated": trace_context_was_propagated(),
         }
 
         def trace_input() -> Any:
