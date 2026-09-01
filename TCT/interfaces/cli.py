@@ -141,6 +141,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tct",
         description="Translator Component Toolkit command-line interface.",
+        epilog=(
+            "Explore commands:\n"
+            "  tct --help\n"
+            "  tct COMMAND --help\n\n"
+            "List options accept one or more space-separated values. "
+            "Structured options accept JSON."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     for tool in shared_tools.TOOLS:

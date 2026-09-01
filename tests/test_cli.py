@@ -38,6 +38,17 @@ def test_cli_help_uses_shared_tool_and_parameter_docs(capsys):
     assert "(default: True)" in help_text
 
 
+def test_root_help_explains_how_to_explore_commands(capsys):
+    """Humans and agents can discover the next help command from root help."""
+    with pytest.raises(SystemExit) as exit_info:
+        cli.build_parser().parse_args(["--help"])
+
+    assert exit_info.value.code == 0
+    help_text = capsys.readouterr().out
+    assert "tct COMMAND --help" in help_text
+    assert "Structured options accept JSON." in help_text
+
+
 def test_cli_parses_unions_lists_booleans_and_defaults():
     """Annotations and defaults determine command-line value conversion."""
     parser = cli.build_parser()

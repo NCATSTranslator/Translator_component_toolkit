@@ -2,7 +2,7 @@ Introduction
 ==================================
 
 ## What is TCT?
-Translator Component Toolkit is a python library that allowing users to explore and use KGs in the Translator ecosystem.
+Translator Component Toolkit (TCT) is a Python library for exploring and using knowledge graphs in the Translator ecosystem.
 Users can check out the key function documentations here: [https://ncatstranslator.github.io/Translator_component_toolkit/](https://ncatstranslator.github.io/Translator_component_toolkit/) 
 
 [TCT Github repo](https://github.com/NCATSTranslator/Translator_component_toolkit/tree/main)
@@ -37,6 +37,14 @@ pip install TCT
 
 **This is the recommended approach for a minimal installation.**
 
+The minimal installation includes both the Python library and the `tct`
+command-line interface. Install the optional MCP dependencies when an agent or
+MCP client will run TCT as a server:
+
+```bash
+pip install "TCT[mcp]"
+```
+
 Visualization support is optional. Install it with the `vision` extra when you need the plotting and graph-rendering utilities:
 
 ```bash
@@ -68,6 +76,95 @@ To include visualization support in the UV environment:
 ```bash
 uv sync --extra vision
 ```
+
+To develop or run the MCP server from a source checkout:
+
+```bash
+uv sync --extra mcp
+```
+
+## Python, CLI, and MCP interfaces
+
+TCT exposes one curated set of well-documented operations through three
+interfaces:
+
+| Interface | Intended use | Starting point |
+| --- | --- | --- |
+| Python | Application and notebook development | `import TCT` |
+| CLI | Shell scripts, exploration, and agent command execution | `tct --help` |
+| MCP | Tool discovery and invocation by MCP clients | `tct-server` |
+
+The CLI and MCP server are generated from the same functions in
+`TCT.interfaces.tools`. Function names, signatures, annotations, defaults, and
+docstrings therefore provide the common tool contract. The MCP server remains
+available from the existing `tct-server` command and from the compatibility
+imports in `TCT.server`.
+
+### Explore the CLI
+
+Start at the root help, then ask for help on any listed command:
+
+```bash
+tct --help
+tct name-lookup --help
+tct normalize-nodes --help
+```
+
+Commands use kebab-case names and long options. List options accept one or
+more space-separated values, structured options accept JSON, and boolean
+options support both `--option` and `--no-option`. Results are written as JSON
+so they can be inspected directly or piped to another program.
+
+```bash
+tct name-lookup --query aspirin
+tct normalize-nodes --query CHEBI:15365 CHEBI:6801 --no-conflate
+```
+
+See [EXAMPLES.md](EXAMPLES.md) for CLI discovery, structured inputs, finder
+commands, Python use, and MCP client configuration.
+
+### Run the MCP server
+
+After installing the `mcp` extra, start the stdio server with:
+
+```bash
+tct-server
+```
+
+MCP clients discover the same tool names, descriptions, input types, required
+parameters, and defaults shown by the CLI. A typical client configuration is:
+
+```json
+{
+  "mcpServers": {
+    "tct": {
+      "command": "tct-server"
+    }
+  }
+}
+```
+
+When running from a source checkout, run `uv sync --extra mcp` first and use
+`uv run tct-server`.
+
+### Shared tool capabilities
+
+The table uses CLI kebab-case spellings; MCP publishes the corresponding
+Python names in snake_case.
+
+| Area | Commands |
+| --- | --- |
+| Translator resources | `get-translator-resources`, `get-kp-info`, `get-metakg-data`, `get-api-predicates` |
+| Name resolution | `name-lookup`, `get-name-synonyms`, `batch-name-lookup` |
+| Node normalization | `normalize-nodes` |
+| MetaKG extension | `add-custom-api-to-metakg`, `add-plover-apis-to-metakg` |
+| TRAPI query preparation and execution | `optimize-query-for-api`, `query-knowledge-provider`, `parallel-query-apis` |
+| Graph finding | `neighborhood-finder`, `path-finder` |
+| Legacy compatibility | `trapi-query-endpoint` |
+
+`trapi-query-endpoint` preserves the existing public tool contract but is a
+legacy placeholder in this release; its underlying operation also requires a
+query body that is not present in the public command signature.
 
 #### Building and Deployment
 **Using pip:**
