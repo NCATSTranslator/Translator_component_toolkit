@@ -63,6 +63,33 @@ cd Translator_component_toolkit
 uv sync
 ```
 
+### Service environment
+
+TCT uses production service URLs by default. Select CI for services that have a
+CI deployment either in Python:
+
+```python
+import TCT
+
+TCT.configure(environment="ci")
+```
+
+or when starting a process such as the MCP server:
+
+```bash
+TCT_ENVIRONMENT=ci tct-server
+```
+
+Services without a separate CI deployment continue to use their shared URL.
+For local testing, individual known services can be replaced explicitly:
+
+```python
+TCT.configure(
+    environment="ci",
+    overrides={"arax": "http://localhost:8080/query"},
+)
+```
+
 To include visualization support in the UV environment:
 
 ```bash
