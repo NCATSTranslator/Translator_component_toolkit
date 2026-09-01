@@ -127,12 +127,33 @@ TCT attaches the following metadata:
 | `tct.interface` | `cli` or `mcp` |
 | `tct.module` | Python module containing the shared callable |
 | `tct.tool` | Python callable name |
+| `tct.input.bytes` | Canonical UTF-8 JSON size of all bound arguments |
+| `tct.input.sha256` | Stable identity for detecting an exact repeated call |
+| `tct.input.argument.<name>.bytes` | Canonical size of one argument |
+| `tct.input.argument.<name>.sha256` | Stable identity of one repeated argument |
+| `tct.output.bytes` | Canonical UTF-8 JSON size of the returned value |
+| `tct.output.sha256` | Stable identity for detecting repeated results |
+
+When applicable, observations also include `tct.provider.name`,
+`tct.provider.count`, `tct.batch.item_count`, `tct.batch.argument`,
+`tct.query.node_count`, `tct.query.identifier_count`, and
+`tct.query.identifier_node_count`. These fields are derived from ordinary
+arguments at the shared invocation boundary; individual tools do not require
+observability decorators.
 
 Inputs are bound against the Python signature, so the observation includes
 applied default values as well as arguments supplied by the caller. Successful
 outputs are converted to JSON-compatible values using the same normalization
 conventions as CLI results. On failure, the original exception crosses the
 Langfuse context before TCT converts it to its stable CLI or MCP error.
+
+The hashes identify equal canonical payloads; they are not cache keys exposed
+to callers and do not change invocation behavior. Input and output byte counts
+measure TCT's normalized logical values, not model tokens or MCP wire framing.
+An agent's Langfuse integration remains responsible for generation model,
+token usage, and price. When agent and MCP observations share distributed
+trace context, those generation costs and these tool metrics can be analyzed
+within the same turn.
 
 ## Test the integration
 

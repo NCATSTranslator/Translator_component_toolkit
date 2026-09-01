@@ -269,7 +269,10 @@ uv run tct-server
 Langfuse remains disabled unless `TCT_LANGFUSE_ENABLED` is explicitly true.
 When enabled, every call made through either adapter is represented as a Langfuse `tool`
 observation. The observation includes the interface, tool name, bound input
-arguments (including defaults), and a JSON-compatible successful result. No
+arguments (including defaults), and a JSON-compatible successful result. It
+also records stable payload hashes, byte sizes, batching counts, provider
+counts, and TRAPI identifier counts where applicable. These metrics expose
+exact duplicates, repeated large arguments, and under-batched calls. No
 per-tool decorator is needed because both adapters call the same invocation
 function.
 
