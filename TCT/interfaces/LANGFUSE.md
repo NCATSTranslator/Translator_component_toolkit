@@ -127,6 +127,7 @@ TCT attaches the following metadata:
 | `tct.interface` | `cli` or `mcp` |
 | `tct.module` | Python module containing the shared callable |
 | `tct.tool` | Python callable name |
+| `tct.trace.propagated` | Whether an MCP client supplied parent trace context |
 | `tct.input.bytes` | Canonical UTF-8 JSON size of all bound arguments |
 | `tct.input.sha256` | Stable identity for detecting an exact repeated call |
 | `tct.input.argument.<name>.bytes` | Canonical size of one argument |
@@ -154,6 +155,51 @@ An agent's Langfuse integration remains responsible for generation model,
 token usage, and price. When agent and MCP observations share distributed
 trace context, those generation costs and these tool metrics can be analyzed
 within the same turn.
+
+## Link agent turns to MCP tools
+
+TCT accepts W3C `traceparent`, `tracestate`, and `baggage` fields in an MCP
+tool request's `_meta`. The MCP adapter restores that context for the duration
+of dispatch, so its `tct.tool.<tool_name>` observation becomes a child of the
+agent's current turn. Trace metadata never becomes part of the shared callable
+signature or the discovered tool input schema.
+
+Clients with direct protocol metadata support should send a request shaped
+like this:
+
+```json
+{
+  "name": "name_lookup",
+  "arguments": {"query": "aspirin"},
+  "_meta": {
+    "traceparent": "00-<trace-id>-<parent-span-id>-01",
+    "baggage": "<agent-propagated trace attributes>"
+  }
+}
+```
+
+Some MCP client libraries do not yet expose request-level `_meta`. TCT also
+accepts `_meta` temporarily alongside tool arguments and removes it before
+FastMCP validates or invokes the tool:
+
+```python
+from langfuse import propagate_attributes
+from opentelemetry.propagate import inject
+
+with propagate_attributes(session_id="conversation-123", as_baggage=True):
+    carrier = {}
+    inject(carrier)
+    await session.call_tool(
+        "name_lookup",
+        {"query": "aspirin", "_meta": carrier},
+    )
+```
+
+The client must inject while the agent turn observation is current. TCT does
+not create LLM generation observations and therefore cannot infer model token
+usage or price. Instrument the agent's model provider with Langfuse; linked
+TCT observations then appear in the same turn trace. Clients that send no
+trace context continue to work and receive an independent TCT trace.
 
 ## Test the integration
 
