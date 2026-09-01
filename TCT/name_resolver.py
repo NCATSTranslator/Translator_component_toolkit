@@ -8,16 +8,14 @@ import urllib.parse
 
 import requests
 
+from .config import service_url
 from .translator_node import TranslatorNode
-
-URL = 'https://name-lookup.ci.transltr.io/'
-"""This is the root URL for the API."""
 
 def status() -> str:
     """
     Returns the status of the Name Resolver API.
     """
-    response = requests.get(URL + 'status')
+    response = requests.get(urllib.parse.urljoin(service_url("name_resolver"), "status"))
     response.raise_for_status()
     return response.json()
 
@@ -58,7 +56,7 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
     TranslatorNode(curie='NCBIGene:3458', label='IFNG', types=['biolink:Gene', 'biolink:GeneOrGeneProduct', 'biolink:GenomicEntity', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:PhysicalEssence', 'biolink:OntologyClass', 'biolink:BiologicalEntity', 'biolink:ThingWithTaxon', 'biolink:NamedThing', 'biolink:Entity', 'biolink:PhysicalEssenceOrOccurrent', 'biolink:MacromolecularMachineMixin', 'biolink:Protein', 'biolink:GeneProductMixin', 'biolink:Polypeptide', 'biolink:ChemicalEntityOrProteinOrPolypeptide'], synonyms=None, curie_synonyms=None, attributes=None, taxa=['NCBITaxon:9606'])
     >>> lookup('AML', return_top_response=False, biolink_type="biolink:Disease")
     """
-    path = urllib.parse.urljoin(URL, 'lookup')
+    path = urllib.parse.urljoin(service_url("name_resolver"), 'lookup')
     # set autocomplete to be false by default
     if 'autocomplete' not in kwargs:
         kwargs['autocomplete'] = False
@@ -95,7 +93,7 @@ def synonyms(query: str|list, **kwargs) -> dict[str, TranslatorNode]:
     -------
     Dict of CURIE id : TranslatorNode
     """
-    path = urllib.parse.urljoin(URL, 'synonyms')
+    path = urllib.parse.urljoin(service_url("name_resolver"), 'synonyms')
     # set autocomplete to be false by default
     response = requests.get(path, params={'preferred_curies': query, **kwargs})
     if response.status_code == 200:
@@ -150,7 +148,7 @@ def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True,
     {'AML': TranslatorNode(curie='MONDO:0018874', label='acute myeloid leukemia',...),
      'CML': TranslatorNode(curie='MONDO:0010809', label='familial chronic myelocytic leukemia-like syndrome',...)}
     """
-    path = urllib.parse.urljoin(URL, 'bulk-lookup')
+    path = urllib.parse.urljoin(service_url("name_resolver"), 'bulk-lookup')
     curies = {}
     chunks = chunk_list(strings, size)
     for chunk in chunks:
@@ -198,7 +196,7 @@ def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict[str, Transl
     Dict of CURIE : TranslatorNode
     """
     chunks = chunk_list(strings, size)
-    path = urllib.parse.urljoin(URL, 'synonyms')
+    path = urllib.parse.urljoin(service_url("name_resolver"), 'synonyms')
     curies = {}
     for chunk in chunks:
         # set autocomplete to be false by default
@@ -217,5 +215,4 @@ def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict[str, Transl
         else:
             raise requests.RequestException('Response from server had error, code ' + str(response.status_code) + ' ' + str(response))
     return curies
-
 
