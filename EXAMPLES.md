@@ -53,6 +53,8 @@ or an agent discovering how to construct a command:
 Command names and options use kebab-case. CLI output is JSON. List options
 accept one or more space-separated values, and mapping or otherwise structured
 options accept JSON. MCP exposes the corresponding tool names in snake_case.
+Successful CLI results are normalized to JSON; tool failures are written to
+standard error and return a nonzero exit status without a Python traceback.
 
 ## Name resolution
 

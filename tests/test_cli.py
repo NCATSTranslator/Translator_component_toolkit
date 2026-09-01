@@ -112,6 +112,46 @@ def test_cli_invokes_registry_callable_and_prints_json(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out) == {"messages": ["hello", "hello"]}
 
 
+def test_cli_reports_tool_failures_without_a_traceback(monkeypatch, capsys):
+    """Invocation failures become concise CLI errors and a nonzero result."""
+
+    def fail(query: str) -> None:
+        """Fail a query.
+
+        Args:
+            query: Query that will fail.
+        """
+        raise ValueError(f"cannot resolve {query}")
+
+    monkeypatch.setattr(tools, "TOOLS", (fail,))
+
+    assert cli.main(["fail", "--query", "unknown"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == "tct: fail: cannot resolve unknown\n"
+
+
+def test_cli_reports_serialization_failures_without_a_traceback(monkeypatch, capsys):
+    """Bad result conversion is also a concise nonzero CLI outcome."""
+
+    class InvalidResult:
+        def to_dict(self):
+            raise ValueError("invalid result")
+
+    def invalid_result() -> object:
+        """Return an invalid result."""
+        return InvalidResult()
+
+    monkeypatch.setattr(tools, "TOOLS", (invalid_result,))
+
+    assert cli.main(["invalid-result"]) == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert captured.err == (
+        "tct: invalid-result: could not serialize result: invalid result\n"
+    )
+
+
 def test_pyproject_exposes_resolvable_tct_command():
     """The wheel metadata provides the generated CLI as ``tct``."""
     pyproject_path = Path(__file__).parents[1] / "pyproject.toml"

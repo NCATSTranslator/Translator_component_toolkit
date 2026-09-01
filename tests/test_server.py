@@ -60,3 +60,31 @@ def test_mcp_adapter_preserves_protocol_error_conversion(monkeypatch):
 
     assert error.value.error.code == INTERNAL_ERROR
     assert error.value.error.message == "Name lookup error: lookup failed"
+
+
+def test_mcp_adapter_uses_shared_invocation_boundary(monkeypatch):
+    """Successful MCP calls pass through the common agent-facing seam."""
+    from TCT.interfaces import mcp as adapter
+    from TCT.interfaces import tools
+
+    calls = []
+
+    def fake_invoke(tool, *args, **kwargs):
+        calls.append((tool, args, kwargs))
+        return {"resolved": kwargs["query"]}
+
+    monkeypatch.setattr(adapter, "invoke_tool", fake_invoke)
+
+    asyncio.run(adapter.name_lookup.run({"query": "aspirin"}))
+
+    assert calls == [
+        (
+            tools.name_lookup,
+            (),
+            {
+                "query": "aspirin",
+                "return_top_response": True,
+                "return_synonyms": False,
+            },
+        )
+    ]

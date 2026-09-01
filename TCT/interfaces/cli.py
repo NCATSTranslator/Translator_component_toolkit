@@ -5,11 +5,18 @@ from __future__ import annotations
 import argparse
 import inspect
 import json
+import sys
 import types
 from collections.abc import Callable
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from . import tools as shared_tools
+from .invocation import (
+    ResultSerializationError,
+    ToolInvocationError,
+    dumps_result,
+    invoke,
+)
 
 
 class _StringOrListAction(argparse.Action):
@@ -158,12 +165,25 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     """Run a shared TCT tool from command-line arguments."""
-    namespace = build_parser().parse_args(argv)
+    parser = build_parser()
+    namespace = parser.parse_args(argv)
     values = vars(namespace)
     tool = values.pop("_tool")
-    values.pop("command")
-    result = tool(**values)
-    print(json.dumps(result, indent=2, default=str))
+    command = values.pop("command")
+    try:
+        result = invoke(tool, **values)
+    except ToolInvocationError as error:
+        print(f"{parser.prog}: {command}: {error}", file=sys.stderr)
+        return 1
+    try:
+        output = dumps_result(result)
+    except ResultSerializationError as error:
+        print(
+            f"{parser.prog}: {command}: could not serialize result: {error}",
+            file=sys.stderr,
+        )
+        return 1
+    print(output)
     return 0
 
 

@@ -106,6 +106,8 @@ Start at the root help, then ask for help on any listed command:
 
 ```bash
 tct --help
+
+\\\\
 tct name-lookup --help
 tct normalize-nodes --help
 ```
@@ -113,7 +115,10 @@ tct normalize-nodes --help
 Commands use kebab-case names and long options. List options accept one or
 more space-separated values, structured options accept JSON, and boolean
 options support both `--option` and `--no-option`. Results are written as JSON
-so they can be inspected directly or piped to another program.
+so they can be inspected directly or piped to another program. Common TCT
+results such as dataclasses, mappings, collections, and tables are converted
+recursively. Tool failures are written concisely to standard error and return
+a nonzero exit status.
 
 ```bash
 tct name-lookup --query aspirin

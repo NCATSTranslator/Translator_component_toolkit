@@ -17,6 +17,7 @@ from mcp.shared.exceptions import McpError
 from mcp.types import INTERNAL_ERROR, ErrorData
 
 from . import tools as shared_tools
+from .invocation import ToolInvocationError, invoke as invoke_tool
 
 
 mcp = FastMCP("TCT")
@@ -50,12 +51,12 @@ def _register_tool(
     @wraps(tool)
     def invoke(*args: Any, **kwargs: Any) -> Any:
         try:
-            return tool(*args, **kwargs)
-        except Exception as error:
+            return invoke_tool(tool, *args, **kwargs)
+        except ToolInvocationError as error:
             raise McpError(
                 ErrorData(
                     code=INTERNAL_ERROR,
-                    message=f"{error_prefix}: {str(error)}",
+                    message=f"{error_prefix}: {str(error.cause)}",
                 )
             ) from error
 
