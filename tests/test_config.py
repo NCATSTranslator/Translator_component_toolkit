@@ -5,17 +5,8 @@ from TCT.config import (
     configure,
     get_runtime_config,
     load_config,
-    reset_config,
 )
 from TCT.translator_kpinfo import _select_provider_url
-
-
-@pytest.fixture(autouse=True)
-def clean_runtime_config():
-    reset_config()
-    yield
-    reset_config()
-
 
 def test_prod_ci_and_test_endpoint_resolution():
     prod = RuntimeConfig(environment="prod")
@@ -48,6 +39,10 @@ def test_environment_variable_selects_ci(monkeypatch):
     monkeypatch.setenv("TCT_ENVIRONMENT", "ci")
 
     assert load_config().environment == "ci"
+
+
+def test_suite_does_not_inherit_runtime_environment():
+    assert load_config().environment == "prod"
 
 
 def test_configure_sets_process_configuration():
