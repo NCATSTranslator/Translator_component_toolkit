@@ -7,7 +7,7 @@ import os
 from typing import Literal, Mapping
 
 
-Environment = Literal["prod", "ci"]
+Environment = Literal["prod", "ci", "test"]
 
 
 @dataclass(frozen=True)
@@ -16,10 +16,13 @@ class ServiceEndpoint:
 
     prod: str
     ci: str | None = None
+    test: str | None = None
 
     def resolve(self, environment: Environment) -> str:
         if environment == "ci" and self.ci is not None:
             return self.ci
+        if environment == "test" and self.test is not None:
+            return self.test
         return self.prod
 
 
@@ -30,9 +33,12 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
     ),
     "node_normalizer": ServiceEndpoint(
         prod="https://nodenorm.transltr.io/",
+        ci="https://nodenorm.ci.transltr.io/",
     ),
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",
+        ci="https://annotator.ci.transltr.io/",
+        test="https://annotator.test.transltr.io/"
     ),
     "smartapi_registry": ServiceEndpoint(
         prod="https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&size=1000&sort=_seq_no&raw=1&fields=paths,servers,tags,components.x-bte*,info,_meta",
@@ -42,12 +48,15 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         ci="https://dev.smart-api.info/api/query?q=tags.name:translator&fields=info,_meta,tags&meta=1&size=500",
     ),
     "arax": ServiceEndpoint(
+        # ARAX should only be accessed through Shepherd
         prod="https://arax.transltr.io/api/arax/v1.4/query",
-        ci="https://arax.ci.transltr.io/api/arax/v1.4/query",
+        ci="https://shepherd.ci.transltr.io/arax/query",
+        test="https://shepherd.test.transltr.io/arax/query"
     ),
     "aragorn": ServiceEndpoint(
-        prod="https://aragorn.transltr.io/aragorn/query",
+        prod="https://shepherd.prod.transltr.io/aragorn/query",
         ci="https://shepherd.ci.transltr.io/aragorn/query",
+        test="https://shepherd.test.transltr.io/aragorn/query"
     ),
 }
 
