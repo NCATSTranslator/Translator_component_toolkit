@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+import hashlib
 import json
 import math
 from collections.abc import Callable, Mapping
@@ -48,6 +49,95 @@ def _trace_input(
     return _trace_value(dict(bound.arguments))
 
 
+def _canonical_payload(value: Any) -> bytes:
+    """Encode normalized trace data deterministically for size and identity."""
+    return json.dumps(
+        value,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+
+def _payload_metadata(prefix: str, value: Any) -> dict[str, Any]:
+    """Describe payload cost and identity without depending on its contents."""
+    payload = _canonical_payload(value)
+    metadata: dict[str, Any] = {
+        f"{prefix}.bytes": len(payload),
+        f"{prefix}.sha256": hashlib.sha256(payload).hexdigest(),
+        f"{prefix}.type": type(value).__name__,
+    }
+    if isinstance(value, Mapping):
+        metadata[f"{prefix}.item_count"] = len(value)
+    elif isinstance(value, list):
+        metadata[f"{prefix}.item_count"] = len(value)
+    return metadata
+
+
+def _trapi_query_metadata(query: Any) -> dict[str, Any]:
+    """Return small batching indicators from a TRAPI query, when present."""
+    if not isinstance(query, Mapping):
+        return {}
+    message = query.get("message")
+    if not isinstance(message, Mapping):
+        return {}
+    query_graph = message.get("query_graph")
+    if not isinstance(query_graph, Mapping):
+        return {}
+    nodes = query_graph.get("nodes")
+    if not isinstance(nodes, Mapping):
+        return {}
+
+    identifier_count = 0
+    identifier_nodes = 0
+    for node in nodes.values():
+        if not isinstance(node, Mapping):
+            continue
+        identifiers = node.get("ids")
+        if isinstance(identifiers, list):
+            identifier_count += len(identifiers)
+            identifier_nodes += 1
+
+    return {
+        "tct.query.node_count": len(nodes),
+        "tct.query.identifier_count": identifier_count,
+        "tct.query.identifier_node_count": identifier_nodes,
+    }
+
+
+def _input_metadata(value: Any) -> dict[str, Any]:
+    """Build generic and TCT-specific input metrics for opportunity analysis."""
+    metadata = _payload_metadata("tct.input", value)
+    if not isinstance(value, Mapping):
+        return metadata
+
+    for name, argument in value.items():
+        metadata.update(_payload_metadata(f"tct.input.argument.{name}", argument))
+
+    api_name = value.get("api_name")
+    if isinstance(api_name, str):
+        metadata["tct.provider.name"] = api_name
+
+    selected_apis = value.get("selected_apis")
+    if isinstance(selected_apis, list):
+        metadata["tct.provider.count"] = len(selected_apis)
+
+    for candidate in ("strings", "node"):
+        items = value.get(candidate)
+        if isinstance(items, list):
+            metadata["tct.batch.item_count"] = len(items)
+            metadata["tct.batch.argument"] = candidate
+            break
+
+    query = value.get("query")
+    if isinstance(query, list):
+        metadata["tct.batch.item_count"] = len(query)
+        metadata["tct.batch.argument"] = "query"
+
+    metadata.update(_trapi_query_metadata(value.get("query_json")))
+    return metadata
+
+
 def invoke(
     tool: Callable[..., Any],
     /,
@@ -62,14 +152,24 @@ def invoke(
             "tct.module": tool.__module__,
             "tct.tool": tool.__name__,
         }
+
+        def trace_input() -> Any:
+            value = _trace_input(tool, args, kwargs)
+            metadata.update(_input_metadata(value))
+            return value
+
         with observe_tool(
             name=f"tct.tool.{tool.__name__}",
-            input_factory=lambda: _trace_input(tool, args, kwargs),
+            input_factory=trace_input,
             metadata=metadata,
         ) as observation:
             result = tool(*args, **kwargs)
             if observation is not None:
-                observation.update(output=_trace_value(result))
+                output = _trace_value(result)
+                observation.update(
+                    output=output,
+                    metadata=_payload_metadata("tct.output", output),
+                )
             return result
     except ToolInvocationError:
         raise

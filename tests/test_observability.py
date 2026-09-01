@@ -78,16 +78,66 @@ def test_invoke_records_tool_input_output_and_interface(monkeypatch):
     result = invocation.invoke(combine, "value", _interface="mcp")
 
     assert result == ("value", "default")
-    assert captured == {
-        "name": "tct.tool.combine",
-        "input": {"left": "value", "right": "default"},
-        "metadata": {
-            "tct.interface": "mcp",
-            "tct.module": __name__,
-            "tct.tool": "combine",
-        },
-        "update": {"output": ["value", "default"]},
+    assert captured["name"] == "tct.tool.combine"
+    assert captured["input"] == {"left": "value", "right": "default"}
+    assert captured["metadata"] == {
+        "tct.interface": "mcp",
+        "tct.module": __name__,
+        "tct.tool": "combine",
+        **invocation._input_metadata(captured["input"]),
     }
+    assert captured["update"] == {
+        "output": ["value", "default"],
+        "metadata": invocation._payload_metadata(
+            "tct.output", ["value", "default"]
+        ),
+    }
+
+
+def test_tool_telemetry_identifies_duplicates_and_batching_opportunities(monkeypatch):
+    """Stable hashes and query counts expose repeated and under-batched calls."""
+    observations = []
+
+    class Observation:
+        def update(self, **values):
+            observations[-1]["update"] = values
+
+    @contextmanager
+    def fake_observe_tool(*, name, input_factory, metadata):
+        observations.append({"name": name, "input": input_factory(), "metadata": metadata})
+        yield Observation()
+
+    monkeypatch.setattr(invocation, "observe_tool", fake_observe_tool)
+
+    def query_provider(api_name: str, query_json: dict) -> dict:
+        return {"results": [1, 2]}
+
+    query = {
+        "message": {
+            "query_graph": {
+                "nodes": {
+                    "genes": {"ids": ["NCBIGene:1", "NCBIGene:2"]},
+                    "disease": {"ids": ["MONDO:1"]},
+                }
+            }
+        }
+    }
+
+    invocation.invoke(query_provider, "RTX KG2", query, _interface="mcp")
+    invocation.invoke(query_provider, "RTX KG2", query, _interface="mcp")
+
+    first = observations[0]["metadata"]
+    second = observations[1]["metadata"]
+    assert first["tct.provider.name"] == "RTX KG2"
+    assert first["tct.query.node_count"] == 2
+    assert first["tct.query.identifier_count"] == 3
+    assert first["tct.query.identifier_node_count"] == 2
+    assert first["tct.input.sha256"] == second["tct.input.sha256"]
+    assert (
+        first["tct.input.argument.query_json.sha256"]
+        == second["tct.input.argument.query_json.sha256"]
+    )
+    assert observations[0]["update"]["metadata"]["tct.output.bytes"] > 0
 
 
 def test_tool_errors_cross_the_observation_before_normalization(monkeypatch):

@@ -158,7 +158,8 @@ tct name-lookup --query aspirin
 tct normalize-nodes --query CHEBI:15365 CHEBI:6801 --no-conflate
 ```
 
-See [EXAMPLES.md](EXAMPLES.md) for CLI discovery, structured inputs, finder
+See [TCT/interfaces/EXAMPLES.md](TCT/interfaces/EXAMPLES.md) for CLI discovery,
+structured inputs, finder
 commands, Python use, and MCP client configuration.
 
 ### Run the MCP server
@@ -216,6 +217,10 @@ Set `TCT_LANGFUSE_ENABLED=true` to opt in. Accepted true values are `1`,
 
 Observations are named `tct.tool.<tool_name>`, tagged with the `cli` or `mcp`
 interface, and include normalized arguments, defaults, and successful results.
+They also include deterministic input/output hashes, encoded byte counts,
+per-argument sizes, provider counts, and TRAPI identifier counts. These fields
+make repeated calls, large repeated arguments, and under-batched queries
+comparable without adding decorators to individual tools.
 The original exception crosses the observation boundary on failure before the
 CLI or MCP adapter converts it to its stable interface error. Because this can
 record biomedical queries and service responses, configure Langfuse according
