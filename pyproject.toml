@@ -42,6 +42,7 @@ mcp = [
 ]
 
 [project.scripts]
+tct = "TCT.interfaces.cli:main"
 tct-server = "TCT.interfaces.mcp:main"
 
 [project.urls]

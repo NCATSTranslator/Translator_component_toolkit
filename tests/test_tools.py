@@ -52,8 +52,10 @@ class RejectMcpImports:
         return None
 
 sys.meta_path.insert(0, RejectMcpImports())
+from TCT.interfaces.cli import build_parser
 from TCT.interfaces.tools import TOOLS
 assert len(TOOLS) == 16
+assert build_parser().prog == "tct"
 """
 
     subprocess.run(
