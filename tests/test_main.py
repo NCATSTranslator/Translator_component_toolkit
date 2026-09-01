@@ -27,6 +27,15 @@ def test_main_imports_mcp_server():
     assert main.mcp is not None
 
 
+def test_main_module_is_a_compatible_view_of_the_mcp_adapter():
+    """The repository launcher delegates to the packaged implementation."""
+    import main
+    from TCT.interfaces import mcp as adapter
+
+    assert main.main is adapter.main
+    assert main.mcp is adapter.mcp
+
+
 def test_main_function_simple():
     """Test that main() function is simple wrapper."""
     import main

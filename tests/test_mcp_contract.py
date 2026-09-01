@@ -8,7 +8,7 @@ import pytest
 
 pytest.importorskip("fastmcp")
 
-from TCT.server import mcp
+from TCT.interfaces.mcp import mcp
 
 
 EXPECTED_SIGNATURES = {

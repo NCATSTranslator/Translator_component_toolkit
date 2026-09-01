@@ -32,6 +32,16 @@ def test_mcp_tools_accessible():
     assert normalize_nodes is not None, "normalize_nodes tool should be accessible"
 
 
+def test_server_module_is_a_compatible_view_of_the_mcp_adapter():
+    """Legacy imports resolve to the authoritative adapter objects."""
+    from TCT import server
+    from TCT.interfaces import mcp as adapter
+
+    assert server.mcp is adapter.mcp
+    assert server.name_lookup is adapter.name_lookup
+    assert server.path_finder is adapter.path_finder
+
+
 def test_mcp_adapter_preserves_protocol_error_conversion(monkeypatch):
     """Failures from shared tools remain MCP internal errors for clients."""
     from mcp.shared.exceptions import McpError
