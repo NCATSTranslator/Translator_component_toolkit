@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 import math
 from collections.abc import Callable, Mapping
 from dataclasses import fields, is_dataclass
 from enum import Enum
 from typing import Any
+
+from .observability import observe_tool
 
 
 class ToolInvocationError(RuntimeError):
@@ -27,10 +30,47 @@ class ResultSerializationError(RuntimeError):
         super().__init__(str(cause))
 
 
-def invoke(tool: Callable[..., Any], /, *args: Any, **kwargs: Any) -> Any:
-    """Invoke a shared tool and normalize its ordinary failure boundary."""
+def _trace_value(value: Any) -> Any:
+    """Prepare trace data without letting conversion break a tool call."""
     try:
-        return tool(*args, **kwargs)
+        return to_jsonable(value)
+    except Exception as error:
+        return {"serialization_error": str(error), "value": repr(value)}
+
+
+def _trace_input(
+    tool: Callable[..., Any],
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> Any:
+    bound = inspect.signature(tool).bind(*args, **kwargs)
+    bound.apply_defaults()
+    return _trace_value(dict(bound.arguments))
+
+
+def invoke(
+    tool: Callable[..., Any],
+    /,
+    *args: Any,
+    _interface: str | None = None,
+    **kwargs: Any,
+) -> Any:
+    """Invoke and optionally observe a tool at an interface boundary."""
+    try:
+        metadata = {
+            "tct.interface": _interface or "shared",
+            "tct.module": tool.__module__,
+            "tct.tool": tool.__name__,
+        }
+        with observe_tool(
+            name=f"tct.tool.{tool.__name__}",
+            input_factory=lambda: _trace_input(tool, args, kwargs),
+            metadata=metadata,
+        ) as observation:
+            result = tool(*args, **kwargs)
+            if observation is not None:
+                observation.update(output=_trace_value(result))
+            return result
     except ToolInvocationError:
         raise
     except Exception as error:

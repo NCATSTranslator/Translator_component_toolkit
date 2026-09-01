@@ -85,6 +85,7 @@ def test_mcp_adapter_uses_shared_invocation_boundary(monkeypatch):
                 "query": "aspirin",
                 "return_top_response": True,
                 "return_synonyms": False,
+                "_interface": "mcp",
             },
         )
     ]

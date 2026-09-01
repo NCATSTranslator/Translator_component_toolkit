@@ -110,6 +110,12 @@ To develop or run the MCP server from a source checkout:
 uv sync --extra mcp
 ```
 
+To observe CLI and MCP tool invocations with Langfuse:
+
+```bash
+uv sync --extra mcp --extra langfuse
+```
+
 ## Python, CLI, and MCP interfaces
 
 TCT exposes one curated set of well-documented operations through three
@@ -178,6 +184,41 @@ parameters, and defaults shown by the CLI. A typical client configuration is:
 
 When running from a source checkout, run `uv sync --extra mcp` first and use
 `uv run tct-server`.
+
+### Optional Langfuse observability
+
+The CLI and MCP adapters can create one Langfuse `tool` observation for each
+call made through their shared invocation boundary. No TCT function is
+decorated: direct Python library calls remain uninstrumented and importing TCT
+does not require the Langfuse SDK.
+
+Install the optional extra and configure the standard Langfuse environment
+variables:
+
+```bash
+uv sync --extra mcp --extra langfuse
+
+export LANGFUSE_PUBLIC_KEY=your-public-key
+export LANGFUSE_SECRET_KEY=your-secret-key
+export LANGFUSE_BASE_URL=https://cloud.langfuse.com
+
+uv run tct name-lookup --query aspirin
+uv run tct-server
+```
+
+Tracing turns on automatically when both keys are present. Set
+`TCT_LANGFUSE_ENABLED=false` to disable it explicitly, or set it to `true` to
+enable it when credentials are supplied by another Langfuse-supported
+mechanism. `LANGFUSE_TRACING_ENVIRONMENT` can distinguish deployments such as
+`ci`, `staging`, and `production` in Langfuse; it is independent of
+`TCT_ENVIRONMENT`, which selects TCT service endpoints.
+
+Observations are named `tct.tool.<tool_name>`, tagged with the `cli` or `mcp`
+interface, and include normalized arguments, defaults, and successful results.
+The original exception crosses the observation boundary on failure before the
+CLI or MCP adapter converts it to its stable interface error. Because this can
+record biomedical queries and service responses, configure Langfuse according
+to the data-handling requirements of the deployment.
 
 ### Shared tool capabilities
 

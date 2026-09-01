@@ -2,7 +2,6 @@
 
 import argparse
 import json
-from pathlib import Path
 
 import pytest
 
@@ -108,6 +107,27 @@ def test_cli_invokes_registry_callable_and_prints_json(monkeypatch, capsys):
 
     assert cli.main(["echo", "--message", "hello", "--repeat", "2"]) == 0
     assert json.loads(capsys.readouterr().out) == {"messages": ["hello", "hello"]}
+
+
+def test_cli_attributes_invocation_and_flushes_observability(monkeypatch, capsys):
+    """Short-lived CLI calls identify their adapter and deliver queued spans."""
+    calls = []
+
+    def example() -> str:
+        """Return an example."""
+        return "unused"
+
+    def fake_invoke(tool, **kwargs):
+        calls.append((tool, kwargs))
+        return "observed"
+
+    monkeypatch.setattr(tools, "TOOLS", (example,))
+    monkeypatch.setattr(cli, "invoke", fake_invoke)
+    monkeypatch.setattr(cli, "flush_observability", lambda: calls.append("flush"))
+
+    assert cli.main(["example"]) == 0
+    assert json.loads(capsys.readouterr().out) == "observed"
+    assert calls == [(example, {"_interface": "cli"}), "flush"]
 
 
 def test_cli_reports_tool_failures_without_a_traceback(monkeypatch, capsys):

@@ -243,3 +243,40 @@ python main.py
 
 Existing Python imports from `TCT.server` also remain compatibility aliases for
 the MCP server and its registered tools.
+
+## Observe agent-facing calls with Langfuse
+
+Install observability separately from the core library. Include `mcp` when the
+MCP server is needed:
+
+```bash
+uv sync --extra langfuse --extra mcp
+```
+
+Set the standard Langfuse credentials, then use the same CLI and MCP commands:
+
+```bash
+export LANGFUSE_PUBLIC_KEY=your-public-key
+export LANGFUSE_SECRET_KEY=your-secret-key
+export LANGFUSE_BASE_URL=https://cloud.langfuse.com
+export LANGFUSE_TRACING_ENVIRONMENT=development
+
+uv run tct normalize-nodes --query CHEBI:15365
+uv run tct-server
+```
+
+Every call made through either adapter is represented as a Langfuse `tool`
+observation. The observation includes the interface, tool name, bound input
+arguments (including defaults), and a JSON-compatible successful result. No
+per-tool decorator is needed because both adapters call the same invocation
+function.
+
+To run normally without emitting observations while retaining credentials in
+the environment:
+
+```bash
+TCT_LANGFUSE_ENABLED=false uv run tct name-lookup --query aspirin
+```
+
+Direct developer calls such as `TCT.name_lookup(...)` do not cross the
+agent-facing invocation boundary and are not traced by this integration.

@@ -18,6 +18,7 @@ from mcp.types import INTERNAL_ERROR, ErrorData
 
 from . import tools as shared_tools
 from .invocation import ToolInvocationError, invoke as invoke_tool
+from .observability import flush_observability
 
 
 mcp = FastMCP("TCT")
@@ -51,7 +52,7 @@ def _register_tool(
     @wraps(tool)
     def invoke(*args: Any, **kwargs: Any) -> Any:
         try:
-            return invoke_tool(tool, *args, **kwargs)
+            return invoke_tool(tool, *args, _interface="mcp", **kwargs)
         except ToolInvocationError as error:
             raise McpError(
                 ErrorData(
@@ -72,7 +73,11 @@ for _tool in shared_tools.TOOLS:
 
 def main() -> None:
     """Entry point for the installed ``tct-server`` command."""
-    mcp.run()
+    try:
+        mcp.run()
+    finally:
+        # The SDK batches events while the long-running server is active.
+        flush_observability()
 
 
 __all__ = ["main", "mcp", *[tool.__name__ for tool in shared_tools.TOOLS]]
