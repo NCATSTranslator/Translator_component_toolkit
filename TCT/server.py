@@ -1,324 +1,530 @@
-"""
-Translator Component Toolkit MCP Server
+"""Expose the Translator Component Toolkit through an MCP server.
 
-This server provides access to biomedical translator tools including:
-- Name resolution and lookup
-- Node normalization 
-- Knowledge provider information
-- Meta knowledge graph operations
-- Query orchestration
-- TRAPI protocol support
-- Neighborhood finder
-- Path finder
+The server presents a curated set of TCT operations for name resolution, node
+normalization, Translator resource discovery, TRAPI querying, and graph
+finding. Tool names, signatures, defaults, and docstrings in this module are
+part of the public MCP discovery contract.
+
+The server uses FastMCP's default stdio transport when run through
+``tct-server`` or ``python main.py``. Install the optional ``mcp`` dependency
+set before starting it. Core TCT runtime configuration, including
+``TCT_ENVIRONMENT``, is resolved by the underlying library functions.
+
+This module currently contains both the tool surface and FastMCP registration.
+It intentionally converts unexpected tool failures to MCP internal errors so
+clients receive consistent protocol-level failures.
 """
+
+from __future__ import annotations
+
+from typing import Any
 
 from fastmcp import FastMCP
 from mcp.shared.exceptions import McpError
-from mcp.types import ErrorData, INTERNAL_ERROR
+from mcp.types import INTERNAL_ERROR, ErrorData
 
-# Import functions from translator_component_toolkit modules using relative imports
-from .name_resolver import lookup, synonyms, batch_lookup
+from .name_resolver import batch_lookup, lookup, synonyms
 from .node_normalizer import get_normalized_nodes
-from .translator_kpinfo import get_translator_kp_info
-from .translator_metakg import get_KP_metadata, add_new_API_for_query, add_plover_API
-from .translator_query import get_translator_API_predicates, optimize_query_json, query_KP, parallel_api_query
-from .trapi import query as trapi_query
-from .TCT_neighborhood_finder import neighborhood_finder as tct_neighborhood_finder
-from .TCT_pathfinder import query_TCT_pathfinder
 from .TCT import get_translator_resources as _get_translator_resources
+from .TCT_neighborhood_finder import (
+    neighborhood_finder as tct_neighborhood_finder,
+)
+from .TCT_pathfinder import query_TCT_pathfinder
+from .translator_kpinfo import get_translator_kp_info
+from .translator_metakg import add_new_API_for_query, add_plover_API, get_KP_metadata
+from .translator_query import (
+    get_translator_API_predicates,
+    optimize_query_json,
+    parallel_api_query,
+    query_KP,
+)
+from .trapi import query as trapi_query
 
-# Create unified MCP server
+
 mcp = FastMCP("TCT")
 
-# get_translator_resources function
+
 @mcp.tool()
-def get_translator_resources():
-    """
-    Load the Translator resources for analysis.
-    
+def get_translator_resources() -> Any:
+    """Load the Translator resources used by the finder tools.
+
     Returns:
-        Dictionary of Translator resources
+        Translator API names, MetaKG data, and supported predicates packaged
+        as the library's ``TranslatorResources`` object.
+
+    Raises:
+        McpError: If Translator resources cannot be loaded.
     """
     try:
         return _get_translator_resources()
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Get translator resources error: {str(e)}")) from e
-    
-# Name Resolver Tools
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Get translator resources error: {str(e)}",
+            )
+        ) from e
+
+
 @mcp.tool()
-def name_lookup(query: str, return_top_response: bool = True, return_synonyms: bool = False):
-    """
-    Look up a name/term and return normalized TranslatorNode information.
-    
+def name_lookup(
+    query: str,
+    return_top_response: bool = True,
+    return_synonyms: bool = False,
+) -> Any:
+    """Resolve a biomedical name or term to Translator node information.
+
     Args:
-        query: Query string to look up
-        return_top_response: If true, returns only the top response; if false, returns all responses
-        return_synonyms: If true, includes synonyms in the result
-        
+        query: Name or term to resolve.
+        return_top_response: Return only the highest-ranked response when true;
+            return all responses when false.
+        return_synonyms: Include synonyms in each returned node when true.
+
     Returns:
-        TranslatorNode object(s) with curie, label, types, and optional synonyms
+        A ``TranslatorNode`` for the highest-ranked response, or a list of
+        nodes when ``return_top_response`` is false.
+
+    Raises:
+        McpError: If the Name Resolver request fails.
     """
     try:
         return lookup(query, return_top_response, return_synonyms)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Name lookup error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(code=INTERNAL_ERROR, message=f"Name lookup error: {str(e)}")
+        ) from e
+
 
 @mcp.tool()
-def get_name_synonyms(query: str):
-    """
-    Get synonyms for a given CURIE.
-    
+def get_name_synonyms(query: str) -> Any:
+    """Return synonyms and Translator node information for a CURIE.
+
     Args:
-        query: Query CURIE to get synonyms for
-        
+        query: CURIE whose synonyms should be returned.
+
     Returns:
-        Dictionary of CURIE id to TranslatorNode information
+        A mapping from the input CURIE to its ``TranslatorNode`` information.
+
+    Raises:
+        McpError: If the Name Resolver request fails.
     """
     try:
         return synonyms(query)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Synonyms lookup error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Synonyms lookup error: {str(e)}",
+            )
+        ) from e
+
 
 @mcp.tool()
-def batch_name_lookup(strings: list[str], size: int = 25, return_top_response: bool = True, return_synonyms: bool = False):
-    """
-    Batch lookup multiple names/terms and return normalized TranslatorNode information.
-    
+def batch_name_lookup(
+    strings: list[str],
+    size: int = 25,
+    return_top_response: bool = True,
+    return_synonyms: bool = False,
+) -> Any:
+    """Resolve multiple biomedical names or terms in batches.
+
     Args:
-        strings: List of query strings to look up
-        size: Chunking size for batch processing (default: 25)
-        return_top_response: If true, returns only the top response per string
-        return_synonyms: If true, includes synonyms in the results
-        
+        strings: Names or terms to resolve.
+        size: Maximum number of terms sent in each batch.
+        return_top_response: Return only the highest-ranked response for each
+            term when true; return all responses when false.
+        return_synonyms: Include synonyms in returned nodes when true.
+
     Returns:
-        Dictionary mapping strings to their TranslatorNode information
+        A mapping from each input string to its resolved ``TranslatorNode`` or
+        list of nodes.
+
+    Raises:
+        McpError: If a Name Resolver request fails.
     """
     try:
         return batch_lookup(strings, size, return_top_response, return_synonyms)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Batch lookup error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Batch lookup error: {str(e)}",
+            )
+        ) from e
 
-# Node Normalizer Tools
+
 @mcp.tool()
-def normalize_nodes(query: str, return_equivalent_identifiers: bool = False, conflate: bool = True, drug_chemical_conflate: bool = False):
-    """
-    Normalize node CURIEs using the Node Normalizer API.
-    
+def normalize_nodes(
+    query: str | list[str],
+    return_equivalent_identifiers: bool = False,
+    conflate: bool = True,
+    drug_chemical_conflate: bool = False,
+) -> Any:
+    """Normalize one or more CURIEs with the Translator Node Normalizer.
+
     Args:
-        query: CURIE string or list of CURIEs to normalize
-        return_equivalent_identifiers: Whether to return equivalent identifiers
-        conflate: Enable gene-protein conflation (default: True)
-        drug_chemical_conflate: Enable drug-chemical conflation (default: False)
-        
+        query: A CURIE or list of CURIEs to normalize.
+        return_equivalent_identifiers: Include equivalent identifiers in the
+            returned node information when true.
+        conflate: Enable gene-protein conflation.
+        drug_chemical_conflate: Enable drug-chemical conflation.
+
     Returns:
-        Normalized TranslatorNode(s) with curie, label, types, and optional synonyms
+        A normalized ``TranslatorNode`` for a single CURIE, or a mapping from
+        CURIE to normalized node for multiple inputs.
+
+    Raises:
+        McpError: If the Node Normalizer request fails.
     """
     try:
-        return get_normalized_nodes(query, return_equivalent_identifiers, conflate=conflate, drug_chemical_conflate=drug_chemical_conflate)
+        return get_normalized_nodes(
+            query,
+            return_equivalent_identifiers,
+            conflate=conflate,
+            drug_chemical_conflate=drug_chemical_conflate,
+        )
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Node normalization error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Node normalization error: {str(e)}",
+            )
+        ) from e
 
-# Knowledge Provider Info Tools
+
 @mcp.tool()
-def get_kp_info():
-    """
-    Get SmartAPI Translator Knowledge Provider information.
-    
+def get_kp_info() -> Any:
+    """Return SmartAPI information for Translator Knowledge Providers.
+
     Returns:
-        Tuple of (DataFrame with KP info, Dictionary mapping API names to URLs)
+        A pair containing the Knowledge Provider information table and a
+        mapping from API names to query URLs.
+
+    Raises:
+        McpError: If SmartAPI information cannot be loaded.
     """
     try:
         return get_translator_kp_info()
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"KP info error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(code=INTERNAL_ERROR, message=f"KP info error: {str(e)}")
+        ) from e
 
-# Meta Knowledge Graph Tools
+
 @mcp.tool()
-def get_metakg_data(api_names: dict):
-    """
-    Get metadata for Knowledge Providers including predicates, subjects, and objects.
-    
+def get_metakg_data(api_names: dict[str, str]) -> Any:
+    """Return MetaKG metadata for a set of Knowledge Providers.
+
     Args:
-        api_names: Dictionary mapping API names to URLs
-        
+        api_names: Mapping from Knowledge Provider names to query URLs.
+
     Returns:
-        DataFrame containing MetaKG information
+        A table containing API, predicate, subject, object, and URL metadata.
+
+    Raises:
+        McpError: If MetaKG information cannot be loaded.
     """
     try:
         return get_KP_metadata(api_names)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"MetaKG data error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"MetaKG data error: {str(e)}",
+            )
+        ) from e
+
 
 @mcp.tool()
-def add_custom_api_to_metakg(api_names: dict, metakg_df, new_api_name: str, new_api_url: str, 
-                             new_api_predicate: str, new_api_subject: str, new_api_object: str):
-    """
-    Add a custom API to the knowledge graph metadata.
-    
+def add_custom_api_to_metakg(
+    api_names: dict[str, str],
+    metakg_df: Any,
+    new_api_name: str,
+    new_api_url: str,
+    new_api_predicate: str,
+    new_api_subject: str,
+    new_api_object: str,
+) -> Any:
+    """Add a custom API and one edge definition to existing MetaKG data.
+
     Args:
-        api_names: Current API names dictionary
-        metakg_df: Current MetaKG DataFrame
-        new_api_name: Name of the new API
-        new_api_url: URL of the new API
-        new_api_predicate: Predicate for the new API
-        new_api_subject: Subject type for the new API
-        new_api_object: Object type for the new API
-        
+        api_names: Current mapping from API names to query URLs.
+        metakg_df: Current MetaKG table.
+        new_api_name: Name used to identify the custom API.
+        new_api_url: Query URL for the custom API.
+        new_api_predicate: Predicate supported by the custom API.
+        new_api_subject: Subject category supported by the custom API.
+        new_api_object: Object category supported by the custom API.
+
     Returns:
-        Tuple of (updated api_names dict, updated metakg DataFrame)
+        The updated API-name mapping and MetaKG table.
+
+    Raises:
+        McpError: If the API cannot be added to the supplied metadata.
     """
     try:
-        return add_new_API_for_query(api_names, metakg_df, new_api_name, new_api_url, 
-                                     new_api_predicate, new_api_subject, new_api_object)
+        return add_new_API_for_query(
+            api_names,
+            metakg_df,
+            new_api_name,
+            new_api_url,
+            new_api_predicate,
+            new_api_subject,
+            new_api_object,
+        )
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Add custom API error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Add custom API error: {str(e)}",
+            )
+        ) from e
+
 
 @mcp.tool()
-def add_plover_apis_to_metakg(api_names: dict, metakg_df):
-    """
-    Add Plover APIs (CATRAX team APIs) to the knowledge graph metadata.
-    
+def add_plover_apis_to_metakg(
+    api_names: dict[str, str],
+    metakg_df: Any,
+) -> Any:
+    """Add the standard CATRAX Plover APIs to existing MetaKG data.
+
     Args:
-        api_names: Current API names dictionary
-        metakg_df: Current MetaKG DataFrame
-        
+        api_names: Current mapping from API names to query URLs.
+        metakg_df: Current MetaKG table.
+
     Returns:
-        Tuple of (updated api_names dict, updated metakg DataFrame)
+        The updated API-name mapping and MetaKG table.
+
+    Raises:
+        McpError: If Plover metadata cannot be retrieved or added.
     """
     try:
         return add_plover_API(api_names, metakg_df)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Add Plover APIs error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Add Plover APIs error: {str(e)}",
+            )
+        ) from e
 
-# Query Tools
+
 @mcp.tool()
-def get_api_predicates():
-    """
-    Get the predicates supported by each Translator API.
-    
+def get_api_predicates() -> Any:
+    """Return the predicates supported by Translator APIs.
+
     Returns:
-        Tuple of (API names dict, MetaKG DataFrame, API predicates dict)
+        API-name mappings, the MetaKG table, and a mapping from each API name
+        to its supported predicates.
+
+    Raises:
+        McpError: If API or MetaKG information cannot be loaded.
     """
     try:
         return get_translator_API_predicates()
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"API predicates error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"API predicates error: {str(e)}",
+            )
+        ) from e
+
 
 @mcp.tool()
-def optimize_query_for_api(query_json: dict, api_name: str, api_predicates: dict):
-    """
-    Optimize a query JSON by removing predicates not supported by the selected API.
-    
+def optimize_query_for_api(
+    query_json: dict[str, Any],
+    api_name: str,
+    api_predicates: dict[str, list[str]],
+) -> Any:
+    """Remove predicates from a TRAPI query that an API does not support.
+
     Args:
-        query_json: TRAPI 1.5.0 format query
-        api_name: Name of the API to query
-        api_predicates: Dictionary of API names and their predicates
-        
+        query_json: TRAPI query to optimize.
+        api_name: Name of the API that will receive the query.
+        api_predicates: Mapping from API names to their supported predicates.
+
     Returns:
-        Modified query JSON with only supported predicates
+        A copy of the query containing only predicates supported by the API.
+
+    Raises:
+        McpError: If the query cannot be optimized.
     """
     try:
         return optimize_query_json(query_json, api_name, api_predicates)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Query optimization error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Query optimization error: {str(e)}",
+            )
+        ) from e
+
 
 @mcp.tool()
-def query_knowledge_provider(api_name: str, query_json: dict, api_names: dict, api_predicates: dict):
-    """
-    Query an individual Knowledge Provider API with a TRAPI 1.5.0 query.
-    
+def query_knowledge_provider(
+    api_name: str,
+    query_json: dict[str, Any],
+    api_names: dict[str, str],
+    api_predicates: dict[str, list[str]],
+) -> Any:
+    """Send a TRAPI query to one Translator Knowledge Provider.
+
     Args:
-        api_name: Name of the API to query
-        query_json: TRAPI 1.5.0 format query
-        api_names: Dictionary mapping API names to URLs
-        api_predicates: Dictionary of API names and their predicates
-        
+        api_name: Name of the API to query.
+        query_json: TRAPI query sent to the provider.
+        api_names: Mapping from API names to query URLs.
+        api_predicates: Mapping from API names to supported predicates.
+
     Returns:
-        Query result from the API or None if no results
+        The provider's knowledge graph, or ``None`` when the response contains
+        no knowledge-graph edges.
+
+    Raises:
+        McpError: If query preparation or the provider request fails.
     """
     try:
         return query_KP(api_name, query_json, api_names, api_predicates)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"KP query error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(code=INTERNAL_ERROR, message=f"KP query error: {str(e)}")
+        ) from e
+
 
 @mcp.tool()
-def parallel_query_apis(query_json: dict, selected_apis: list[str], api_names: dict, api_predicates: dict, max_workers: int = 1):
-    """
-    Query multiple APIs in parallel and merge results into a single knowledge graph.
-    
+def parallel_query_apis(
+    query_json: dict[str, Any],
+    selected_apis: list[str],
+    api_names: dict[str, str],
+    api_predicates: dict[str, list[str]],
+    max_workers: int = 1,
+) -> Any:
+    """Query multiple Translator APIs and merge their knowledge graphs.
+
     Args:
-        query_json: TRAPI 1.5.0 format query
-        selected_apis: List of API names to query
-        api_names: Dictionary mapping API names to URLs
-        api_predicates: Dictionary of API names and their predicates
-        max_workers: Number of parallel workers (default: 1)
-        
+        query_json: TRAPI query sent to each selected API.
+        selected_apis: Names of APIs to query.
+        api_names: Mapping from API names to query URLs.
+        api_predicates: Mapping from API names to supported predicates.
+        max_workers: Maximum number of API queries executed concurrently.
+
     Returns:
-        Merged knowledge graph from all successful API responses
+        A merged knowledge graph from successful provider responses.
+
+    Raises:
+        McpError: If parallel query processing fails.
     """
     try:
-        return parallel_api_query(query_json, selected_apis, api_names, api_predicates, max_workers)
+        return parallel_api_query(
+            query_json,
+            selected_apis,
+            api_names,
+            api_predicates,
+            max_workers,
+        )
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Parallel query error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Parallel query error: {str(e)}",
+            )
+        ) from e
 
-# TRAPI Tools
+
 @mcp.tool()
-def trapi_query_endpoint(url: str):
-    """
-    Query a TRAPI endpoint (currently unimplemented - placeholder).
-    
+def trapi_query_endpoint(url: str) -> Any:
+    """Invoke the legacy TRAPI endpoint placeholder.
+
     Args:
-        url: The URL for the TRAPI API endpoint
-        
+        url: URL of the TRAPI query endpoint.
+
     Returns:
-        TODO: Implementation needed
+        This tool has no successful return value in the current release.
+
+    Raises:
+        McpError: Always in the current release because the underlying
+            ``trapi.query`` function also requires a query body. The missing
+            public parameter is retained here for MCP compatibility and will
+            be addressed separately from this documentation-only stage.
     """
     try:
         return trapi_query(url)
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"TRAPI query error: {str(e)}")) from e
-    
+        raise McpError(
+            ErrorData(code=INTERNAL_ERROR, message=f"TRAPI query error: {str(e)}")
+        ) from e
 
-# add neighborhood finder tool
+
 @mcp.tool()
-def neighborhood_finder(node: list[str], neighbor_categories: list[str]):
-    """
-    Find neighbors of a given node using the neighborhood finder tool using TCT.
-    The 
-    
+def neighborhood_finder(
+    node: list[str],
+    neighbor_categories: list[str],
+) -> Any:
+    """Find category-filtered neighbors for one or more CURIEs using TCT.
+
     Args:
-        node: List of CURIEs to find neighbors for
-        neighbor_categories: List of categories to filter neighbors
-        resources: Dictionary of resources for the neighborhood finder
+        node: CURIEs whose neighboring nodes should be found.
+        neighbor_categories: Biolink categories used to filter returned
+            neighbors.
+
     Returns:
-        List of neighboring nodes matching the specified categories
+        A ``FinderResult`` containing the query, resolved nodes, knowledge
+        graph, results, auxiliary graphs, and raw parsed response.
+
+    Raises:
+        McpError: If Translator resources cannot be loaded or a finder request
+            fails.
     """
     try:
-        resources = _get_translator_resources()  # Ensure resources are loaded
+        resources = _get_translator_resources()
         return tct_neighborhood_finder(
             node=node,
             neighbor_categories=neighbor_categories,
-            resources=resources
+            resources=resources,
         )
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Neighborhood finder error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Neighborhood finder error: {str(e)}",
+            )
+        ) from e
 
-# add path finder tool
+
 @mcp.tool()
-def path_finder(start: str, end: str, intermediate_categories: list[str] = None):
-    """
-    Find paths between two nodes using the path finder tool using TCT.
-    
+def path_finder(
+    start: str,
+    end: str,
+    intermediate_categories: list[str] | None = None,
+) -> Any:
+    """Find paths between two CURIEs using TCT.
+
     Args:
-        start: CURIE of the starting node
-        end: CURIE of the ending node
-        intermediate_categories: List of categories for intermediate nodes
-        resources: Dictionary of resources for the path finder
+        start: CURIE of the starting node.
+        end: CURIE of the ending node.
+        intermediate_categories: Optional Biolink categories allowed for
+            intermediate path nodes.
+
     Returns:
-        List of paths connecting the start and end nodes
+        A ``FinderResult`` containing the query, resolved nodes, knowledge
+        graph, results, auxiliary graphs, and raw parsed response.
+
+    Raises:
+        McpError: If Translator resources cannot be loaded or a finder request
+            fails.
     """
     try:
-        resources = _get_translator_resources()  # Ensure resources are loaded
-        return query_TCT_pathfinder(start, end, intermediate_categories=intermediate_categories, resources=resources)
+        resources = _get_translator_resources()
+        return query_TCT_pathfinder(
+            start,
+            end,
+            intermediate_categories=intermediate_categories,
+            resources=resources,
+        )
     except Exception as e:
-        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Path finder error: {str(e)}")) from e
+        raise McpError(
+            ErrorData(
+                code=INTERNAL_ERROR,
+                message=f"Path finder error: {str(e)}",
+            )
+        ) from e
