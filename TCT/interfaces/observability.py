@@ -26,8 +26,9 @@ class ObservabilityConfigurationError(RuntimeError):
 def langfuse_enabled(environ: Mapping[str, str] | None = None) -> bool:
     """Return whether Langfuse tracing is enabled for interface invocations.
 
-    ``TCT_LANGFUSE_ENABLED`` takes precedence when set. Otherwise, tracing is
-    enabled automatically when both standard Langfuse API keys are present.
+    Tracing is disabled by default and requires ``TCT_LANGFUSE_ENABLED`` to be
+    set to an accepted true value. Langfuse credentials alone never activate
+    instrumentation.
     """
     variables = os.environ if environ is None else environ
     configured = variables.get(_ENABLED_VARIABLE)
@@ -41,10 +42,7 @@ def langfuse_enabled(environ: Mapping[str, str] | None = None) -> bool:
             f"{_ENABLED_VARIABLE} must be one of: "
             "1, true, yes, on, 0, false, no, off"
         )
-    return bool(
-        variables.get("LANGFUSE_PUBLIC_KEY")
-        and variables.get("LANGFUSE_SECRET_KEY")
-    )
+    return False
 
 
 def _get_langfuse_client() -> Any | None:

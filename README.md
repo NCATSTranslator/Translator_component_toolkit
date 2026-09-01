@@ -201,15 +201,16 @@ uv sync --extra mcp --extra langfuse
 export LANGFUSE_PUBLIC_KEY=your-public-key
 export LANGFUSE_SECRET_KEY=your-secret-key
 export LANGFUSE_BASE_URL=https://cloud.langfuse.com
+export TCT_LANGFUSE_ENABLED=true
 
 uv run tct name-lookup --query aspirin
 uv run tct-server
 ```
 
-Tracing turns on automatically when both keys are present. Set
-`TCT_LANGFUSE_ENABLED=false` to disable it explicitly, or set it to `true` to
-enable it when credentials are supplied by another Langfuse-supported
-mechanism. `LANGFUSE_TRACING_ENVIRONMENT` can distinguish deployments such as
+Tracing is disabled by default, even when Langfuse credentials are present.
+Set `TCT_LANGFUSE_ENABLED=true` to opt in. Accepted true values are `1`,
+`true`, `yes`, and `on`; accepted false values are `0`, `false`, `no`, and
+`off`. `LANGFUSE_TRACING_ENVIRONMENT` can distinguish deployments such as
 `ci`, `staging`, and `production` in Langfuse; it is independent of
 `TCT_ENVIRONMENT`, which selects TCT service endpoints.
 

@@ -260,12 +260,14 @@ export LANGFUSE_PUBLIC_KEY=your-public-key
 export LANGFUSE_SECRET_KEY=your-secret-key
 export LANGFUSE_BASE_URL=https://cloud.langfuse.com
 export LANGFUSE_TRACING_ENVIRONMENT=development
+export TCT_LANGFUSE_ENABLED=true
 
 uv run tct normalize-nodes --query CHEBI:15365
 uv run tct-server
 ```
 
-Every call made through either adapter is represented as a Langfuse `tool`
+Langfuse remains disabled unless `TCT_LANGFUSE_ENABLED` is explicitly true.
+When enabled, every call made through either adapter is represented as a Langfuse `tool`
 observation. The observation includes the interface, tool name, bound input
 arguments (including defaults), and a JSON-compatible successful result. No
 per-tool decorator is needed because both adapters call the same invocation

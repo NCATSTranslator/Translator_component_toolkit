@@ -8,14 +8,14 @@ from TCT.interfaces import invocation, observability
 from TCT.interfaces.invocation import ToolInvocationError
 
 
-def test_langfuse_activation_uses_standard_keys_and_explicit_override():
-    """Credentials enable tracing unless the TCT override disables it."""
+def test_langfuse_activation_is_explicit_and_false_by_default():
+    """Credentials alone do not trace; the TCT switch is required."""
     credentials = {
         "LANGFUSE_PUBLIC_KEY": "public",
         "LANGFUSE_SECRET_KEY": "secret",
     }
 
-    assert observability.langfuse_enabled(credentials) is True
+    assert observability.langfuse_enabled(credentials) is False
     assert observability.langfuse_enabled(
         {**credentials, "TCT_LANGFUSE_ENABLED": "false"}
     ) is False
