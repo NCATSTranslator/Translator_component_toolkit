@@ -21,7 +21,7 @@ class ServiceEndpoint:
     def resolve(self, environment: Environment) -> str:
         if environment == "ci" and self.ci is not None:
             return self.ci
-        if environment == "test" and self.test is not None:
+        elif environment == "test" and self.test is not None:
             return self.test
         return self.prod
 
