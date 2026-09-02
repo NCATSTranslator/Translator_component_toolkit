@@ -52,3 +52,8 @@ are required but are never included in the report or configuration errors.
 The latest sanitized live result is checked in as
 `langfuse_conversation_acceptance_result.json` so reviewers can inspect the
 server-returned trace IDs and metrics directly in the pull request.
+
+The complementary `langfuse_codex_turn_result.json` records a real Codex turn
+that successfully called the TCT MCP server. It includes the parent turn's
+actual model token, cost, latency, generation, and tool-call rollups returned
+by Langfuse.

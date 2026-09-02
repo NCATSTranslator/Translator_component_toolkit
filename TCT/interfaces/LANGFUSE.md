@@ -33,6 +33,20 @@ credentials does not enable it. TCT starts observations only when
 `TCT_ENVIRONMENT` selects Translator service endpoints; it does not enable or
 configure Langfuse.
 
+### Codex conversational turns
+
+The Langfuse Codex tracing plugin does not load the repository `.env` file by
+itself. Generate its local, git-ignored configuration with:
+
+```bash
+sh scripts/setup-langfuse-codex.sh
+```
+
+The generated `.codex/langfuse.json` has mode `600`. After configuration,
+completed Codex turns are uploaded with a parent agent observation, child LLM
+generations carrying token/cost data, and child tool observations carrying
+their input, output, status, and latency.
+
 ## Install
 
 Install only the capabilities required by the process:
