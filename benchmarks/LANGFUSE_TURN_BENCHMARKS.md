@@ -30,3 +30,25 @@ input/output tokens and price belong to the parent generation observation.
 When the MCP client propagates the parent W3C trace context, Langfuse can join
 those generation costs with TCT's tool-call counts, hashes, and payload sizes
 for a complete per-turn view.
+
+## Live acceptance: conversational turns returned by Langfuse
+
+The offline benchmark is not proof that a Langfuse deployment accepted the
+observations. The live acceptance probe creates two parent `agent`
+observations, invokes the TCT fixture tools beneath them, flushes the SDK, and
+then queries those trace IDs through the Langfuse observations API. Its JSON
+output is computed only from observations returned by Langfuse.
+
+Set `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY`; set
+`LANGFUSE_BASE_URL` as well for a self-hosted deployment. Then run:
+
+```bash
+uv run --extra langfuse python -m benchmarks.langfuse_conversation_acceptance
+```
+
+Exit status zero and `"acceptance": "passed"` mean that both conversational
+turns and their TCT child observations were returned with metrics. Credentials
+are required but are never included in the report or configuration errors.
+The latest sanitized live result is checked in as
+`langfuse_conversation_acceptance_result.json` so reviewers can inspect the
+server-returned trace IDs and metrics directly in the pull request.
