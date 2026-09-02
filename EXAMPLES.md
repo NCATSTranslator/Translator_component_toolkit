@@ -162,6 +162,45 @@ tct path-finder \
   --intermediate-categories biolink:Gene
 ```
 
+## Autonomous Relay System (ARS)
+
+The ARS fans one TRAPI query out to every Translator ARA and merges the
+answers. Submission is asynchronous, so the tools either wait for you or hand
+back a `pk` to poll later. The tier follows `TCT_ENVIRONMENT` (`prod`, `ci`,
+or `test`).
+
+Submit and wait in one call. Node ids must be CURIEs; the ARS accepts names
+but then returns nothing. The default output is a ranked summary of the top
+20 results with names, predicates, and primary knowledge sources:
+
+```bash
+tct query-ars \
+  --query-json '{"message":{"query_graph":{"nodes":{"n00":{"ids":["MONDO:0005148"]},"n01":{"categories":["biolink:ChemicalEntity"]}},"edges":{"e00":{"subject":"n00","object":"n01","predicates":["biolink:treats"]}}}}}' \
+  --timeout 900
+```
+
+Pass `--top-n 0` to get the full merged TRAPI message instead. It can be tens
+of megabytes, so redirect it to a file.
+
+Submit now and collect later:
+
+```bash
+tct submit-ars-query --query-json '...'      # prints the pk
+tct get-ars-status --pk <pk>                  # Running / Done / Error, per-ARA children
+tct wait-for-ars-results --pk <pk> --poll-interval 15 --timeout 1200
+tct get-ars-results --pk <pk> --top-n 10
+```
+
+Ask the ARS for neighbors of a concept without loading the MetaKG yourself.
+Names are resolved to CURIEs first:
+
+```bash
+tct ars-neighborhood-finder \
+  --node "type 2 diabetes" \
+  --neighbor-categories ChemicalEntity \
+  --predicates biolink:treats
+```
+
 ## Python use of the shared surface
 
 Developers can continue using TCT's public Python APIs. Interface integrations

@@ -39,6 +39,12 @@ _ERROR_PREFIXES = {
     "trapi_query_endpoint": "TRAPI query error",
     "neighborhood_finder": "Neighborhood finder error",
     "path_finder": "Path finder error",
+    "submit_ars_query": "ARS submit error",
+    "get_ars_status": "ARS status error",
+    "wait_for_ars_results": "ARS wait error",
+    "get_ars_results": "ARS results error",
+    "query_ars": "ARS query error",
+    "ars_neighborhood_finder": "ARS neighborhood finder error",
 }
 
 
@@ -66,7 +72,7 @@ def _register_tool(
 for _tool in shared_tools.TOOLS:
     globals()[_tool.__name__] = _register_tool(
         _tool,
-        _ERROR_PREFIXES[_tool.__name__],
+        _ERROR_PREFIXES.get(_tool.__name__, f"{_tool.__name__} error"),
     )
 
 

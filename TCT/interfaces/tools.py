@@ -14,6 +14,15 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from ..ars import (
+    ars_neighborhood_finder as tct_ars_neighborhood_finder,
+    get_results as ars_get_results,
+    get_status as ars_get_status,
+    query as ars_query,
+    submit as ars_submit,
+    summarize_results as ars_summarize_results,
+    wait_for_results as ars_wait_for_results,
+)
 from ..name_resolver import batch_lookup, lookup, synonyms
 from ..node_normalizer import get_normalized_nodes
 from ..TCT import get_translator_resources as _get_translator_resources
@@ -336,6 +345,154 @@ def path_finder(
     )
 
 
+def _ars_payload(
+    pk: str,
+    status: Any,
+    merged_pk: str | None,
+    message: dict[str, Any] | None,
+    top_n: int,
+) -> dict[str, Any]:
+    """Shape an ARS answer for agents: ranked summary rows, or the full message."""
+    payload: dict[str, Any] = {"pk": pk, "merged_pk": merged_pk, "status": status}
+    if top_n <= 0:
+        payload["message"] = message
+        return payload
+    payload["result_count"] = len((message or {}).get("results") or [])
+    payload["results"] = ars_summarize_results(message, top_n=top_n)
+    return payload
+
+
+def submit_ars_query(query_json: dict[str, Any]) -> Any:
+    """Submit a TRAPI query to the Autonomous Relay System (ARS) without waiting.
+
+    Args:
+        query_json: TRAPI request, message, or query graph to submit. Node
+            ids must be CURIEs; the ARS accepts unresolved names but then
+            returns no results.
+
+    Returns:
+        The parent message pk and its initial status. Pass the pk to
+        ``wait_for_ars_results`` or ``get_ars_status``.
+    """
+    pk = ars_submit(query_json)
+    return {"pk": pk, "status": ars_get_status(pk)}
+
+
+def get_ars_status(pk: str) -> Any:
+    """Return the status of a submitted ARS query and its per-agent children.
+
+    Args:
+        pk: Parent message pk returned by ``submit_ars_query``.
+
+    Returns:
+        The parent status (``Running``, ``Done``, or ``Error``), the merged
+        message pk once available, and one entry per ARA child.
+    """
+    return ars_get_status(pk)
+
+
+def wait_for_ars_results(
+    pk: str,
+    poll_interval: float = 10.0,
+    timeout: float = 900.0,
+) -> Any:
+    """Block until an ARS query is done and its merged answer is ready.
+
+    Args:
+        pk: Parent message pk returned by ``submit_ars_query``.
+        poll_interval: Seconds between status polls.
+        timeout: Maximum seconds to wait before failing.
+
+    Returns:
+        The final status, including the merged message pk.
+    """
+    return ars_wait_for_results(pk, poll_interval=poll_interval, timeout=timeout)
+
+
+def get_ars_results(pk: str, top_n: int = 20) -> Any:
+    """Fetch the merged answer for a finished ARS query.
+
+    Args:
+        pk: Parent message pk returned by ``submit_ars_query``.
+        top_n: Number of ranked result rows to return. Pass 0 to return the
+            full merged TRAPI message instead of a summary.
+
+    Returns:
+        The pk, merged pk, status, and either ranked summary rows or the full
+        TRAPI message.
+    """
+    status = ars_get_status(pk)
+    merged_pk, message = ars_get_results(status)
+    return _ars_payload(pk, status, merged_pk, message, top_n)
+
+
+def query_ars(
+    query_json: dict[str, Any],
+    poll_interval: float = 10.0,
+    timeout: float = 900.0,
+    top_n: int = 20,
+) -> Any:
+    """Submit a TRAPI query to the ARS and wait for the merged answer.
+
+    Args:
+        query_json: TRAPI request, message, or query graph. Node ids must be
+            CURIEs.
+        poll_interval: Seconds between status polls.
+        timeout: Maximum seconds to wait before failing.
+        top_n: Number of ranked result rows to return. Pass 0 to return the
+            full merged TRAPI message instead of a summary.
+
+    Returns:
+        The pk, merged pk, final status, and either ranked summary rows or
+        the full TRAPI message.
+    """
+    outcome = ars_query(query_json, poll_interval=poll_interval, timeout=timeout)
+    return _ars_payload(outcome.pk, outcome.status, outcome.merged_pk, outcome.message, top_n)
+
+
+def ars_neighborhood_finder(
+    node: list[str],
+    neighbor_categories: list[str],
+    predicates: list[str] | None = None,
+    poll_interval: float = 10.0,
+    timeout: float = 900.0,
+    top_n: int = 20,
+) -> Any:
+    """Find category-filtered neighbors for one or more concepts via the ARS.
+
+    Args:
+        node: CURIEs or names whose neighbors should be found. Names are
+            resolved to CURIEs before the query is submitted.
+        neighbor_categories: Biolink categories used to filter returned
+            neighbors, with or without the ``biolink:`` prefix.
+        predicates: Edge predicates to require; any predicate when omitted.
+            The edge runs from the input node to the neighbor, so for
+            "what treats X" use ``biolink:treated_by`` or leave this unset.
+        poll_interval: Seconds between status polls.
+        timeout: Maximum seconds to wait before failing.
+        top_n: Number of ranked result rows to return. Pass 0 to return the
+            full ``FinderResult`` instead of a summary.
+
+    Returns:
+        The resolved input nodes plus either ranked summary rows or the full
+        ``FinderResult`` containing the merged TRAPI message.
+    """
+    result = tct_ars_neighborhood_finder(
+        node,
+        neighbor_categories,
+        predicates=predicates,
+        poll_interval=poll_interval,
+        timeout=timeout,
+    )
+    if top_n <= 0:
+        return result
+    return {
+        "resolved_nodes": result.resolved_nodes,
+        "result_count": len(result.results),
+        "results": ars_summarize_results(result.raw, top_n=top_n),
+    }
+
+
 TOOLS: tuple[Callable[..., Any], ...] = (
     get_translator_resources,
     name_lookup,
@@ -353,6 +510,12 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     trapi_query_endpoint,
     neighborhood_finder,
     path_finder,
+    submit_ars_query,
+    get_ars_status,
+    wait_for_ars_results,
+    get_ars_results,
+    query_ars,
+    ars_neighborhood_finder,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]

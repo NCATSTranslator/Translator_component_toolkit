@@ -10,4 +10,4 @@ from .config import (
     load_config as load_config,
 )
 
-from . import name_resolver as name_resolver, node_normalizer as node_normalizer, node_annotator as node_annotator, trapi as trapi, translator_kpinfo as translator_kpinfo
+from . import name_resolver as name_resolver, node_normalizer as node_normalizer, node_annotator as node_annotator, trapi as trapi, translator_kpinfo as translator_kpinfo, ars as ars

@@ -60,6 +60,21 @@ EXPECTED_SIGNATURES = {
         "(start: 'str', end: 'str', "
         "intermediate_categories: 'list[str] | None' = None) -> 'Any'"
     ),
+    "submit_ars_query": "(query_json: 'dict[str, Any]') -> 'Any'",
+    "get_ars_status": "(pk: 'str') -> 'Any'",
+    "wait_for_ars_results": (
+        "(pk: 'str', poll_interval: 'float' = 10.0, timeout: 'float' = 900.0) -> 'Any'"
+    ),
+    "get_ars_results": "(pk: 'str', top_n: 'int' = 20) -> 'Any'",
+    "query_ars": (
+        "(query_json: 'dict[str, Any]', poll_interval: 'float' = 10.0, "
+        "timeout: 'float' = 900.0, top_n: 'int' = 20) -> 'Any'"
+    ),
+    "ars_neighborhood_finder": (
+        "(node: 'list[str]', neighbor_categories: 'list[str]', "
+        "predicates: 'list[str] | None' = None, poll_interval: 'float' = 10.0, "
+        "timeout: 'float' = 900.0, top_n: 'int' = 20) -> 'Any'"
+    ),
 }
 
 
@@ -222,6 +237,49 @@ EXPECTED_INPUTS = {
             },
         },
         ["start", "end"],
+    ),
+    "submit_ars_query": (
+        {"query_json": {"additionalProperties": True, "type": "object"}},
+        ["query_json"],
+    ),
+    "get_ars_status": ({"pk": {"type": "string"}}, ["pk"]),
+    "wait_for_ars_results": (
+        {
+            "pk": {"type": "string"},
+            "poll_interval": {"default": 10.0, "type": "number"},
+            "timeout": {"default": 900.0, "type": "number"},
+        },
+        ["pk"],
+    ),
+    "get_ars_results": (
+        {"pk": {"type": "string"}, "top_n": {"default": 20, "type": "integer"}},
+        ["pk"],
+    ),
+    "query_ars": (
+        {
+            "query_json": {"additionalProperties": True, "type": "object"},
+            "poll_interval": {"default": 10.0, "type": "number"},
+            "timeout": {"default": 900.0, "type": "number"},
+            "top_n": {"default": 20, "type": "integer"},
+        },
+        ["query_json"],
+    ),
+    "ars_neighborhood_finder": (
+        {
+            "node": {"items": {"type": "string"}, "type": "array"},
+            "neighbor_categories": {"items": {"type": "string"}, "type": "array"},
+            "predicates": {
+                "anyOf": [
+                    {"items": {"type": "string"}, "type": "array"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+            "poll_interval": {"default": 10.0, "type": "number"},
+            "timeout": {"default": 900.0, "type": "number"},
+            "top_n": {"default": 20, "type": "integer"},
+        },
+        ["node", "neighbor_categories"],
     ),
 }
 

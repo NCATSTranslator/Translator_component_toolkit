@@ -58,6 +58,12 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         ci="https://shepherd.ci.transltr.io/aragorn/query",
         test="https://shepherd.test.transltr.io/aragorn/query",
     ),
+    "ars": ServiceEndpoint(
+        # Autonomous Relay System REST root; TCT.ars appends submit/ and messages/.
+        prod="https://ars-prod.transltr.io/ars/api/",
+        ci="https://ars.ci.transltr.io/ars/api/",
+        test="https://ars.test.transltr.io/ars/api/",
+    ),
 }
 
 

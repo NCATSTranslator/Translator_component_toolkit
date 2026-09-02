@@ -153,7 +153,8 @@ tct normalize-nodes --query CHEBI:15365 CHEBI:6801 --no-conflate
 ```
 
 See [EXAMPLES.md](EXAMPLES.md) for CLI discovery, structured inputs, finder
-commands, Python use, and MCP client configuration.
+commands, Autonomous Relay System (ARS) queries, Python use, and MCP client
+configuration.
 
 ### Run the MCP server
 
