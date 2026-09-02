@@ -26,6 +26,7 @@ from .trapi import query as trapi_query
 from .TCT_neighborhood_finder import neighborhood_finder as tct_neighborhood_finder
 from .TCT_pathfinder import query_TCT_pathfinder
 from .TCT import get_translator_resources as _get_translator_resources
+from .Query_ARS import ARS_neighborhood_finder as ARS_neighborhood_finder
 
 # Create unified MCP server
 mcp = FastMCP("TCT")
@@ -322,3 +323,26 @@ def path_finder(start: str, end: str, intermediate_categories: list[str] = None)
         return query_TCT_pathfinder(start, end, intermediate_categories=intermediate_categories, resources=resources)
     except Exception as e:
         raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"Path finder error: {str(e)}")) from e
+
+# add ARS neighborhood finder tool
+@mcp.tool()
+def ARS_neighborhood_finder(node: list[str], neighbor_categories: list[str]):
+    """
+    Find neighbors of a given node using the neighborhood finder tool using ARS.
+    
+    Args:
+        node: List of CURIEs to find neighbors for
+        neighbor_categories: List of categories to filter neighbors
+        resources: Dictionary of resources for the neighborhood finder
+    Returns:
+        List of neighboring nodes matching the specified categories
+    """
+    try:
+        #resources = _get_translator_resources()  # Ensure resources are loaded
+        return ARS_neighborhood_finder(
+            node=node,
+            neighbor_categories=neighbor_categories,
+            #resources=resources
+        )
+    except Exception as e:
+        raise McpError(ErrorData(code=INTERNAL_ERROR, message=f"ARS Neighborhood finder error: {str(e)}")) from e
