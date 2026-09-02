@@ -34,7 +34,7 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
     ),
     "node_normalizer": ServiceEndpoint(
         prod="https://nodenorm.transltr.io/",
-        ci="https://nodenorm.ci.transltr.io/",
+        ci="https://nodenorm.transltr.io/",
     ),
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",
