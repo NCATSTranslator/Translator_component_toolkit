@@ -1,0 +1,253 @@
+# Langfuse observability for TCT interfaces
+
+TCT can send CLI and MCP tool invocations to Langfuse without decorating the
+individual functions in `tools.py`. Instrumentation lives at the shared
+interface invocation boundary:
+
+```text
+CLI ─┐
+     ├─> invocation.invoke() ─> TCT tool
+MCP ─┘           │
+                 └─> optional Langfuse tool observation
+```
+
+Direct calls to the Python library do not cross this boundary and are not
+observed. This keeps agent-facing observability separate from the core API
+used by application and notebook developers.
+
+## Default behavior
+
+Langfuse is **disabled by default**. Installing the SDK or setting Langfuse
+credentials does not enable it. TCT starts observations only when
+`TCT_LANGFUSE_ENABLED` has an accepted true value.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `TCT_LANGFUSE_ENABLED` | Yes | Explicitly enables TCT instrumentation. Accepts `1`, `true`, `yes`, or `on`; matching false values disable it. |
+| `LANGFUSE_PUBLIC_KEY` | Yes for normal SDK authentication | Langfuse project public key. |
+| `LANGFUSE_SECRET_KEY` | Yes for normal SDK authentication | Langfuse project secret key. |
+| `LANGFUSE_BASE_URL` | For self-hosted Langfuse | Langfuse API base URL; otherwise the SDK default applies. |
+| `LANGFUSE_TRACING_ENVIRONMENT` | No | Labels traces by deployment environment. |
+
+`LANGFUSE_TRACING_ENVIRONMENT` is separate from `TCT_ENVIRONMENT`.
+`TCT_ENVIRONMENT` selects Translator service endpoints; it does not enable or
+configure Langfuse.
+
+### Codex conversational turns
+
+The Langfuse Codex tracing plugin does not load the repository `.env` file by
+itself. Generate its local, git-ignored configuration with:
+
+```bash
+sh scripts/setup-langfuse-codex.sh
+```
+
+The generated `.codex/langfuse.json` has mode `600`. After configuration,
+completed Codex turns are uploaded with a parent agent observation, child LLM
+generations carrying token/cost data, and child tool observations carrying
+their input, output, status, and latency.
+
+## Install
+
+Install only the capabilities required by the process:
+
+```bash
+# CLI observability
+pip install 'TCT[langfuse]'
+
+# MCP server and observability
+pip install 'TCT[mcp,langfuse]'
+```
+
+From a source checkout with UV:
+
+```bash
+uv sync --extra langfuse
+uv sync --extra mcp --extra langfuse
+```
+
+The Langfuse package is imported lazily. A normal TCT installation does not
+need the SDK. If instrumentation is explicitly enabled without the optional
+package, the CLI or MCP call reports that the `langfuse` extra must be
+installed.
+
+## Configure and run the CLI
+
+Set credentials through the process environment and opt in explicitly:
+
+```bash
+export LANGFUSE_PUBLIC_KEY=your-public-key
+export LANGFUSE_SECRET_KEY=your-secret-key
+export LANGFUSE_BASE_URL=https://cloud.langfuse.com
+export LANGFUSE_TRACING_ENVIRONMENT=development
+export TCT_LANGFUSE_ENABLED=true
+
+uv run tct name-lookup --query aspirin
+```
+
+The CLI flushes pending Langfuse events before it exits. To disable tracing
+while leaving credentials available:
+
+```bash
+TCT_LANGFUSE_ENABLED=false uv run tct name-lookup --query aspirin
+```
+
+## Configure and run the MCP server
+
+The existing MCP entry point does not change:
+
+```bash
+export LANGFUSE_PUBLIC_KEY=your-public-key
+export LANGFUSE_SECRET_KEY=your-secret-key
+export TCT_LANGFUSE_ENABLED=true
+
+uv run tct-server
+```
+
+An MCP client may pass the same variables to the server process. The exact
+configuration shape depends on the client; a typical stdio configuration is:
+
+```json
+{
+  "mcpServers": {
+    "tct": {
+      "command": "uv",
+      "args": ["run", "tct-server"],
+      "cwd": "/absolute/path/to/Translator_component_toolkit",
+      "env": {
+        "TCT_LANGFUSE_ENABLED": "true",
+        "LANGFUSE_PUBLIC_KEY": "your-public-key",
+        "LANGFUSE_SECRET_KEY": "your-secret-key"
+      }
+    }
+  }
+}
+```
+
+Do not commit real credentials in an MCP client configuration. Prefer the
+client's secret storage or inherited process environment. The server batches
+events while running and flushes them during normal shutdown.
+
+## Observation contract
+
+Each observed invocation uses the Langfuse observation type `tool` and the
+name `tct.tool.<tool_name>`. For example, `name_lookup` appears as
+`tct.tool.name_lookup`.
+
+TCT attaches the following metadata:
+
+| Metadata | Value |
+| --- | --- |
+| `tct.interface` | `cli` or `mcp` |
+| `tct.module` | Python module containing the shared callable |
+| `tct.tool` | Python callable name |
+| `tct.trace.propagated` | Whether an MCP client supplied parent trace context |
+| `tct.input.bytes` | Canonical UTF-8 JSON size of all bound arguments |
+| `tct.input.sha256` | Stable identity for detecting an exact repeated call |
+| `tct.input.argument.<name>.bytes` | Canonical size of one argument |
+| `tct.input.argument.<name>.sha256` | Stable identity of one repeated argument |
+| `tct.output.bytes` | Canonical UTF-8 JSON size of the returned value |
+| `tct.output.sha256` | Stable identity for detecting repeated results |
+
+When applicable, observations also include `tct.provider.name`,
+`tct.provider.count`, `tct.batch.item_count`, `tct.batch.argument`,
+`tct.query.node_count`, `tct.query.identifier_count`, and
+`tct.query.identifier_node_count`. These fields are derived from ordinary
+arguments at the shared invocation boundary; individual tools do not require
+observability decorators.
+
+Inputs are bound against the Python signature, so the observation includes
+applied default values as well as arguments supplied by the caller. Successful
+outputs are converted to JSON-compatible values using the same normalization
+conventions as CLI results. On failure, the original exception crosses the
+Langfuse context before TCT converts it to its stable CLI or MCP error.
+
+The hashes identify equal canonical payloads; they are not cache keys exposed
+to callers and do not change invocation behavior. Input and output byte counts
+measure TCT's normalized logical values, not model tokens or MCP wire framing.
+An agent's Langfuse integration remains responsible for generation model,
+token usage, and price. When agent and MCP observations share distributed
+trace context, those generation costs and these tool metrics can be analyzed
+within the same turn.
+
+A deterministic offline baseline is available in
+[`benchmarks/LANGFUSE_TURN_BENCHMARKS.md`](../../benchmarks/LANGFUSE_TURN_BENCHMARKS.md).
+It compares repeated single-identifier calls, one batched call, and duplicate
+batched calls using this metadata contract without contacting Langfuse.
+
+## Link agent turns to MCP tools
+
+TCT accepts W3C `traceparent`, `tracestate`, and `baggage` fields in an MCP
+tool request's `_meta`. The MCP adapter restores that context for the duration
+of dispatch, so its `tct.tool.<tool_name>` observation becomes a child of the
+agent's current turn. Trace metadata never becomes part of the shared callable
+signature or the discovered tool input schema.
+
+Clients with direct protocol metadata support should send a request shaped
+like this:
+
+```json
+{
+  "name": "name_lookup",
+  "arguments": {"query": "aspirin"},
+  "_meta": {
+    "traceparent": "00-<trace-id>-<parent-span-id>-01",
+    "baggage": "<agent-propagated trace attributes>"
+  }
+}
+```
+
+Some MCP client libraries do not yet expose request-level `_meta`. TCT also
+accepts `_meta` temporarily alongside tool arguments and removes it before
+FastMCP validates or invokes the tool:
+
+```python
+from langfuse import propagate_attributes
+from opentelemetry.propagate import inject
+
+with propagate_attributes(session_id="conversation-123", as_baggage=True):
+    carrier = {}
+    inject(carrier)
+    await session.call_tool(
+        "name_lookup",
+        {"query": "aspirin", "_meta": carrier},
+    )
+```
+
+The client must inject while the agent turn observation is current. TCT does
+not create LLM generation observations and therefore cannot infer model token
+usage or price. Instrument the agent's model provider with Langfuse; linked
+TCT observations then appear in the same turn trace. Clients that send no
+trace context continue to work and receive an independent TCT trace.
+
+## Test the integration
+
+Run the isolated tests, which use fakes and do not send data to Langfuse:
+
+```bash
+uv run pytest \
+  tests/test_observability.py \
+  tests/test_invocation.py \
+  tests/test_cli.py \
+  tests/test_server.py
+```
+
+Verify strict opt-in behavior directly:
+
+```bash
+LANGFUSE_PUBLIC_KEY=present \
+LANGFUSE_SECRET_KEY=present \
+uv run python -c \
+  'from TCT.interfaces.observability import langfuse_enabled; assert not langfuse_enabled()'
+```
+
+For an end-to-end check, supply credentials, set
+`TCT_LANGFUSE_ENABLED=true`, invoke a CLI command or an MCP tool, and look for
+`tct.tool.<tool_name>` in the configured Langfuse project.
+
+## Data handling
+
+Observations may contain biomedical queries, identifiers, complete bound
+arguments, and service responses. Enable this integration only when the
+Langfuse deployment and project retention policy meet the data-handling
+requirements of the environment.

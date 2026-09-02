@@ -112,6 +112,12 @@ To develop or run the MCP server from a source checkout:
 uv sync --extra mcp
 ```
 
+To observe CLI and MCP tool invocations with Langfuse:
+
+```bash
+uv sync --extra mcp --extra langfuse
+```
+
 ## Python, CLI, and MCP interfaces
 
 TCT exposes one curated set of well-documented operations through three
@@ -154,7 +160,8 @@ tct name-lookup --query aspirin
 tct normalize-nodes --query CHEBI:15365 CHEBI:6801 --no-conflate
 ```
 
-See [EXAMPLES.md](EXAMPLES.md) for CLI discovery, structured inputs, finder
+See [TCT/interfaces/EXAMPLES.md](TCT/interfaces/EXAMPLES.md) for CLI discovery,
+structured inputs, finder
 commands, Python use, and MCP client configuration.
 
 ### Run the MCP server
@@ -180,6 +187,52 @@ parameters, and defaults shown by the CLI. A typical client configuration is:
 
 When running from a source checkout, run `uv sync --extra mcp` first and use
 `uv run tct-server`.
+
+### Optional Langfuse observability
+
+The CLI and MCP adapters can create one Langfuse `tool` observation for each
+call made through their shared invocation boundary. No TCT function is
+decorated: direct Python library calls remain uninstrumented and importing TCT
+does not require the Langfuse SDK.
+
+Install the optional extra and configure the standard Langfuse environment
+variables:
+
+```bash
+uv sync --extra mcp --extra langfuse
+
+export LANGFUSE_PUBLIC_KEY=your-public-key
+export LANGFUSE_SECRET_KEY=your-secret-key
+export LANGFUSE_BASE_URL=https://cloud.langfuse.com
+export TCT_LANGFUSE_ENABLED=true
+
+uv run tct name-lookup --query aspirin
+uv run tct-server
+```
+
+Tracing is disabled by default, even when Langfuse credentials are present.
+Set `TCT_LANGFUSE_ENABLED=true` to opt in. Accepted true values are `1`,
+`true`, `yes`, and `on`; accepted false values are `0`, `false`, `no`, and
+`off`. `LANGFUSE_TRACING_ENVIRONMENT` can distinguish deployments such as
+`ci`, `staging`, and `production` in Langfuse; it is independent of
+`TCT_ENVIRONMENT`, which selects TCT service endpoints.
+
+Observations are named `tct.tool.<tool_name>`, tagged with the `cli` or `mcp`
+interface, and include normalized arguments, defaults, and successful results.
+They also include deterministic input/output hashes, encoded byte counts,
+per-argument sizes, provider counts, and TRAPI identifier counts. These fields
+make repeated calls, large repeated arguments, and under-batched queries
+comparable without adding decorators to individual tools.
+The original exception crosses the observation boundary on failure before the
+CLI or MCP adapter converts it to its stable interface error. Because this can
+record biomedical queries and service responses, configure Langfuse according
+to the data-handling requirements of the deployment.
+
+MCP clients can link these tool observations to an instrumented agent turn by
+injecting W3C trace context into request `_meta`. TCT restores the context in
+MCP middleware without adding trace parameters to the published tool schema.
+See [TCT/interfaces/LANGFUSE.md](TCT/interfaces/LANGFUSE.md) for the request
+shape, compatibility fallback, and telemetry field contract.
 
 ### Shared tool capabilities
 

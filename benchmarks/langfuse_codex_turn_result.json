@@ -1,0 +1,18 @@
+{
+  "acceptance": "passed",
+  "dashboard_url": "https://us.cloud.langfuse.com/project/cmthc70qs00tmad0dr7hd1ail/traces/94ac7fb1c9a153df10cca766e4d50a66",
+  "known_plugin_limitation": "Codex 0.152 records MCP calls through the unified exec wrapper, so tracing plugin 0.1.0 displays the tool observation as exec instead of translator-component-toolkit.optimize_query_for_api.",
+  "source": "Langfuse trace and observations APIs",
+  "trace": {
+    "latency_seconds": 13.463,
+    "llm_calls": 2,
+    "model": "gpt-5.6-sol",
+    "name": "Codex Turn",
+    "prompt_tokens": 34354,
+    "completion_tokens": 403,
+    "total_cost_usd": 0.0450216,
+    "total_tokens": 34757,
+    "tool_calls": 1
+  },
+  "trace_id": "94ac7fb1c9a153df10cca766e4d50a66"
+}
