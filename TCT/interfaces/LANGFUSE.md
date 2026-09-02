@@ -156,6 +156,11 @@ token usage, and price. When agent and MCP observations share distributed
 trace context, those generation costs and these tool metrics can be analyzed
 within the same turn.
 
+A deterministic offline baseline is available in
+[`benchmarks/LANGFUSE_TURN_BENCHMARKS.md`](../../benchmarks/LANGFUSE_TURN_BENCHMARKS.md).
+It compares repeated single-identifier calls, one batched call, and duplicate
+batched calls using this metadata contract without contacting Langfuse.
+
 ## Link agent turns to MCP tools
 
 TCT accepts W3C `traceparent`, `tracestate`, and `baggage` fields in an MCP

@@ -5,6 +5,7 @@ from TCT.config import (
     configure,
     get_runtime_config,
     load_config,
+    reset_config,
 )
 from TCT.translator_kpinfo import _select_provider_url
 
@@ -43,6 +44,7 @@ def test_environment_variable_selects_ci(monkeypatch):
 
 def test_ci_is_the_default_environment(monkeypatch):
     monkeypatch.delenv("TCT_ENVIRONMENT", raising=False)
+    reset_config()
 
     assert RuntimeConfig().environment == "ci"
     assert load_config().environment == "ci"

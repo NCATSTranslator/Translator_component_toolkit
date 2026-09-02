@@ -45,8 +45,7 @@ def langfuse_enabled(environ: Mapping[str, str] | None = None) -> bool:
         if normalized in _FALSE_VALUES:
             return False
         raise ObservabilityConfigurationError(
-            f"{_ENABLED_VARIABLE} must be one of: "
-            "1, true, yes, on, 0, false, no, off"
+            f"{_ENABLED_VARIABLE} must be one of: 1, true, yes, on, 0, false, no, off"
         )
     return False
 

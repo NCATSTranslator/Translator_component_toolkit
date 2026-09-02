@@ -1,0 +1,48 @@
+{
+  "batching_comparison": {
+    "input_bytes_avoided": 8706,
+    "input_bytes_reduction_percent": 84.8,
+    "provider_metadata_bytes_avoided": 7176,
+    "tool_calls_avoided": 6,
+    "total_payload_bytes_avoided": 8928,
+    "total_payload_bytes_reduction_percent": 81.5
+  },
+  "fixture": "langfuse-turns-v1",
+  "notes": {
+    "langfuse_uploads": 0,
+    "network_requests": 0,
+    "token_counts": "Model tokens and price belong to the parent Langfuse generation; this report measures TCT tool payloads within each turn."
+  },
+  "turns": {
+    "batched_identifiers": {
+      "input_bytes": 1563,
+      "output_bytes": 457,
+      "provider_metadata_bytes": 1196,
+      "query_identifiers": 8,
+      "repeated_input_calls": 0,
+      "tool_calls": 1,
+      "total_payload_bytes": 2020,
+      "unique_inputs": 1
+    },
+    "duplicate_batched_calls": {
+      "input_bytes": 3126,
+      "output_bytes": 914,
+      "provider_metadata_bytes": 2392,
+      "query_identifiers": 16,
+      "repeated_input_calls": 1,
+      "tool_calls": 2,
+      "total_payload_bytes": 4040,
+      "unique_inputs": 1
+    },
+    "one_call_per_identifier": {
+      "input_bytes": 10269,
+      "output_bytes": 679,
+      "provider_metadata_bytes": 8372,
+      "query_identifiers": 14,
+      "repeated_input_calls": 0,
+      "tool_calls": 7,
+      "total_payload_bytes": 10948,
+      "unique_inputs": 7
+    }
+  }
+}
