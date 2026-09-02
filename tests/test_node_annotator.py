@@ -1,5 +1,15 @@
 import TCT
 import pytest
+from TCT.config import reset_config
+
+
+@pytest.fixture(autouse=True)
+def use_node_annotator_prod():
+    """Run legacy Node Annotator expectations against production."""
+    TCT.configure(environment="prod")
+    yield
+    reset_config()
+
 
 CURIES_with_annotations = [
     {
