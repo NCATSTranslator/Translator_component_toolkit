@@ -18,6 +18,12 @@ class ToolInvocationError(RuntimeError):
         self.cause = cause
         super().__init__(str(cause))
 
+    @property
+    def contextual_message(self) -> str:
+        """Return the failure with context derived from the public tool name."""
+        tool_label = self.tool_name.replace("_", " ").capitalize()
+        return f"{tool_label} error: {self.cause}"
+
 
 class ResultSerializationError(RuntimeError):
     """Represent a failure to convert a successful result into JSON."""

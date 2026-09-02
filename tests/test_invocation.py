@@ -55,6 +55,32 @@ def test_invoke_does_not_double_wrap_normalized_errors():
     assert error.value is original
 
 
+@pytest.mark.parametrize(
+    ("tool_name", "expected"),
+    [
+        ("name_lookup", "Name lookup error: failed"),
+        ("get_kp_info", "Get kp info error: failed"),
+        (
+            "add_plover_apis_to_metakg",
+            "Add plover apis to metakg error: failed",
+        ),
+        ("trapi_query_endpoint", "Trapi query endpoint error: failed"),
+    ],
+)
+def test_invocation_errors_provide_stable_contextual_messages(tool_name, expected):
+    """Shared failures own the presentation context used by adapters."""
+    error = ToolInvocationError(tool_name, ValueError("failed"))
+
+    assert error.contextual_message == expected
+
+
+def test_invocation_error_context_works_for_new_tools_without_a_registry():
+    """A new tool's reflected name provides its error context automatically."""
+    error = ToolInvocationError("query_future_api", ValueError("failed"))
+
+    assert error.contextual_message == "Query future api error: failed"
+
+
 def test_to_jsonable_handles_tct_dataclasses_tables_and_collections():
     """Common TCT result types become nested JSON-compatible values."""
 
