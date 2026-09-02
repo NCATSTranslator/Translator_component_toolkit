@@ -1,4 +1,4 @@
-"""Client for the Translator Autonomous Relay System (ARS).
+"""Client for the Translator ARS.
 
 The ARS accepts one TRAPI query, fans it out to every registered Autonomous
 Relay Agent (ARA), and merges their answers. Submission is asynchronous:
