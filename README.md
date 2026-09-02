@@ -95,6 +95,7 @@ For local testing, individual known services can be replaced explicitly:
 
 ```python
 TCT.configure(
+    environment="test",
     overrides={"arax": "http://localhost:8080/query"},
 )
 ```
@@ -171,7 +172,7 @@ parameters, and defaults shown by the CLI. A typical client configuration is:
 {
   "mcpServers": {
     "tct": {
-      "command": "tct-server"
+      "command": "uv run tct-server"
     }
   }
 }
