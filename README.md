@@ -73,27 +73,29 @@ uv sync
 
 ### Service environment
 
-TCT uses production service URLs by default. Select CI for services that have a
-CI deployment either in Python:
+TCT uses CI service URLs by default. Select another environment explicitly when
+needed, for example in Python:
 
 ```python
 import TCT
 
-TCT.configure(environment="ci")
+TCT.configure(environment="test")
 ```
 
 or when starting a process such as the MCP server:
 
 ```bash
-TCT_ENVIRONMENT=ci tct-server
+TCT_ENVIRONMENT=test tct-server
 ```
 
-Services without a separate CI deployment continue to use their shared URL.
+Services without a separate CI deployment continue to use their production URL.
+For discovered providers, TCT falls back to the first available non-test URL;
+a test URL is used only when no production or CI URL is available.
 For local testing, individual known services can be replaced explicitly:
 
 ```python
 TCT.configure(
-    environment="ci",
+    environment="test",
     overrides={"arax": "http://localhost:8080/query"},
 )
 ```
@@ -176,7 +178,7 @@ parameters, and defaults shown by the CLI. A typical client configuration is:
 {
   "mcpServers": {
     "tct": {
-      "command": "tct-server"
+      "command": "uv run tct-server"
     }
   }
 }

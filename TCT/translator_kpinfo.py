@@ -11,12 +11,16 @@ from .config import get_runtime_config, service_url
 def _select_provider_url(
     prod_url: str | None,
     ci_url: str | None,
+    test_url: str | None,
     environment: str,
 ) -> str | None:
-    """Select CI when requested, preserving prod's existing CI-only fallback."""
-    if environment == "ci" and ci_url is not None:
-        return ci_url
-    return prod_url or ci_url
+    """Prefer the selected environment, then non-test URLs, then test."""
+    selected_url = {
+        "prod": prod_url,
+        "ci": ci_url,
+        "test": test_url,
+    }.get(environment)
+    return selected_url or prod_url or ci_url or test_url
 
 
 """This is the root URL for the resource."""
@@ -146,6 +150,7 @@ def get_translator_kp_info() -> tuple[pd.DataFrame, dict[str, str]]:
         selected_url = _select_provider_url(
             prod_url_list[i],
             ci_url_list[i],
+            test_url_list[i],
             environment,
         )
         if selected_url is not None:

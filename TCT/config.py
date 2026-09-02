@@ -8,6 +8,7 @@ from typing import Literal, Mapping
 
 
 Environment = Literal["prod", "ci", "test"]
+DEFAULT_ENVIRONMENT: Environment = "ci"
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,7 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
     ),
     "node_normalizer": ServiceEndpoint(
         prod="https://nodenorm.transltr.io/",
-        ci="https://nodenorm.ci.transltr.io/",
+        ci="https://nodenorm.transltr.io/",
     ),
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",
@@ -65,7 +66,7 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
 class RuntimeConfig:
     """Runtime environment and explicit service URL replacements."""
 
-    environment: Environment = "prod"
+    environment: Environment = DEFAULT_ENVIRONMENT
     overrides: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -94,7 +95,10 @@ def load_config(
     overrides: Mapping[str, str] | None = None,
 ) -> RuntimeConfig:
     """Build configuration from explicit values and ``TCT_ENVIRONMENT``."""
-    selected_environment = environment or os.getenv("TCT_ENVIRONMENT", "prod")
+    selected_environment = environment or os.getenv(
+        "TCT_ENVIRONMENT",
+        DEFAULT_ENVIRONMENT,
+    )
     return RuntimeConfig(
         environment=selected_environment,  # type: ignore[arg-type]
         overrides=overrides or {},
