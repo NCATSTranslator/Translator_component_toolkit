@@ -95,21 +95,23 @@ uv<span class="w"> </span>sync
 </section>
 <section id="service-environment">
 <h3>Service environment<a class="headerlink" href="#service-environment" title="Link to this heading">¶</a></h3>
-<p>TCT uses production service URLs by default. Select CI for services that have a
-CI deployment either in Python:</p>
+<p>TCT uses CI service URLs by default. Select another environment explicitly when
+needed, for example in Python:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">TCT</span>
 
-<span class="n">TCT</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">environment</span><span class="o">=</span><span class="s2">"ci"</span><span class="p">)</span>
+<span class="n">TCT</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">environment</span><span class="o">=</span><span class="s2">"test"</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>or when starting a process such as the MCP server:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TCT_ENVIRONMENT</span><span class="o">=</span>ci<span class="w"> </span>tct-server
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">TCT_ENVIRONMENT</span><span class="o">=</span><span class="nb">test</span><span class="w"> </span>tct-server
 </pre></div>
 </div>
-<p>Services without a separate CI deployment continue to use their shared URL.
+<p>Services without a separate CI deployment continue to use their production URL.
+For discovered providers, TCT falls back to the first available non-test URL;
+a test URL is used only when no production or CI URL is available.
 For local testing, individual known services can be replaced explicitly:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">TCT</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span>
-    <span class="n">environment</span><span class="o">=</span><span class="s2">"ci"</span><span class="p">,</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s2">"test"</span><span class="p">,</span>
     <span class="n">overrides</span><span class="o">=</span><span class="p">{</span><span class="s2">"arax"</span><span class="p">:</span> <span class="s2">"http://localhost:8080/query"</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
@@ -190,7 +192,7 @@ parameters, and defaults shown by the CLI. A typical client configuration is:</p
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">"mcpServers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">"tct"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tct-server"</span>
+<span class="w">      </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="s2">"uv run tct-server"</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>

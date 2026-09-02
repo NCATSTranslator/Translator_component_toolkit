@@ -44,12 +44,16 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_select_provider_url</span><span class="p">(</span>
     <span class="n">prod_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ci_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">test_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">environment</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Select CI when requested, preserving prod's existing CI-only fallback."""</span>
-    <span class="k">if</span> <span class="n">environment</span> <span class="o">==</span> <span class="s2">"ci"</span> <span class="ow">and</span> <span class="n">ci_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">ci_url</span>
-    <span class="k">return</span> <span class="n">prod_url</span> <span class="ow">or</span> <span class="n">ci_url</span>
+<span class="w">    </span><span class="sd">"""Prefer the selected environment, then non-test URLs, then test."""</span>
+    <span class="n">selected_url</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"prod"</span><span class="p">:</span> <span class="n">prod_url</span><span class="p">,</span>
+        <span class="s2">"ci"</span><span class="p">:</span> <span class="n">ci_url</span><span class="p">,</span>
+        <span class="s2">"test"</span><span class="p">:</span> <span class="n">test_url</span><span class="p">,</span>
+    <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">selected_url</span> <span class="ow">or</span> <span class="n">prod_url</span> <span class="ow">or</span> <span class="n">ci_url</span> <span class="ow">or</span> <span class="n">test_url</span>
 
 
 <span class="sd">"""This is the root URL for the resource."""</span>
@@ -181,6 +185,7 @@
         <span class="n">selected_url</span> <span class="o">=</span> <span class="n">_select_provider_url</span><span class="p">(</span>
             <span class="n">prod_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
             <span class="n">ci_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">test_url_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
             <span class="n">environment</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">selected_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
