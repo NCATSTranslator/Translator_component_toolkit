@@ -5,7 +5,7 @@ import requests
 import pandas as pd
 from collections import Counter
 
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 from . import translator_query
 from .config import service_url
@@ -363,100 +363,55 @@ def format_pathfinder_query(node1_id:str, node1_category:str, node2_id:str, node
     return query_json
 
 
-def query_aragorn_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
+PATHFINDER_ARAS = ("aragorn", "arax")
+
+
+def query_pathfinder(
+    ara: str,
+    node1_id: str,
+    node1_category: str,
+    node2_id: str,
+    node2_category: str,
+    constraints: Optional[Sequence[str]] = None,
+    timeout: Optional[float] = None,
+) -> requests.Response:
     """
-    This queries the ARAGORN Pathfinder API.
+    Queries an ARA's Pathfinder API, with or without intermediate constraints.
 
     Params
     ------
+    ara : str
+        'aragorn' or 'arax'
     node1_id : str
     node1_category : str
     node2_id : str
     node2_category : str
+    constraints : sequence of str, optional
+        Intermediate node categories. Only up to one allowed.
+    timeout : float, optional
 
     Returns
     -------
-    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.
+    pathfinder response
     """
-    aragorn_endpoint = service_url("aragorn")
-    query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = requests.post(aragorn_endpoint, json=query_current)
-    return response
+    ara_key = ara.strip().lower()
+    if ara_key not in PATHFINDER_ARAS:
+        raise ValueError(
+            f"unknown pathfinder ARA: {ara!r}; "
+            f"expected one of {', '.join(PATHFINDER_ARAS)}"
+        )
+    if constraints:
+        query_json = format_query_json_for_pathfinder_with_constraints(
+            subject_ids=node1_id,
+            object_ids=node2_id,
+            subject_categories=node1_category,
+            object_categories=node2_category,
+            constraints=list(constraints),
+        )
+    else:
+        query_json = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
+    return requests.post(service_url(ara_key), json=query_json, timeout=timeout)
 
-
-def query_aragorn_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
-    """
-    This queries the ARAGORN Pathfinder API with a list of constraints.
-
-    Params
-    ------
-    node1_id : str
-    node1_category : str
-    node2_id : str
-    node2_category : str
-    constraints : list
-
-    Returns
-    -------
-    A string (which should be a JSON) representing the result of an ARAGORN pathfinder query.
-    """
-    aragorn_endpoint = service_url("aragorn")
-    query_current = format_query_json_for_pathfinder_with_constraints(
-        subject_ids=node1_id,
-        object_ids=node2_id,
-        subject_categories=node1_category,
-        object_categories=node2_category,
-        constraints=constraints
-    )
-    response = requests.post(aragorn_endpoint, json=query_current)
-    return response
-
-def query_arax_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
-    """
-    This queries the ARAX Pathfinder API.
-
-    Params
-    ------
-    node1_id : str
-    node1_category : str
-    node2_id : str
-    node2_category : str
-
-    Returns
-    -------
-    A string (which should be a JSON) representing the result of an ARAX pathfinder query.
-    """
-    ARAX_endpoint = service_url("arax")
-    query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = requests.post(ARAX_endpoint, json=query_current)
-    return response
-
-def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
-    """
-    This queries the ARAX Pathfinder API with a list of constraints.
-
-    Params
-    ------
-    node1_id : str
-    node1_category : str
-    node2_id : str
-    node2_category : str
-    constraints : list
-
-    Returns
-    -------
-    A string (which should be a JSON) representing the result of an ARAX pathfinder query.
-    """
-    ARAX_endpoint = service_url("arax")
-    query_current = format_query_json_for_pathfinder_with_constraints(
-        subject_ids=node1_id,
-        object_ids=node2_id,
-        subject_categories=node1_category,
-        object_categories=node2_category,
-        constraints=constraints
-    )
-    response = requests.post(ARAX_endpoint, json=query_current)
-    return response
 
 def query_TCT_pathfinder(
     start: NodeInput,
