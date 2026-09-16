@@ -1,0 +1,35 @@
+{
+  "acceptance": "passed",
+  "comparison": {
+    "input_bytes_avoided": 8706,
+    "output_bytes_avoided": 222,
+    "tool_calls_avoided": 6
+  },
+  "read_back_at": "2026-09-02T16:54:05.941518+00:00",
+  "run_id": "3ec4fa9e-fa5a-44f6-bf48-9e284553818c",
+  "source": "Langfuse observations API",
+  "turns": {
+    "batched_identifiers": {
+      "agent_turns_returned": 1,
+      "input_bytes": 1563,
+      "output_bytes": 457,
+      "query_identifiers": 8,
+      "repeated_tool_inputs": 0,
+      "scenario": "batched_identifiers",
+      "tool_observations_returned": 1,
+      "trace_id": "461d85e03201fd38f80d9afd031d32c9",
+      "unique_tool_inputs": 1
+    },
+    "one_call_per_identifier": {
+      "agent_turns_returned": 1,
+      "input_bytes": 10269,
+      "output_bytes": 679,
+      "query_identifiers": 14,
+      "repeated_tool_inputs": 0,
+      "scenario": "one_call_per_identifier",
+      "tool_observations_returned": 7,
+      "trace_id": "811c2a8882a494120e1edb978e91ab29",
+      "unique_tool_inputs": 7
+    }
+  }
+}
