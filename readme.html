@@ -124,6 +124,10 @@ For local testing, individual known services can be replaced explicitly:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>mcp
 </pre></div>
 </div>
+<p>To observe CLI and MCP tool invocations with Langfuse:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>mcp<span class="w"> </span>--extra<span class="w"> </span>langfuse
+</pre></div>
+</div>
 </section>
 </section>
 <section id="python-cli-and-mcp-interfaces">
@@ -178,7 +182,8 @@ a nonzero exit status.</p>
 tct<span class="w"> </span>normalize-nodes<span class="w"> </span>--query<span class="w"> </span>CHEBI:15365<span class="w"> </span>CHEBI:6801<span class="w"> </span>--no-conflate
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="#EXAMPLES.md"><span class="xref myst">EXAMPLES.md</span></a> for CLI discovery, structured inputs, finder
+<p>See <a class="reference internal" href="#TCT/interfaces/EXAMPLES.md"><span class="xref myst">TCT/interfaces/EXAMPLES.md</span></a> for CLI discovery,
+structured inputs, finder
 commands, Python use, and MCP client configuration.</p>
 </section>
 <section id="run-the-mcp-server">
@@ -200,6 +205,48 @@ parameters, and defaults shown by the CLI. A typical client configuration is:</p
 </div>
 <p>When running from a source checkout, run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span> <span class="pre">--extra</span> <span class="pre">mcp</span></code> first and use
 <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">tct-server</span></code>.</p>
+</section>
+<section id="optional-langfuse-observability">
+<h3>Optional Langfuse observability<a class="headerlink" href="#optional-langfuse-observability" title="Link to this heading">¶</a></h3>
+<p>The CLI and MCP adapters can create one Langfuse <code class="docutils literal notranslate"><span class="pre">tool</span></code> observation for each
+call made through their shared invocation boundary. No TCT function is
+decorated: direct Python library calls remain uninstrumented and importing TCT
+does not require the Langfuse SDK.</p>
+<p>Install the optional extra and configure the standard Langfuse environment
+variables:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>mcp<span class="w"> </span>--extra<span class="w"> </span>langfuse
+
+<span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_PUBLIC_KEY</span><span class="o">=</span>your-public-key
+<span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_SECRET_KEY</span><span class="o">=</span>your-secret-key
+<span class="nb">export</span><span class="w"> </span><span class="nv">LANGFUSE_BASE_URL</span><span class="o">=</span>https://cloud.langfuse.com
+<span class="nb">export</span><span class="w"> </span><span class="nv">TCT_LANGFUSE_ENABLED</span><span class="o">=</span><span class="nb">true</span>
+
+uv<span class="w"> </span>run<span class="w"> </span>tct<span class="w"> </span>name-lookup<span class="w"> </span>--query<span class="w"> </span>aspirin
+uv<span class="w"> </span>run<span class="w"> </span>tct-server
+</pre></div>
+</div>
+<p>Tracing is disabled by default, even when Langfuse credentials are present.
+Set <code class="docutils literal notranslate"><span class="pre">TCT_LANGFUSE_ENABLED=true</span></code> to opt in. Accepted true values are <code class="docutils literal notranslate"><span class="pre">1</span></code>,
+<code class="docutils literal notranslate"><span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">yes</span></code>, and <code class="docutils literal notranslate"><span class="pre">on</span></code>; accepted false values are <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">false</span></code>, <code class="docutils literal notranslate"><span class="pre">no</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">off</span></code>. <code class="docutils literal notranslate"><span class="pre">LANGFUSE_TRACING_ENVIRONMENT</span></code> can distinguish deployments such as
+<code class="docutils literal notranslate"><span class="pre">ci</span></code>, <code class="docutils literal notranslate"><span class="pre">staging</span></code>, and <code class="docutils literal notranslate"><span class="pre">production</span></code> in Langfuse; it is independent of
+<code class="docutils literal notranslate"><span class="pre">TCT_ENVIRONMENT</span></code>, which selects TCT service endpoints.</p>
+<p>Observations are named <code class="docutils literal notranslate"><span class="pre">tct.tool.&lt;tool_name&gt;</span></code>, tagged with the <code class="docutils literal notranslate"><span class="pre">cli</span></code> or <code class="docutils literal notranslate"><span class="pre">mcp</span></code>
+interface, and include normalized arguments, defaults, and successful results.
+They also include deterministic input/output hashes, encoded byte counts,
+per-argument sizes, provider counts, and TRAPI identifier counts. These fields
+make repeated calls, large repeated arguments, and under-batched queries
+comparable without adding decorators to individual tools.
+Tracing failures produce warnings without changing tool results or replacing
+tool exceptions. The original exception crosses the observation boundary before the
+CLI or MCP adapter converts it to its stable interface error. Because this can
+record biomedical queries and service responses, configure Langfuse according
+to the data-handling requirements of the deployment.</p>
+<p>MCP clients can link these tool observations to an instrumented agent turn by
+injecting W3C trace context into request <code class="docutils literal notranslate"><span class="pre">_meta</span></code>. TCT restores the context in
+MCP middleware without adding trace parameters to the published tool schema.
+See <a class="reference internal" href="#TCT/interfaces/LANGFUSE.md"><span class="xref myst">TCT/interfaces/LANGFUSE.md</span></a> for the request
+shape, compatibility fallback, and telemetry field contract.</p>
 </section>
 <section id="shared-tool-capabilities">
 <h3>Shared tool capabilities<a class="headerlink" href="#shared-tool-capabilities" title="Link to this heading">¶</a></h3>
