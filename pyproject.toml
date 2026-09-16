@@ -40,6 +40,9 @@ vision = [
 mcp = [
     "fastmcp>=2.12.2",
 ]
+langfuse = [
+    "langfuse>=3.63.0",
+]
 
 [project.scripts]
 tct = "TCT.interfaces.cli:main"

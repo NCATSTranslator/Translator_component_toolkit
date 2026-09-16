@@ -17,6 +17,7 @@ from .invocation import (
     dumps_result,
     invoke,
 )
+from .observability import flush_observability
 
 
 class _StringOrListAction(argparse.Action):
@@ -171,10 +172,13 @@ def main(argv: list[str] | None = None) -> int:
     tool = values.pop("_tool")
     command = values.pop("command")
     try:
-        result = invoke(tool, **values)
+        result = invoke(tool, _interface="cli", **values)
     except ToolInvocationError as error:
         print(f"{parser.prog}: {command}: {error}", file=sys.stderr)
         return 1
+    finally:
+        # The CLI is short-lived, so ensure queued observations are delivered.
+        flush_observability()
     try:
         output = dumps_result(result)
     except ResultSerializationError as error:
