@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 import pytest
 
-from TCT.interfaces import invocation, observability
+from TCT.interfaces import invocation, observability, telemetry
 from TCT.interfaces.invocation import ToolInvocationError
 
 
@@ -32,7 +32,7 @@ def test_invalid_langfuse_activation_value_is_actionable():
         observability.langfuse_enabled({"TCT_LANGFUSE_ENABLED": "perhaps"})
 
 
-def test_enabled_tracing_requires_only_the_optional_install(monkeypatch):
+def test_enabled_tracing_reports_missing_optional_install(monkeypatch):
     """A base installation imports normally and explains an enabled missing SDK."""
     monkeypatch.setenv("TCT_LANGFUSE_ENABLED", "true")
 
@@ -45,12 +45,7 @@ def test_enabled_tracing_requires_only_the_optional_install(monkeypatch):
         observability.ObservabilityConfigurationError,
         match="install TCT with the 'langfuse' extra",
     ):
-        with observability.observe_tool(
-            name="tct.tool.example",
-            input_factory=dict,
-            metadata={},
-        ):
-            pass
+        observability._get_langfuse_client()
 
 
 def test_invoke_records_tool_input_output_and_interface(monkeypatch):
@@ -70,7 +65,7 @@ def test_invoke_records_tool_input_output_and_interface(monkeypatch):
         )
         yield Observation()
 
-    monkeypatch.setattr(invocation, "observe_tool", fake_observe_tool)
+    monkeypatch.setattr(telemetry, "observe_tool", fake_observe_tool)
 
     def combine(left: str, right: str = "default") -> tuple[str, str]:
         return left, right
@@ -85,11 +80,11 @@ def test_invoke_records_tool_input_output_and_interface(monkeypatch):
         "tct.module": __name__,
         "tct.tool": "combine",
         "tct.trace.propagated": False,
-        **invocation._input_metadata(captured["input"]),
+        **telemetry._input_metadata(captured["input"]),
     }
     assert captured["update"] == {
         "output": ["value", "default"],
-        "metadata": invocation._payload_metadata(
+        "metadata": telemetry._payload_metadata(
             "tct.output", ["value", "default"]
         ),
     }
@@ -108,7 +103,7 @@ def test_tool_telemetry_identifies_duplicates_and_batching_opportunities(monkeyp
         observations.append({"name": name, "input": input_factory(), "metadata": metadata})
         yield Observation()
 
-    monkeypatch.setattr(invocation, "observe_tool", fake_observe_tool)
+    monkeypatch.setattr(telemetry, "observe_tool", fake_observe_tool)
 
     def query_provider(api_name: str, query_json: dict) -> dict:
         return {"results": [1, 2]}
@@ -153,7 +148,7 @@ def test_tool_errors_cross_the_observation_before_normalization(monkeypatch):
             captured["error"] = error
             raise
 
-    monkeypatch.setattr(invocation, "observe_tool", fake_observe_tool)
+    monkeypatch.setattr(telemetry, "observe_tool", fake_observe_tool)
     cause = ValueError("failed")
 
     def fail() -> None:

@@ -223,7 +223,8 @@ They also include deterministic input/output hashes, encoded byte counts,
 per-argument sizes, provider counts, and TRAPI identifier counts. These fields
 make repeated calls, large repeated arguments, and under-batched queries
 comparable without adding decorators to individual tools.
-The original exception crosses the observation boundary on failure before the
+Tracing failures produce warnings without changing tool results or replacing
+tool exceptions. The original exception crosses the observation boundary before the
 CLI or MCP adapter converts it to its stable interface error. Because this can
 record biomedical queries and service responses, configure Langfuse according
 to the data-handling requirements of the deployment.

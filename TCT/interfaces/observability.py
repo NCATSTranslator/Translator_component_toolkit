@@ -8,11 +8,25 @@ the observability SDK.
 from __future__ import annotations
 
 import importlib
+import logging
 import os
+import sys
 from collections.abc import Callable, Generator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Any
+
+
+logger = logging.getLogger(__name__)
+
+
+def _warn(operation: str, error: Exception) -> None:
+    """Report telemetry failures without logging credentials or payloads."""
+    if isinstance(error, ObservabilityConfigurationError):
+        # These messages are authored here and contain no configuration values.
+        logger.warning("Unable to %s: %s", operation, error)
+    else:
+        logger.warning("Unable to %s (%s)", operation, type(error).__name__)
 
 
 _ENABLED_VARIABLE = "TCT_LANGFUSE_ENABLED"
@@ -79,20 +93,33 @@ def use_incoming_trace_context(
         for key, value in (metadata or {}).items()
         if key in _TRACE_CONTEXT_FIELDS and isinstance(value, str)
     }
-    if not carrier or not langfuse_enabled():
+    if not carrier:
         yield
         return
 
-    otel_context = importlib.import_module("opentelemetry.context")
-    otel_propagate = importlib.import_module("opentelemetry.propagate")
-    extracted = otel_propagate.extract(carrier)
-    otel_token = otel_context.attach(extracted)
+    try:
+        enabled = langfuse_enabled()
+        if enabled:
+            otel_context = importlib.import_module("opentelemetry.context")
+            otel_propagate = importlib.import_module("opentelemetry.propagate")
+            extracted = otel_propagate.extract(carrier)
+            otel_token = otel_context.attach(extracted)
+    except Exception as error:
+        _warn("restore trace context", error)
+        yield
+        return
+    if not enabled:
+        yield
+        return
     propagated_token = _PROPAGATED_TRACE_CONTEXT.set(True)
     try:
         yield
     finally:
         _PROPAGATED_TRACE_CONTEXT.reset(propagated_token)
-        otel_context.detach(otel_token)
+        try:
+            otel_context.detach(otel_token)
+        except Exception as error:
+            _warn("detach trace context", error)
 
 
 def trace_context_was_propagated() -> bool:
@@ -107,31 +134,49 @@ def observe_tool(
     input_factory: Callable[[], Any],
     metadata: Mapping[str, Any],
 ) -> Generator[Any | None, None, None]:
-    """Open a Langfuse tool observation, or yield ``None`` when disabled."""
-    client = _get_langfuse_client()
+    """Observe a tool without letting SDK failures alter its outcome."""
+    try:
+        client = _get_langfuse_client()
+        if client is not None:
+            context = client.start_as_current_observation(
+                as_type="tool",
+                name=name,
+                input=input_factory(),
+                metadata=dict(metadata),
+            )
+            observation = context.__enter__()
+    except Exception as error:
+        _warn("start tool observation", error)
+        yield None
+        return
     if client is None:
         yield None
         return
-
-    with client.start_as_current_observation(
-        as_type="tool",
-        name=name,
-        input=input_factory(),
-        metadata=dict(metadata),
-    ) as observation:
+    try:
         yield observation
+    except BaseException:
+        # Notify the SDK of the original tool failure, but never let it
+        # suppress or replace that exception (including cancellation).
+        try:
+            context.__exit__(*sys.exc_info())
+        except Exception as error:
+            _warn("finish failed tool observation", error)
+        raise
+    else:
+        try:
+            context.__exit__(None, None, None)
+        except Exception as error:
+            _warn("finish tool observation", error)
 
 
 def flush_observability() -> None:
     """Flush enabled tracing without importing Langfuse in untraced runs."""
     try:
         client = _get_langfuse_client()
-    except ObservabilityConfigurationError:
-        # Invocation reports setup errors with the relevant tool context. A
-        # cleanup attempt must not replace that useful interface error.
-        return
-    if client is not None:
-        client.flush()
+        if client is not None:
+            client.flush()
+    except Exception as error:
+        _warn("flush tool observations", error)
 
 
 __all__ = [

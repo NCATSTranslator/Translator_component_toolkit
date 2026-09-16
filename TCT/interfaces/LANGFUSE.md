@@ -33,20 +33,6 @@ credentials does not enable it. TCT starts observations only when
 `TCT_ENVIRONMENT` selects Translator service endpoints; it does not enable or
 configure Langfuse.
 
-### Codex conversational turns
-
-The Langfuse Codex tracing plugin does not load the repository `.env` file by
-itself. Generate its local, git-ignored configuration with:
-
-```bash
-sh scripts/setup-langfuse-codex.sh
-```
-
-The generated `.codex/langfuse.json` has mode `600`. After configuration,
-completed Codex turns are uploaded with a parent agent observation, child LLM
-generations carrying token/cost data, and child tool observations carrying
-their input, output, status, and latency.
-
 ## Install
 
 Install only the capabilities required by the process:
@@ -68,8 +54,7 @@ uv sync --extra mcp --extra langfuse
 
 The Langfuse package is imported lazily. A normal TCT installation does not
 need the SDK. If instrumentation is explicitly enabled without the optional
-package, the CLI or MCP call reports that the `langfuse` extra must be
-installed.
+package, TCT logs a configuration warning and runs the tool without tracing.
 
 ## Configure and run the CLI
 
@@ -128,6 +113,24 @@ Do not commit real credentials in an MCP client configuration. Prefer the
 client's secret storage or inherited process environment. The server batches
 events while running and flushes them during normal shutdown.
 
+## Architecture and failure behavior
+
+`invocation.py` runs tools and translates their errors. `serialization.py`
+provides JSON conversion. `telemetry.py` derives payload and TRAPI metrics;
+`observability.py` owns the optional Langfuse SDK and trace-context lifecycle.
+
+Installing `TCT[langfuse]` adds dependencies; it does not enable tracing.
+Libraries importing TCT can depend on plain `TCT` and own their own tracing.
+Direct calls to core library functions remain uninstrumented, even when the
+CLI/MCP tracing flag is enabled.
+
+Observation setup, input capture, result recording, context cleanup, and flush
+failures produce warnings without changing tool results or replacing original
+tool exceptions. Warning messages omit payloads and SDK exception text. An
+invalid opt-in flag or missing SDK also leaves the tool usable; diagnostics
+identify the failure type. The explicit configuration parser still raises
+`ObservabilityConfigurationError` for callers validating their configuration.
+
 ## Observation contract
 
 Each observed invocation uses the Langfuse observation type `tool` and the
@@ -169,11 +172,6 @@ An agent's Langfuse integration remains responsible for generation model,
 token usage, and price. When agent and MCP observations share distributed
 trace context, those generation costs and these tool metrics can be analyzed
 within the same turn.
-
-A deterministic offline baseline is available in
-[`benchmarks/LANGFUSE_TURN_BENCHMARKS.md`](../../benchmarks/LANGFUSE_TURN_BENCHMARKS.md).
-It compares repeated single-identifier calls, one batched call, and duplicate
-batched calls using this metadata contract without contacting Langfuse.
 
 ## Link agent turns to MCP tools
 
