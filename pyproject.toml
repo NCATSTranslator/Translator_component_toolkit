@@ -42,7 +42,8 @@ mcp = [
 ]
 
 [project.scripts]
-tct-server = "main:main"
+tct = "TCT.interfaces.cli:main"
+tct-server = "TCT.interfaces.mcp:main"
 
 [project.urls]
 Homepage = "https://github.com/NCATSTranslator/Translator_component_toolkit"

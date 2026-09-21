@@ -8,16 +8,13 @@ import urllib.parse
 
 import requests
 
-from .translator_node import TranslatorNode
-
-URL = 'https://annotator.transltr.io/'
-"""This is the root URL for the API."""
+from .config import service_url
 
 def status():
     """
     Returns the status of the Node Annotator API.
     """
-    response = requests.get(f'{URL}status')
+    response = requests.get(urllib.parse.urljoin(service_url("node_annotator"), "status"))
     response.raise_for_status()
     return response.json()
 
@@ -49,7 +46,7 @@ def lookup_curies(curies: list[str], **kwargs) -> dict[str, dict]:
     >>> lookup_curies(['MESH:D014867'])
     >>> lookup_curies(['NCIT:C34373', 'NCBIGene:1756'])
     """
-    path = urllib.parse.urljoin(URL, 'curie')
+    path = urllib.parse.urljoin(service_url("node_annotator"), 'curie')
     response = requests.post(path, json={'ids': curies, **kwargs})
     response.raise_for_status()
 

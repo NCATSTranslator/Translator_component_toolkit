@@ -2,11 +2,11 @@ from dataclasses import dataclass
 from typing import Any, Optional, TypeAlias, Union
 
 import requests
-import json
 import pandas as pd
 import numpy as np
 #import openai
-from . import name_resolver, node_normalizer, translator_query
+from . import name_resolver, node_normalizer, translator_kpinfo, translator_query
+from .config import service_url
 
 # plt.switch_backend('module://ipykernel.pylab.backend_inline')
 
@@ -77,8 +77,7 @@ def get_Translator_APIs():
     >>> Translator_KP_info,APInames= TCT.get_SmartAPI_Translator_KP_info()
     '''
     Translator_APIs = []
-    #Translator_apps_url = "https://smart-api.info/api/query?q=tags.name:translator&fields=info,_meta,tags&meta=1&size=500"
-    Translator_apps_url = "https://dev.smart-api.info/api/query?q=tags.name:translator&fields=info,_meta,tags&meta=1&size=500"
+    Translator_apps_url = service_url("smartapi_catalog")
     Translator_apps = requests.get(Translator_apps_url).json()['hits']
     for app in Translator_apps:
         Translator_APIs.append(app['info']['title'])
@@ -101,127 +100,7 @@ def get_SmartAPI_Translator_KP_info():
 
     """
 
-    import requests
-    import pandas as pd
-
-    # several APIs should be excluded:
-    #https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1
-
-    # Get x-bte smartapi specs
-    url = "https://smart-api.info/api/query?q=tags.name:translator AND tags.name:trapi&size=1000&sort=_seq_no&raw=1&fields=paths,servers,tags,components.x-bte*,info,_meta"
-    response = requests.get(url)
-    try:
-        response.raise_for_status()
-    except Exception:
-        print(f"error downloading smartapi specs: {response.status_code}")
-        exit()
-
-    content = json.loads(response.content)
-    smartapis = content["hits"]
-
-    id_list = []
-    title_list = []
-    prod_url_list = []
-    ci_url_list = []
-    test_url_list = []
-    for api in smartapis:
-
-
-        ci_found = False
-        test_found = False
-        prod_found = False
-        for i in range(len(api['servers'])):
-
-            server = api['servers'][i]
-            if 'x-maturity' not in server:
-                print(f"Skipping server without x-maturity: {server}")
-
-            else:
-                if server['x-maturity'] == 'production':
-                    # if prod_ur is not ars-prod.transltr.io
-                    if server['url'] == 'https://ars-prod.transltr.io':
-                        prod_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if prod_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            prod_url = server['url'] + 'query/'
-                        else:
-                            # if prod_url does not end with /, add '/query/' to the end
-                            prod_url = server['url'] + '/query/'
-
-                    prod_found = True
-
-                if server['x-maturity'] == 'staging' or server['x-maturity'] == 'development':
-                    # if ci_url is not ars.ci.transltr.io
-                    if server['url'] == 'https://ars.ci.transltr.io':
-                        ci_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if ci_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            ci_url = server['url'] + 'query/'
-                        else:
-                            # if ci_url does not end with /, add '/query/' to the end
-                            ci_url = server['url'] + '/query/'
-                    ci_found = True
-
-                if server['x-maturity'] == 'testing':
-                    # if test_url is not ars-test.transltr.io
-                    if server['url'] == 'https://ars.test.transltr.io':
-                        test_url = server['url'] + '/ars/api/submit/'
-                    else:
-                        # if test_url does not end with /, add '/query/' to the end
-                        if server['url'].endswith('/'):
-                            test_url = server['url'] + 'query/'
-                        else:
-                            # if test_url does not end with /, add '/query/' to the end
-                            test_url = server['url'] + '/query/'
-
-                    test_found = True
-
-        if not (prod_found or ci_found or test_found):
-            print(api['info']['title'])
-            print(f"Skipping server without production, staging or testing: {server}")
-        else:
-            id_list.append('https://smart-api.info/ui/'+api['_id'])
-            title_list.append(api['info']['title'])
-            if prod_found:
-                prod_url_list.append(prod_url)
-            else:
-                prod_url = prod_url_list.append(None)
-
-            if ci_found:
-                ci_url_list.append(ci_url)
-            else:
-                ci_url = ci_url_list.append(None)
-            if test_found:
-                test_url_list.append(test_url)
-            else:
-                test_url = test_url_list.append(None)
-
-    # write all the smartapis to a dataframe
-
-    smartapi_df = pd.DataFrame({
-        'id': id_list,
-        'title': title_list,
-        'prod_url': prod_url_list,
-        'ci_url': ci_url_list,
-        'test_url': test_url_list,
-    })
-    #smartapi_df = smartapi_df.set_index('id')
-
-    # remove the excluded APIs from the dataframe
-    #excluded_APIs = ['https://smart-api.info/ui/ac9c2ad11c5c442a1a1271223468ced1',#RaMP]
-
-    #smartapi_df = smartapi_df[~smartapi_df['id'].isin(excluded_APIs)]
-
-    API_names = {}
-    for i in range(len(smartapi_df)):
-        if prod_url_list[i] is not None:
-            #API_names[smartapi_df['title'][i]] = smartapi_df['prod_url'][i] + 'query/'
-            API_names[smartapi_df['title'].values[i]] = prod_url_list[i]
-        else:
-            API_names[smartapi_df['title'].values[i]] = ci_url_list[i]
-    return smartapi_df, API_names
+    return translator_kpinfo.get_translator_kp_info()
 
 # used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def list_Translator_APIs():
@@ -572,7 +451,7 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list):
     recoglized_ids = []
     # To convert a CURIE to a preferred name, you don't need NameLookup at all -- NodeNorm can
     # do this by itself!
-    NODENORM_BASE_URL = "https://nodenorm.transltr.io"  # Adjust this if you need NodeNorm TEST, CI or DEV.
+    nodenorm_base_url = service_url("node_normalizer").rstrip("/")
     NODENORM_BATCH_LIMIT = 900                          # Adjust this if you start getting errors from NodeNorm.
     NODENORM_GENE_PROTEIN_CONFLATION = True             # Change to False if you don't want gene/protein conflation.
     NODENORM_DRUG_CHEMICAL_CONFLATION = False           # Change to True if you want drug/chemical conflation.
@@ -584,7 +463,7 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list):
         # print(f"id_sublist: {id_sublist}")
 
         # Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get
-        response = requests.post(NODENORM_BASE_URL + '/get_normalized_nodes', json={
+        response = requests.post(nodenorm_base_url + '/get_normalized_nodes', json={
             "curies": id_sublist,
             "description": False,   # Change to True if you want descriptions from any identifiers we know about.
             "conflate": NODENORM_GENE_PROTEIN_CONFLATION,
@@ -1718,7 +1597,7 @@ def plot_path_bar(x,
 
 # Sri-name-resolver  Used Dec 5, 2023 (Example_query_one_hop_with_category.ipynb)
 def get_curie(name):
-    response = requests.get("https://name-lookup.transltr.io/lookup", params={
+    response = requests.get(service_url("name_resolver") + "lookup", params={
         'string': name,
         'autocomplete': False
     })
@@ -2388,4 +2267,3 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 # ---------------------------------------------------------------------------
 from .TCT_pathfinder import query_TCT_pathfinder  # noqa: E402
 from .TCT_neighborhood_finder import neighborhood_finder  # noqa: E402
-

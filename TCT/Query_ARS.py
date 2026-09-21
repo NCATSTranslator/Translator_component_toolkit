@@ -85,7 +85,7 @@ def check_ars_results(response_pk: str):
             print("Max retries reached. Exiting.")
             return None
 
-def format_query_json(subject_ids:list[str],
+def format_query_json_forARS(subject_ids:list[str],
         object_ids:list[str]|None = None,
         subject_categories:list[str]|None = None,
         object_categories:list[str]|None = None,
@@ -104,6 +104,9 @@ def format_query_json(subject_ids:list[str],
     attribute_constraints = [build_attribute_constraint('biolink:has_total', '>', 2)]
     '''
     #edited Dec 5, 2023
+    if len(predicates) == 0:
+            predicates = ['biolink:related_to']
+
     query_json_temp = {
         "message": {
             "query_graph": {
@@ -130,7 +133,7 @@ def format_query_json(subject_ids:list[str],
        
         "submitter": "TCT"
         }
-
+    
     if attribute_constraints is not None and len(attribute_constraints) > 0:
         query_json_temp['message']['query_graph']['edges']['e00']['attribute_constraints'] = attribute_constraints
 
@@ -226,12 +229,12 @@ def ARS_neighborhood_finder(
 
     #input_curies = [resolved_node.curie for resolved_node in resolved_nodes]
 
-    query = format_query_json(
+    query = format_query_json_forARS(
         subject_ids=node,
         object_ids=None,
         subject_categories=None,
         object_categories=neighbor_categories,
-        predicates=[],
+        predicates=predicates_subset,
         attribute_constraints=attribute_constraints,
     )
 
