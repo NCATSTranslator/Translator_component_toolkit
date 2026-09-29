@@ -336,7 +336,7 @@ def test_results_come_from_merged_message_or_fall_back_to_parent(monkeypatch):
     assert len(result.results) == 2
     assert isinstance(result, FinderResult)
     assert result.to_dict() is result.raw
-    assert result.summarize(1)[0]["essence"] == "drug"
+    assert result.summarize(1)[0]["nodes"]["n01"][0]["name"] == "drug"
 
     status = ars.parse_trace(PARENT, trace("Done", None, []))
     fallback = ars.get_ARS_result(status)
@@ -367,13 +367,18 @@ def test_empty_shell_returned_without_merged_message(monkeypatch):
 
 
 def test_summarize_results_flattens_bindings_predicates_and_sources():
-    rows = ars.summarize_results(merged_message(), top_n=1)
+    # essence/rank are optional per ARA; the summarizer must read them when set.
+    enriched = merged_message()
+    enriched["results"][0].update(
+        {"rank": 1, "essence": "drug", "essence_category": "biolink:SmallMolecule"}
+    )
+    rows = ars.summarize_results(enriched, top_n=1)
 
     assert len(rows) == 1
     row = rows[0]
     assert row["rank"] == 1 and row["score"] == 0.9
     assert row["essence"] == "drug"
-    assert row["nodes"]["n1"][0]["name"] == "drug"
+    assert row["nodes"]["n01"][0]["name"] == "drug"
     assert row["predicates"] == ["biolink:treats"]
     assert row["primary_sources"] == ["infores:a"]
     assert row["aras"] == ["infores:arax"]

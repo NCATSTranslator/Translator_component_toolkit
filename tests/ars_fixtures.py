@@ -36,12 +36,16 @@ def child(agent, status, pk="child", result_count=None, code=200):
 
 
 def trace(status, merged=None, children=()):
-    """A ``?trace=y`` parent response."""
+    """A ``?trace=y`` parent response.
+
+    ``merged_versions_list`` mirrors the live ARS, which serializes the field
+    as the Python repr of a list of ``[pk, agent]`` pairs rather than JSON.
+    """
     return {
         "status": status,
         "code": 200 if status == "Done" else 202,
         "merged_version": merged,
-        "merged_versions_list": [],
+        "merged_versions_list": f"[['{merged}', 'ars']]" if merged else "[]",
         "children": list(children),
     }
 
@@ -87,19 +91,16 @@ def merged_message():
         },
         "results": [
             {
-                "rank": 1,
                 "normalized_score": 0.9,
-                "essence": "drug",
-                "essence_category": "biolink:SmallMolecule",
-                "node_bindings": {"n0": [{"id": "MONDO:1"}], "n1": [{"id": "CHEBI:1"}]},
+                "node_bindings": {"n00": [{"id": "MONDO:1"}], "n01": [{"id": "CHEBI:1"}]},
                 "analyses": [
                     {
                         "resource_id": "infores:arax",
-                        "edge_bindings": {"e0": [{"id": "e1"}]},
+                        "edge_bindings": {"e00": [{"id": "e1"}]},
                     }
                 ],
             },
-            {"rank": 2, "score": 0.1, "node_bindings": {}, "analyses": []},
+            {"node_bindings": {}, "analyses": []},
         ],
         "auxiliary_graphs": {},
     }
