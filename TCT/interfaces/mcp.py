@@ -13,8 +13,10 @@ from functools import wraps
 from typing import Any
 
 from fastmcp import FastMCP
+from fastmcp.dependencies import Progress
 from fastmcp.exceptions import ToolError
 from fastmcp.server.middleware import Middleware, MiddlewareContext
+from fastmcp.server.tasks import TaskConfig
 from fastmcp.tools.tool import ToolResult
 
 from . import tools as shared_tools
@@ -29,6 +31,12 @@ mcp = FastMCP("TCT")
 # services, so openWorldHint is always true.
 _READ_ONLY_TOOLS = frozenset(
     {
+        "ARS_neighborhood_finder",
+        "ARS_pathfinder",
+        "submit_ars_query",
+        "get_ars_status",
+        "get_ars_results",
+        "query_ars",
         "get_translator_resources",
         "name_lookup",
         "get_name_synonyms",
@@ -118,9 +126,6 @@ def _register_ars_task_tool() -> None:
     """
     import asyncio
 
-    from fastmcp.dependencies import Progress
-    from fastmcp.server.tasks import TaskConfig
-
     from .. import Query_ARS as ars
 
     async def query_ars(
@@ -129,7 +134,7 @@ def _register_ars_task_tool() -> None:
         predicates: list[str] | None = None,
         top_n: int = 20,
         progress: Progress = Progress(),
-    ) -> dict[str, Any]:
+    ) -> Any:
         """Query the Translator ARS end to end and return ranked answer rows.
 
         Submits a one-hop query, waits for every ARA and the ARS merge agent,
@@ -171,7 +176,7 @@ def _register_ars_task_tool() -> None:
         result = await asyncio.to_thread(ars.get_ARS_result, status)
         await progress.increment()
 
-        payload: dict[str, Any] = {
+        payload = {
             "pk": result.pk,
             "merged_pk": result.merged_pk,
             "status": result.status,
@@ -187,15 +192,14 @@ def _register_ars_task_tool() -> None:
             payload["results"] = result.summarize(top_n)
         return payload
 
-    mcp.tool(
+    return mcp.tool(
         name="query_ars",
         task=TaskConfig(mode="optional"),
         annotations={"readOnlyHint": True, "openWorldHint": True},
     )(query_ars)
-    globals()["query_ars"] = query_ars
 
 
-_register_ars_task_tool()
+query_ars = _register_ars_task_tool()
 
 
 def main() -> None:
