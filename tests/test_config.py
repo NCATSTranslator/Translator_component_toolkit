@@ -26,6 +26,10 @@ def test_prod_ci_and_test_endpoint_resolution():
     assert ci.service_url("arax") == "https://shepherd.ci.transltr.io/arax/query"
     assert test.service_url("arax") == "https://shepherd.test.transltr.io/arax/query"
 
+    assert prod.service_url("ars") == "https://ars-prod.transltr.io/ars/api/"
+    assert ci.service_url("ars") == "https://ars.ci.transltr.io/ars/api/"
+    assert test.service_url("ars") == "https://ars.test.transltr.io/ars/api/"
+
 
 def test_environment_specific_and_fallback_endpoint_resolution():
     ci = RuntimeConfig(environment="ci")
