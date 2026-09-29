@@ -24,6 +24,28 @@ from .observability import flush_observability, use_incoming_trace_context
 
 mcp = FastMCP("TCT")
 
+# Tools that only read data or produce derived copies; everything else may
+# mutate the metadata structures passed in. All tools reach out to network
+# services, so openWorldHint is always true.
+_READ_ONLY_TOOLS = frozenset(
+    {
+        "get_translator_resources",
+        "name_lookup",
+        "get_name_synonyms",
+        "batch_name_lookup",
+        "normalize_nodes",
+        "get_kp_info",
+        "get_metakg_data",
+        "get_api_predicates",
+        "optimize_query_for_api",
+        "query_knowledge_provider",
+        "parallel_query_apis",
+        "trapi_query_endpoint",
+        "neighborhood_finder",
+        "path_finder",
+    }
+)
+
 
 def _metadata_mapping(value: Any) -> dict[str, Any]:
     """Convert protocol metadata to an ordinary mapping, preserving extras."""
@@ -77,7 +99,11 @@ def _register_tool(
             # carrying the contextual message.
             raise ToolError(error.contextual_message) from error
 
-    return mcp.tool()(invoke)
+    annotations = {
+        "readOnlyHint": tool.__name__ in _READ_ONLY_TOOLS,
+        "openWorldHint": True,
+    }
+    return mcp.tool(annotations=annotations)(invoke)
 
 
 for _tool in shared_tools.TOOLS:

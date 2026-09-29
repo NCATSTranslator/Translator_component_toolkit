@@ -171,3 +171,49 @@ def test_mcp_middleware_restores_protocol_context_without_schema_arguments(
             },
         ),
     ]
+
+def test_shared_tools_carry_protocol_annotations():
+    """Tool annotations disclose read-only behavior to clients."""
+    from TCT.interfaces.mcp import _READ_ONLY_TOOLS
+
+    async def collect():
+        return await mcp.get_tools()
+
+    tools = asyncio.run(collect())
+
+    assert tools["name_lookup"].annotations.readOnlyHint is True
+    assert tools["add_custom_api_to_metakg"].annotations.readOnlyHint is False
+    assert all(
+        tool.annotations.openWorldHint is True for tool in tools.values()
+    )
+    assert set(tools) - _READ_ONLY_TOOLS == {
+        "add_custom_api_to_metakg",
+        "add_plover_apis_to_metakg",
+    }
+
+def test_fastmcp_background_task_protocol_is_available():
+    """The pinned fastmcp registers async task tools with SEP-1686 metadata."""
+    from fastmcp import Client, FastMCP
+    from fastmcp.server.tasks import TaskConfig
+
+    server = FastMCP("task-smoke")
+
+    @server.tool(task=TaskConfig(mode="optional"))
+    async def slow_work(n: int = 1) -> str:
+        return "done" * n
+
+    async def run_it():
+        tool = await server.get_tool("slow_work")
+        async with Client(server) as client:
+            task = await client.call_tool("slow_work", {"n": 2}, task=True)
+            result = await task.result()
+            status = await client.get_task_status(task.task_id)
+        return tool, result, status
+
+    tool, result, status = asyncio.run(run_it())
+
+    assert tool.task_config is not None
+    assert tool.task_config.mode == "optional"
+    assert result.is_error is False
+    assert result.data == "donedone"
+    assert status.status == "completed"
