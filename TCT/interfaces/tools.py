@@ -428,6 +428,101 @@ def ARS_pathfinder(
     }
 
 
+def submit_ars_query(
+    node: list[str],
+    neighbor_categories: list[str],
+    predicates: list[str] | None = None,
+) -> Any:
+    """Submit a one-hop biomedical query to the Translator ARS and return immediately.
+
+    The ARS fans the query out to every registered ARA and merges their answers;
+    completion typically takes ~15 s to several minutes, so this does NOT wait
+    for results. Track progress by passing the returned pk to get_ars_status
+    (poll every ~15 s) until its status is Done, then fetch answers with
+    get_ars_results.
+
+    Args:
+        node: One or more input nodes, as names ("asthma") or CURIEs
+            ("MONDO:0004979"). Names are resolved to CURIEs before submission.
+        neighbor_categories: Biolink categories wanted for neighbors, with or
+            without the "biolink:" prefix (for example ["Drug"]).
+        predicates: Optional edge predicates to require, for example
+            ["biolink:treated_by"]. Omit for any predicate; the ARS returns an
+            empty merge for some directional predicates. Defaults to
+            biolink:related_to, which spans directions.
+
+    Returns:
+        {"pk", "resolved_nodes", "status"}. Keep the pk for the follow-up calls.
+
+    Fails only on unresolvable inputs or submission rejection; later failure
+    shows up as status Error in get_ars_status.
+    """
+    resolved = _resolve_nodes(node)
+    pk = _submit_ARS(_format_query_json_forARS_neighborhood(
+        subject_ids=[resolved_node.curie for resolved_node in resolved],
+        object_categories=_normalize_categories(neighbor_categories),
+        predicates=predicates,
+    ))
+    return {
+        "pk": pk,
+        "resolved_nodes": {
+            f"node_{index}": resolved_node
+            for index, resolved_node in enumerate(resolved)
+        },
+        "status": _get_ARS_status(pk),
+    }
+
+
+def get_ars_status(pk: str) -> Any:
+    """Check progress of an ARS query submitted with submit_ars_query, without blocking.
+
+    Args:
+        pk: Parent message pk returned by submit_ars_query.
+
+    Returns:
+        Parent status ("Running", "Done", or "Error"), the merged message pk
+        once available, and one entry per ARA with its own status and result
+        count. Poll until status is Done, then call get_ars_results once.
+        "Done" with zero results means the query matched nothing and will not
+        change.
+    """
+    return _get_ARS_status(pk)
+
+
+def get_ars_results(pk: str, top_n: int = 20) -> Any:
+    """Fetch the merged answer of a finished ARS query as ranked summary rows.
+
+    Args:
+        pk: Parent message pk returned by submit_ars_query.
+        top_n: Number of ranked rows to return (default 20). Keep the default
+            unless explicitly asked for more; pass 0 only when exporting the
+            full merged TRAPI message, which can be tens of megabytes.
+
+    Returns:
+        {"pk", "merged_pk", "status", "ready", "result_count", "results"}. Rows
+        give rank, score, essence (answer node with name and categories),
+        predicates, primary knowledge sources, and contributing ARAs. When
+        ready is false the query is still running: poll get_ars_status instead
+        of retrying this.
+    """
+    status = _get_ARS_status(pk)
+    if not status.is_terminal:
+        return {"pk": pk, "merged_pk": status.merged_version, "status": status, "ready": False}
+    result = _get_ARS_result(status)
+    payload = {
+        "pk": result.pk,
+        "merged_pk": result.merged_pk,
+        "status": result.status,
+        "ready": True,
+        "result_count": len(result.results),
+    }
+    if top_n <= 0:
+        payload["message"] = result.raw
+    else:
+        payload["results"] = result.summarize(top_n)
+    return payload
+
+
 TOOLS: tuple[Callable[..., Any], ...] = (
     get_translator_resources,
     name_lookup,
@@ -447,6 +542,9 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     path_finder,
     ARS_neighborhood_finder,
     ARS_pathfinder,
+    submit_ars_query,
+    get_ars_status,
+    get_ars_results,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]
