@@ -190,6 +190,8 @@ def test_shared_tools_carry_protocol_annotations():
         "add_custom_api_to_metakg",
         "add_plover_apis_to_metakg",
     }
+    assert "query_ars" in tools  # MCP-only background-task tool
+    assert tools["query_ars"].annotations.readOnlyHint is True
 
 def test_fastmcp_background_task_protocol_is_available():
     """The pinned fastmcp registers async task tools with SEP-1686 metadata."""
