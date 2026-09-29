@@ -38,7 +38,7 @@ vision = [
     "seaborn",
 ]
 mcp = [
-    "fastmcp>=2.12.2",
+    "fastmcp>=2.14.7,<3",
 ]
 langfuse = [
     "langfuse>=3.63.0",
