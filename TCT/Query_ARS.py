@@ -209,11 +209,6 @@ def _get(url: str, params: Optional[dict[str, str]] = None) -> requests.Response
     return _session().get(url, params=params, timeout=HTTP_TIMEOUT)
 
 
-def _api_root(url: Optional[str]) -> str:
-    root = (url or service_url("ars")).rstrip("/")
-    return root
-
-
 def _message_from_envelope(envelope: dict[str, Any]) -> Optional[dict[str, Any]]:
     """Extract the merged TRAPI message from a full ARS message envelope."""
     data = (envelope.get("fields") or {}).get("data") or {}
