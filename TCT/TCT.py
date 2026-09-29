@@ -51,7 +51,12 @@ __all__ = [
     #'query_chatGPT4',
     'load_json_template',
     'extract_json',
-    'TRAPI_json_validation'
+    'TRAPI_json_validation',
+    'ARS_neighborhood_finder',
+    'ARS_pathfinder',
+    'ARSResult',
+    'check_ars_results',
+    'fetch_ars_results',
 ]
 
 
@@ -2267,3 +2272,13 @@ def get_similar_predicate(query_json_cur_clean, All_predicates):
 # ---------------------------------------------------------------------------
 from .TCT_pathfinder import query_TCT_pathfinder  # noqa: E402
 from .TCT_neighborhood_finder import neighborhood_finder  # noqa: E402
+# NOTE: the Query_ARS *function* is deliberately not re-exported here; the name
+# must stay free for ``import TCT.Query_ARS`` (the module). It remains available
+# as ``TCT.Query_ARS.Query_ARS``.
+from .Query_ARS import (  # noqa: E402
+    ARSResult,
+    ARS_neighborhood_finder,
+    ARS_pathfinder,
+    check_ars_results,
+    fetch_ars_results,
+)
