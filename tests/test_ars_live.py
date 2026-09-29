@@ -32,18 +32,17 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_live_ARS_neighborhood_finder_returns_finder_shaped_result():
-    result = ARS_neighborhood_finder(
-        "asthma",
-        ["ChemicalEntity"],
-        predicates=["biolink:treated_by"],
-    )
+    # No predicate filter: the ARS accepts the query but some directional
+    # predicates (e.g. biolink:treated_by) come back with an empty merge.
+    result = ARS_neighborhood_finder("asthma", ["ChemicalEntity"])
 
     assert isinstance(result, ars.ARSResult)
     assert isinstance(result, FinderResult)
     assert result.status is not None and result.status.status == "Done"
     assert result.results, "expected at least one merged result"
     rows = result.summarize(3)
-    assert rows and rows[0]["essence"]
+    # essence is optional in ARS merges (aragorn/bte leave it unset).
+    assert rows and rows[0]["rank"] == 1 and rows[0]["nodes"]
 
 
 def test_live_ARS_pathfinder_returns_paths():
@@ -64,7 +63,14 @@ def _subset_structure(offline, live, path, problems):
             problems.append(f"{path}: expected object, got {type(live).__name__}")
             return
         for key, value in offline.items():
-            if key not in live:
+            if key == "*":
+                # Wildcard: compare the value shape against any one live entry.
+                if not live:
+                    problems.append(f"{path}: empty live object")
+                else:
+                    first = next(iter(live))
+                    _subset_structure(value, live[first], f"{path}.{first}", problems)
+            elif key not in live:
                 problems.append(f"{path}.{key}: missing in live response")
             else:
                 _subset_structure(value, live[key], f"{path}.{key}", problems)
@@ -97,7 +103,6 @@ def test_offline_fixtures_match_live_ars_shape():
     pk = session.post(f"{root}/submit", json=ars.format_query_json_forARS_neighborhood(
         subject_ids=["MONDO:0004979"],
         object_categories=["biolink:ChemicalEntity"],
-        predicates=["biolink:treated_by"],
     ), timeout=ars.HTTP_TIMEOUT).json()["pk"]
 
     merged_pk = ars.check_ars_results(pk)
@@ -123,7 +128,12 @@ def test_offline_fixtures_match_live_ars_shape():
             "children[0]",
             problems,
         )
-    _subset_structure(envelope(merged_message()), live_envelope, "envelope", problems)
+    fixture_envelope = envelope(merged_message())
+    kg = fixture_envelope["fields"]["data"]["message"]["knowledge_graph"]
+    # Node and edge ids vary per query; compare their entry shapes instead.
+    kg["nodes"] = {"*": next(iter(merged_message()["knowledge_graph"]["nodes"].values()))}
+    kg["edges"] = {"*": next(iter(merged_message()["knowledge_graph"]["edges"].values()))}
+    _subset_structure(fixture_envelope, live_envelope, "envelope", problems)
 
     assert not problems, (
         "offline ARS fixtures drifted from the live response shape:\n"

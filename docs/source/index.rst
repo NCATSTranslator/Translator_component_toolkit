@@ -21,6 +21,7 @@ Welcome to Translator Component Toolkit's documentation!
    TCT
    neighborhood
    pathfinder
+   ars
    network_annotator
    node_annotator
 
