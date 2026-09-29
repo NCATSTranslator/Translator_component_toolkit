@@ -13,11 +13,9 @@ from functools import wraps
 from typing import Any
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.tools.tool import ToolResult
-from mcp import types as mcp_types
-from mcp.shared.exceptions import McpError
-from mcp.types import INTERNAL_ERROR, ErrorData
 
 from . import tools as shared_tools
 from .invocation import ToolInvocationError, invoke as invoke_tool
@@ -42,7 +40,7 @@ class _TraceContextMiddleware(Middleware):
 
     async def on_call_tool(
         self,
-        context: MiddlewareContext[mcp_types.CallToolRequestParams],
+        context: MiddlewareContext,
         call_next: Any,
     ) -> ToolResult:
         message = context.message
@@ -75,12 +73,9 @@ def _register_tool(
         try:
             return invoke_tool(tool, *args, _interface="mcp", **kwargs)
         except ToolInvocationError as error:
-            raise McpError(
-                ErrorData(
-                    code=INTERNAL_ERROR,
-                    message=error.contextual_message,
-                )
-            ) from error
+            # FastMCP converts ToolError into a protocol-level tool error result
+            # carrying the contextual message.
+            raise ToolError(error.contextual_message) from error
 
     return mcp.tool()(invoke)
 

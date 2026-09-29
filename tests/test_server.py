@@ -44,23 +44,25 @@ def test_server_module_is_a_compatible_view_of_the_mcp_adapter():
 
 
 def test_mcp_adapter_preserves_protocol_error_conversion(monkeypatch):
-    """Failures from shared tools remain MCP internal errors for clients."""
-    from mcp.shared.exceptions import McpError
-    from mcp.types import INTERNAL_ERROR
+    """Failures from shared tools surface as ToolError with contextual messages."""
+    from fastmcp import Client
+    from fastmcp.exceptions import ToolError
 
     from TCT.interfaces import tools
-    from TCT.server import name_lookup
 
     def fail_lookup(*args, **kwargs):
         raise ValueError("lookup failed")
 
     monkeypatch.setattr(tools, "lookup", fail_lookup)
 
-    with pytest.raises(McpError) as error:
-        asyncio.run(name_lookup.run({"query": "aspirin"}))
+    async def call_it():
+        async with Client(mcp) as client:
+            await client.call_tool("name_lookup", {"query": "aspirin"})
 
-    assert error.value.error.code == INTERNAL_ERROR
-    assert error.value.error.message == "Name lookup error: lookup failed"
+    with pytest.raises(ToolError) as error:
+        asyncio.run(call_it())
+
+    assert str(error.value) == "Name lookup error: lookup failed"
 
 
 def test_mcp_adapter_uses_shared_invocation_boundary(monkeypatch):
@@ -97,11 +99,20 @@ def test_mcp_middleware_restores_protocol_context_without_schema_arguments(
 ):
     """Trace metadata surrounds dispatch and never reaches the shared tool."""
     from fastmcp.server.middleware import MiddlewareContext
-    from mcp.types import CallToolRequestParams
 
     from TCT.interfaces import mcp as adapter
 
     calls = []
+
+    class FakeParams:
+        """Stand-in for the protocol params object, without importing mcp types."""
+
+        def __init__(self, arguments, meta=None):
+            self.arguments = arguments
+            self.meta = meta
+
+        def model_copy(self, *, update=None):
+            return FakeParams(update.get("arguments", self.arguments), self.meta)
 
     @contextmanager
     def fake_trace_context(metadata):
@@ -116,8 +127,7 @@ def test_mcp_middleware_restores_protocol_context_without_schema_arguments(
         return "result"
 
     monkeypatch.setattr(adapter, "use_incoming_trace_context", fake_trace_context)
-    params = CallToolRequestParams(
-        name="name_lookup",
+    params = FakeParams(
         arguments={
             "query": "aspirin",
             "_meta": {
@@ -127,7 +137,7 @@ def test_mcp_middleware_restores_protocol_context_without_schema_arguments(
                 )
             },
         },
-        _meta={"baggage": "session.id=conversation-123"},
+        meta={"baggage": "session.id=conversation-123"},
     )
 
     result = asyncio.run(
