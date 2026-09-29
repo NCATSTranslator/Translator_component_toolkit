@@ -31,7 +31,7 @@ def test_environment_specific_and_fallback_endpoint_resolution():
     ci = RuntimeConfig(environment="ci")
     test = RuntimeConfig(environment="test")
 
-    assert ci.service_url("node_normalizer") == "https://nodenorm.ci.transltr.io/"
+    assert ci.service_url("node_normalizer") == "https://nodenorm.transltr.io/"
     assert test.service_url("node_normalizer") == "https://nodenorm.transltr.io/"
 
 

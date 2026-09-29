@@ -32,8 +32,9 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         ci="https://name-lookup.ci.transltr.io/",
     ),
     "node_normalizer": ServiceEndpoint(
+        # The CI hostname returns 404; use production in all environments
+        # unless the caller supplies an explicit service override.
         prod="https://nodenorm.transltr.io/",
-        ci="https://nodenorm.ci.transltr.io/",
     ),
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",

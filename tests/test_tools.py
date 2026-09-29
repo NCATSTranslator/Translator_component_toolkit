@@ -25,6 +25,7 @@ EXPECTED_TOOL_NAMES = [
     "trapi_query_endpoint",
     "neighborhood_finder",
     "path_finder",
+    "ARS_neighborhood_finder",
 ]
 
 
@@ -54,7 +55,7 @@ class RejectMcpImports:
 sys.meta_path.insert(0, RejectMcpImports())
 from TCT.interfaces.cli import build_parser
 from TCT.interfaces.tools import TOOLS
-assert len(TOOLS) == 16
+assert len(TOOLS) == 17
 assert build_parser().prog == "tct"
 """
 

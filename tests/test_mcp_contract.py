@@ -60,6 +60,11 @@ EXPECTED_SIGNATURES = {
         "(start: 'str', end: 'str', "
         "intermediate_categories: 'list[str] | None' = None) -> 'Any'"
     ),
+    "ARS_neighborhood_finder": (
+        "(json_file: 'dict[str, Any] | None' = None, "
+        "node: 'list[str] | None' = None, "
+        "neighbor_categories: 'list[str] | None' = None) -> 'Any'"
+    ),
 }
 
 
@@ -222,6 +227,32 @@ EXPECTED_INPUTS = {
             },
         },
         ["start", "end"],
+    ),
+    "ARS_neighborhood_finder": (
+        {
+            "json_file": {
+                "anyOf": [
+                    {"additionalProperties": True, "type": "object"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+            "node": {
+                "anyOf": [
+                    {"items": {"type": "string"}, "type": "array"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+            "neighbor_categories": {
+                "anyOf": [
+                    {"items": {"type": "string"}, "type": "array"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+        },
+        [],
     ),
 }
 

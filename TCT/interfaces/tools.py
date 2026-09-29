@@ -19,6 +19,7 @@ from ..node_normalizer import get_normalized_nodes
 from ..TCT import get_translator_resources as _get_translator_resources
 from ..TCT_neighborhood_finder import neighborhood_finder as tct_neighborhood_finder
 from ..TCT_pathfinder import query_TCT_pathfinder
+from ..Query_ARS import ARS_neighborhood_finder as query_ars_neighborhood_finder
 from ..translator_kpinfo import get_translator_kp_info
 from ..translator_metakg import add_new_API_for_query, add_plover_API, get_KP_metadata
 from ..translator_query import (
@@ -335,22 +336,27 @@ def path_finder(
         resources=resources,
     )
 
-def ARS_neighborhood_finder(node: list[str], neighbor_categories: list[str]):
-    """
-    Find neighbors of a given node using the neighborhood finder tool using ARS.
-    
+def ARS_neighborhood_finder(
+    json_file: dict[str, Any] | None = None,
+    node: list[str] | None = None,
+    neighbor_categories: list[str] | None = None,
+) -> Any:
+    """Submit uploaded TRAPI JSON to CI ARS and return its merged response.
+
     Args:
-        node: List of CURIEs to find neighbors for
-        neighbor_categories: List of categories to filter neighbors
-        resources: Dictionary of resources for the neighborhood finder
+        json_file: Parsed JSON object from the file uploaded in chat. The query
+            is submitted unchanged, including a path query graph if present.
+        node: Optional CURIE list for building a one-hop query instead.
+        neighbor_categories: Neighbor categories for the one-hop query.
+
     Returns:
-        List of neighboring nodes matching the specified categories
+        The full merged ARS message, with TRAPI data at fields.data.message,
+        or null if ARS has no merged result.
     """
-    #resources = _get_translator_resources()  # Ensure resources are loaded
-    return ARS_neighborhood_finder(
+    return query_ars_neighborhood_finder(
+        json_file=json_file,
         node=node,
         neighbor_categories=neighbor_categories,
-        #resources=resources
     )
 
 TOOLS: tuple[Callable[..., Any], ...] = (
