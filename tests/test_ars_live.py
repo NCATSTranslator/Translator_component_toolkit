@@ -149,13 +149,13 @@ def test_live_mcp_ars_tools_full_flow():
 
     submitted = tools.submit_ars_query(["asthma"], ["ChemicalEntity"])
     pk = submitted["pk"]
-    assert pk and submitted["status"].status in {"Running", "Done"}
+    assert pk and submitted["status"] in {"Running", "Done"}
 
     deadline = 900.0
     import time
 
     start = time.monotonic()
-    status = submitted["status"]
+    status = tools.get_ars_status(pk)
     while not status.is_terminal and time.monotonic() - start < deadline:
         time.sleep(15.0)
         status = tools.get_ars_status(pk)
@@ -168,13 +168,23 @@ def test_live_mcp_ars_tools_full_flow():
     rows = result["results"]
     assert rows and rows[0]["rank"] == 1
 
+def _fresh_mcp_module():
+    """Reload the adapter so each client gets a pristine FastMCP instance.
+
+    FastMCP keeps dependency/session state on the server object; reusing one
+    instance across a task call and a plain call fails dependency resolution.
+    """
+    import importlib
+
+    from TCT.interfaces import mcp as mcp_module
+
+    return importlib.reload(mcp_module)
+
 def test_live_mcp_query_ars_background_task():
     """query_ars end to end through an in-process MCP client as a task."""
     import asyncio
 
     from fastmcp import Client
-
-    from TCT.interfaces import mcp as mcp_module
 
     async def scenario():
         async with Client(mcp_module.mcp) as client:
@@ -191,6 +201,7 @@ def test_live_mcp_query_ars_background_task():
             assert data["results"] and data["results"][0]["rank"] == 1
             return data
 
+    mcp_module = _fresh_mcp_module()
     data = asyncio.run(scenario())
     assert isinstance(data, dict)
 
@@ -200,7 +211,7 @@ def test_live_mcp_query_ars_task_unaware_client():
 
     from fastmcp import Client
 
-    from TCT.interfaces import mcp as mcp_module
+    mcp_module = _fresh_mcp_module()
 
     async def scenario():
         async with Client(mcp_module.mcp) as client:
