@@ -28,6 +28,7 @@ from ..translator_query import (
     query_KP,
 )
 from ..trapi import query as trapi_query
+from ..workflow import replay_workflow, run_workflow, validate_workflow
 
 
 def get_translator_resources() -> Any:
@@ -336,6 +337,79 @@ def path_finder(
     )
 
 
+def validate_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Validate a composable query recipe without contacting any providers.
+
+    Recipes have schema_version=1, steps, and named outputs. Each step has
+    id and op. Data references are {"$ref": "step_id", "path": "/json/pointer"}.
+    Supported operations: literal (value); query (url, query, timeout_seconds);
+    rows (input object); filter (input, conditions); project (input, fields);
+    pluck (input, path, unique); join (left, right, left_on, right_on).
+    Transformation inputs and named outputs must be references. Filters AND
+    conditions with path/operator/value; operators are eq, ne, in, not_in,
+    gt, gte, lt, lte, exists. Joins are exact inner joins. Paths are JSON
+    pointers, not Python expressions. Descriptions are caller-supplied intent.
+
+    Args:
+        workflow: Versioned JSON recipe with steps and named output references.
+
+    Returns:
+        Normalized recipe, execution order, and explicit step dependencies.
+        Dynamic paths and types are checked only when upstream outputs exist.
+    """
+    return validate_workflow(workflow)
+
+
+def run_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Execute a query DAG and return replayable evidence with row lineage.
+
+    Use validate_query_workflow to inspect the recipe first. Query operations
+    POST explicit TRAPI bodies to explicit URLs without pruning predicates,
+    retries, redirects, or automatic provider expansion. Full synchronous
+    responses, resolved requests, filter decisions, and join lineage are saved.
+    Errors remain distinct from valid empty results; dependent steps are skipped.
+    Check the returned status and output_errors before interpreting outputs.
+
+    Agent effort (advisory):
+        Routine: Execute an agreed, bounded recipe using resolved identifiers.
+        Escalate: Review identifiers, direction, qualifiers, source selection,
+            and evidence before interpreting a joined path as a mechanism.
+        Execution: Up to 100 steps, 10,000 transformation rows, 8 MiB per
+            response, and 120 seconds per query socket timeout. Evidence is
+            returned inline; callers are responsible for saving the bundle.
+
+    Args:
+        workflow: Version-1 recipe described by validate_query_workflow.
+
+    Returns:
+        Structured bundle containing recipe, per-step evidence and failures,
+        row lineage, named outputs, timestamps, versions, and content hashes.
+        A traceable graph connection does not establish biological causality.
+    """
+    return run_workflow(workflow)
+
+
+def replay_query_workflow(
+    bundle: dict[str, Any], mode: str = "snapshot"
+) -> dict[str, Any]:
+    """Inspect saved query evidence offline, or explicitly rerun the recipe.
+
+    Snapshot mode makes no network calls: it verifies bundle checksums, reuses
+    saved query responses, and recomputes filters, projections, and joins.
+    Live mode contacts the recorded endpoints again; changing remote data can
+    change results. Checksums detect modification, not evidence authenticity.
+
+    Args:
+        bundle: Complete evidence bundle returned by run_query_workflow.
+        mode: snapshot (offline, default) or live (new remote requests).
+
+    Returns:
+        New bundle linked to the original, with replayed or freshly queried
+        evidence. Snapshot replay requires the same workflow engine version.
+    """
+    return replay_workflow(bundle, mode)
+
+
 TOOLS: tuple[Callable[..., Any], ...] = (
     get_translator_resources,
     name_lookup,
@@ -353,6 +427,9 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     trapi_query_endpoint,
     neighborhood_finder,
     path_finder,
+    validate_query_workflow,
+    run_query_workflow,
+    replay_query_workflow,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]
