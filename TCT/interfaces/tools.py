@@ -375,20 +375,20 @@ def ARS_neighborhood_finder(
     if json_file is not None:
         return {
             "merged_pk": result.merged_pk,
-            "status": result.status,
+            "status": result.status.status,
             "message": result.raw,
         }
     return {
         "resolved_nodes": result.resolved_nodes,
-        "status": result.status,
+        "status": result.status.status,
         "result_count": len(result.results),
         "results": result.summarize(20),
     }
 
 
 def ARS_pathfinder(
-    start: str,
-    end: str,
+    start: str = "",
+    end: str = "",
     intermediate_categories: list[str] | None = None,
     json_file: dict[str, Any] | None = None,
 ) -> Any:
@@ -408,6 +408,8 @@ def ARS_pathfinder(
         submit_ars_query / get_ars_status / get_ars_results when polling is
         better than waiting.
     """
+    if json_file is None and (not start or not end):
+        raise ValueError("Provide start and end, or json_file")
     result = _ars_pathfinder(
         start,
         end,
@@ -417,12 +419,12 @@ def ARS_pathfinder(
     if json_file is not None:
         return {
             "merged_pk": result.merged_pk,
-            "status": result.status,
+            "status": result.status.status,
             "message": result.raw,
         }
     return {
         "resolved_nodes": result.resolved_nodes,
-        "status": result.status,
+        "status": result.status.status,
         "result_count": len(result.results),
         "results": result.summarize(20),
     }
@@ -469,7 +471,7 @@ def submit_ars_query(
             f"node_{index}": resolved_node
             for index, resolved_node in enumerate(resolved)
         },
-        "status": _get_ARS_status(pk),
+        "status": _get_ARS_status(pk).status,
     }
 
 
@@ -507,12 +509,12 @@ def get_ars_results(pk: str, top_n: int = 20) -> Any:
     """
     status = _get_ARS_status(pk)
     if not status.is_terminal:
-        return {"pk": pk, "merged_pk": status.merged_version, "status": status, "ready": False}
+        return {"pk": pk, "merged_pk": status.merged_version, "status": status.status, "ready": False}
     result = _get_ARS_result(status)
     payload = {
         "pk": result.pk,
         "merged_pk": result.merged_pk,
-        "status": result.status,
+        "status": result.status.status,
         "ready": True,
         "result_count": len(result.results),
     }

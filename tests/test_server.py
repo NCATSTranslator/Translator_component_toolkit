@@ -189,6 +189,8 @@ def test_shared_tools_carry_protocol_annotations():
     assert set(tools) - _READ_ONLY_TOOLS == {
         "add_custom_api_to_metakg",
         "add_plover_apis_to_metakg",
+        # Submitting a query creates ARS state, so it is not read-only.
+        "submit_ars_query",
     }
     assert "query_ars" in tools  # MCP-only background-task tool
     assert tools["query_ars"].annotations.readOnlyHint is True
