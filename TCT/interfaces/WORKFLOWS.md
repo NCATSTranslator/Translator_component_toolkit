@@ -168,3 +168,40 @@ invocation exposed through the workflow interpreter.
    Do not turn source-level conformance into an answer-correctness score.
 6. Build the user view: choose a returned path, walk backward through filters
    and joins, inspect supporting records, and export the replayable recipe.
+
+### Optional TRAPI representations
+
+The shared CLI/MCP functions `query_knowledge_provider`, `parallel_query_apis`,
+`neighborhood_finder`, `path_finder`, `run_query_workflow`, and
+`replay_query_workflow` accept `include_trapi=True` (CLI: `--include-trapi`).
+By default they retain their existing return values. Opting in returns:
+
+```json
+{
+  "result": "the unchanged native result",
+  "trapi": {
+    "representation_version": 1,
+    "schema_validation": "not_performed",
+    "artifacts": [],
+    "limitations": []
+  }
+}
+```
+
+The representation is produced locally after the ordinary operation, without
+additional provider requests. Artifacts are detached copies. Provider messages
+and finder raw output are wrapped as response-shaped objects. Finder output may
+use path extensions or incomplete bindings; this is not a schema-validation or
+RIG-compliance guarantee. Parallel queries expose only a
+`knowledge_graph_fragment` containing merged edges, not an invented response.
+A provider's `None` result yields no artifact because emptiness and failure
+cannot be distinguished by that existing interface.
+
+Workflow artifacts retain each executed query's resolved request and any saved
+response, tagged with `step_id` and `execution_status`. Failed requests are not
+represented as empty successful responses. Skipped queries have no artifact.
+Filters, joins, row lineage, and reproducibility remain in `result`; no single
+TRAPI query is synthesized for arbitrary composition. Pass `envelope["result"]`
+to replay, preserving the original bundle's checksums. Literal-only workflows
+have no TRAPI artifacts. Name resolution and normalization retain their native
+interfaces.

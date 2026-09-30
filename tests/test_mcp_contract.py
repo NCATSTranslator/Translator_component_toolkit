@@ -66,6 +66,20 @@ EXPECTED_SIGNATURES = {
 }
 
 
+TRAPI_TOOLS = {
+    "query_knowledge_provider",
+    "parallel_query_apis",
+    "neighborhood_finder",
+    "path_finder",
+    "run_query_workflow",
+    "replay_query_workflow",
+}
+for name in TRAPI_TOOLS:
+    EXPECTED_SIGNATURES[name] = EXPECTED_SIGNATURES[name].replace(
+        ") ->", ", include_trapi: 'bool' = False) ->"
+    )
+
+
 EXPECTED_INPUTS = {
     "get_translator_resources": ({}, []),
     "name_lookup": (
@@ -258,7 +272,10 @@ def test_generated_mcp_input_schemas_are_stable():
     for name, (properties, required) in EXPECTED_INPUTS.items():
         schema = _without_titles(tools[name].parameters)
         assert schema["type"] == "object"
-        assert schema["properties"] == properties
+        expected = dict(properties)
+        if name in TRAPI_TOOLS:
+            expected["include_trapi"] = {"type": "boolean", "default": False}
+        assert schema["properties"] == expected
         assert schema.get("required", []) == required
 
 
@@ -281,7 +298,13 @@ def test_workflow_tool_inputs_are_explicit_json_objects():
     tools = asyncio.run(mcp.get_tools())
     for name in ("validate_query_workflow", "run_query_workflow"):
         schema = _without_titles(tools[name].parameters)
-        assert schema["properties"] == {
+        properties = dict(schema["properties"])
+        if name == "run_query_workflow":
+            assert properties.pop("include_trapi") == {
+                "type": "boolean",
+                "default": False,
+            }
+        assert properties == {
             "workflow": {"type": "object", "additionalProperties": True}
         }
         assert schema["required"] == ["workflow"]
@@ -289,6 +312,7 @@ def test_workflow_tool_inputs_are_explicit_json_objects():
     assert schema["properties"] == {
         "bundle": {"type": "object", "additionalProperties": True},
         "mode": {"type": "string", "default": "snapshot"},
+        "include_trapi": {"type": "boolean", "default": False},
     }
     assert schema["required"] == ["bundle"]
 
