@@ -66,7 +66,7 @@ EXPECTED_SIGNATURES = {
         "neighbor_categories: 'list[str] | None' = None) -> 'Any'"
     ),
     "ARS_pathfinder": (
-        "(start: 'str', end: 'str', "
+        "(start: 'str' = '', end: 'str' = '', "
         "intermediate_categories: 'list[str] | None' = None, "
         "json_file: 'dict[str, Any] | None' = None) -> 'Any'"
     ),
@@ -76,9 +76,10 @@ EXPECTED_SIGNATURES = {
     ),
     "get_ars_status": "(pk: 'str') -> 'Any'",
     "get_ars_results": "(pk: 'str', top_n: 'int' = 20) -> 'Any'",
+    # Defined without PEP 563, so annotations stay unquoted.
     "query_ars": (
-        "(node: 'list[str]', neighbor_categories: 'list[str]', "
-        "predicates: 'list[str] | None' = None, top_n: 'int' = 20) -> 'Any'"
+        "(node: list[str], neighbor_categories: list[str], "
+        "predicates: list[str] | None = None, top_n: int = 20) -> Any"
     ),
 }
 
@@ -265,8 +266,8 @@ EXPECTED_INPUTS = {
     ),
     "ARS_pathfinder": (
         {
-            "start": {"type": "string"},
-            "end": {"type": "string"},
+            "start": {"default": "", "type": "string"},
+            "end": {"default": "", "type": "string"},
             "intermediate_categories": {
                 "anyOf": [
                     {"items": {"type": "string"}, "type": "array"},
@@ -282,7 +283,7 @@ EXPECTED_INPUTS = {
                 "default": None,
             },
         },
-        ["start", "end"],
+        [],
     ),
     "submit_ars_query": (
         {
