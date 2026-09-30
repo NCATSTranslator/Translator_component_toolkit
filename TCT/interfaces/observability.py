@@ -50,6 +50,12 @@ def langfuse_enabled(environ: Mapping[str, str] | None = None) -> bool:
     set to an accepted true value. Langfuse credentials alone never activate
     instrumentation.
     """
+    if environ is None:
+        from ..execution import langfuse_override
+
+        override = langfuse_override()
+        if override is not None:
+            return override
     variables = os.environ if environ is None else environ
     configured = variables.get(_ENABLED_VARIABLE)
     if configured is not None:

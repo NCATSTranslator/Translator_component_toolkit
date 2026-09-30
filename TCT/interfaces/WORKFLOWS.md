@@ -169,32 +169,77 @@ invocation exposed through the workflow interpreter.
 6. Build the user view: choose a returned path, walk backward through filters
    and joins, inspect supporting records, and export the replayable recipe.
 
-### Optional TRAPI observation capture
+### Optional execution controls
 
 The experimental `include_trapi` argument and return envelope have been removed.
-The six query/finder/workflow wrappers always return native results. Their
-introspected CLI/MCP signatures no longer advertise a representation flag.
-
-Python callers can opt into in-memory observations:
+Functions retain their native results. CLI and MCP adapters each expose one
+optional execution setting; ordinary library signatures are unchanged.
 
 ```python
 from TCT import execution
 from TCT.interfaces.tools import run_query_workflow
 
-with execution({"trapi": True}) as observations:
+with execution({"record": True, "store": "./evidence", "trapi": True}) as run:
     bundle = run_query_workflow(recipe)
-# bundle is unchanged and can be replayed directly.
-# observations contains inputs, operation status, and detached representations.
+print(run.run_id)  # Available even when the caller did not choose an ID.
+# bundle remains a normal workflow bundle; run is also a list of observations.
 ```
 
-Capture is disabled by default. An omitted setting inherits an enclosing context;
-explicit false temporarily disables capture. Langfuse is independently enabled
-through its existing environment setting and still observes interface invocations.
-This context neither writes files nor enables caching. It does not yet provide
-CLI/MCP execution configuration, durable replay state, or a validated TRAPI rollup.
+Use `tct COMMAND ... --execution execution.json` in the CLI, or an `execution`
+object alongside normal MCP arguments. An example file/object is:
 
-Representations retain their prior limitations: provider failures and empty
-results may both return None; parallel results contain only merged edges; finder
-output is TRAPI-style and unvalidated. Workflow artifacts preserve individual
-query requests/responses, not a compiled query for arbitrary joins. Capture
-failures after execution are recorded without replacing the native return value.
+```json
+{
+  "record": true,
+  "store": "./evidence",
+  "run_id": "experiment-001",
+  "step_id": "query-001",
+  "depends_on": [],
+  "trapi": true,
+  "langfuse": false
+}
+```
+
+CLI/MCP durable recording requires a caller-supplied `run_id`, so continuation
+never depends on extracting a handle from a changed result payload. Store paths
+are local to the machine running TCT. Use a new step_id for each operation; an
+omitted step_id is generated. Explicit dependencies must already have succeeded
+within the same run. Parent-call links describe nesting, not data dependencies.
+
+`record`, `trapi`, and `langfuse` are independent booleans. Unspecified settings
+inherit from the enclosing Python context, and Langfuse otherwise uses the existing
+`TCT_LANGFUSE_ENABLED` setting. Explicit false disables the corresponding feature.
+A store path alone does not activate recording. Recording requires an explicit
+store. Unknown settings and invalid types fail before execution. `cache: false`
+is accepted; true is rejected until the caching phase is implemented.
+
+With all features disabled, no new persistence, evidence hashing, copying, or SDK
+loading occurs. Existing toolkit resource caching is unchanged. Langfuse failures
+remain nonfatal. The shared invocation boundary unwraps decorated tools once so
+interface calls do not produce duplicate observations. Direct decorated Python
+calls use that same instrumentation; undecorated direct library calls do not yet
+receive automatic instrumentation.
+
+With only `trapi: true`, observations remain in memory. Representations are
+unvalidated and retain their earlier limitations: merged provider results may
+contain only edges, and finder output is TRAPI-style. No full rollup is constructed.
+
+Durable recording writes content-addressed JSON observations under `artifacts/`
+and indexes calls in `journal.sqlite3`. Artifacts are written atomically and the
+SQLite index registers a running call before invocation, then its outcome after.
+Duplicate step IDs are rejected before re-execution, including interrupted steps.
+This is not automatic retry, caching, or an exactly-once remote execution guarantee.
+Inspect an interrupted run before choosing a new step identity. Payload conversion
+uses the existing interface serializer; it is not a general Python-object restore
+format. Replay reconstruction and schema-validated rollup remain later phases.
+
+A recording failure before invocation reports `operation_completed=False`. A
+failure after a successful invocation reports `operation_completed=True`, with
+run/call IDs: do not blindly retry. If the tool itself raises and journal finalization
+also fails, the original exception is preserved, with a diagnostic note where
+supported and a warning/error log. The index may retain a running entry for review.
+
+Thread-pool dispatch uses an explicit copied context for every worker. Context
+reset on scope exit prevents settings leaking into unrelated calls. No files or
+full responses are sent to Langfuse merely because local recording was enabled;
+existing Langfuse input/output capture runs only when tracing is independently on.

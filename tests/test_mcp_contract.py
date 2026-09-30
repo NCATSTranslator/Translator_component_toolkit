@@ -246,7 +246,20 @@ def test_published_tool_names_signatures_and_docs_are_stable():
     assert list(tools) == list(EXPECTED_SIGNATURES)
     for name, expected_signature in EXPECTED_SIGNATURES.items():
         tool = tools[name]
-        assert str(inspect.signature(tool.fn)) == expected_signature
+        actual = inspect.signature(tool.fn)
+        assert actual.parameters["execution"].default is None
+        assert (
+            str(
+                actual.replace(
+                    parameters=[
+                        p
+                        for name, p in actual.parameters.items()
+                        if name != "execution"
+                    ]
+                )
+            )
+            == expected_signature
+        )
         assert tool.description == inspect.getdoc(tool.fn)
         assert tool.description
 
@@ -259,6 +272,13 @@ def test_generated_mcp_input_schemas_are_stable():
         schema = _without_titles(tools[name].parameters)
         assert schema["type"] == "object"
         expected = dict(properties)
+        expected["execution"] = {
+            "anyOf": [
+                {"type": "object", "additionalProperties": True},
+                {"type": "null"},
+            ],
+            "default": None,
+        }
         assert schema["properties"] == expected
         assert schema.get("required", []) == required
 
@@ -283,12 +303,15 @@ def test_workflow_tool_inputs_are_explicit_json_objects():
     for name in ("validate_query_workflow", "run_query_workflow"):
         schema = _without_titles(tools[name].parameters)
         properties = dict(schema["properties"])
+        assert properties.pop("execution")["default"] is None
         assert properties == {
             "workflow": {"type": "object", "additionalProperties": True}
         }
         assert schema["required"] == ["workflow"]
     schema = _without_titles(tools["replay_query_workflow"].parameters)
-    assert schema["properties"] == {
+    properties = dict(schema["properties"])
+    assert properties.pop("execution")["default"] is None
+    assert properties == {
         "bundle": {"type": "object", "additionalProperties": True},
         "mode": {"type": "string", "default": "snapshot"},
     }

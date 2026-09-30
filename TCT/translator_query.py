@@ -223,7 +223,8 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # copy the query_json for each API to avoid modifying the original query_json
         query_json_cur = deepcopy(query_json)
-        future_to_url = {executor.submit(query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
+        from .execution import submit_with_context
+        future_to_url = {submit_with_context(executor, query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
 
         for future in as_completed(future_to_url):
             url = future_to_url[future]
