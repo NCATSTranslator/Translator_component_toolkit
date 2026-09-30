@@ -28,7 +28,7 @@ from ..translator_query import (
     query_KP,
 )
 from ..trapi import query as trapi_query
-from ..trapi_representation import with_trapi
+from ..execution import capture_trapi
 from ..workflow import replay_workflow, run_workflow, validate_workflow
 
 
@@ -223,18 +223,16 @@ def optimize_query_for_api(
     return optimize_query_json(query_json, api_name, api_predicates)
 
 
+@capture_trapi("message")
 def query_knowledge_provider(
     api_name: str,
     query_json: dict[str, Any],
     api_names: dict[str, str],
     api_predicates: dict[str, list[str]],
-    include_trapi: bool = False,
 ) -> Any:
     """Send a TRAPI query to one Translator Knowledge Provider.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         api_name: Name of the API to query.
         query_json: TRAPI query sent to the provider.
         api_names: Mapping from API names to query URLs.
@@ -246,22 +244,20 @@ def query_knowledge_provider(
     """
     result = query_KP(api_name, query_json, api_names, api_predicates)
 
-    return with_trapi(result, "message") if include_trapi else result
+    return result
 
 
+@capture_trapi("edges")
 def parallel_query_apis(
     query_json: dict[str, Any],
     selected_apis: list[str],
     api_names: dict[str, str],
     api_predicates: dict[str, list[str]],
     max_workers: int = 1,
-    include_trapi: bool = False,
 ) -> Any:
     """Query multiple Translator APIs and merge their knowledge graphs.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         query_json: TRAPI query sent to each selected API.
         selected_apis: Names of APIs to query.
         api_names: Mapping from API names to query URLs.
@@ -279,7 +275,7 @@ def parallel_query_apis(
         max_workers,
     )
 
-    return with_trapi(result, "edges") if include_trapi else result
+    return result
 
 
 def trapi_query_endpoint(url: str) -> Any:
@@ -299,16 +295,14 @@ def trapi_query_endpoint(url: str) -> Any:
     return trapi_query(url)
 
 
+@capture_trapi("finder")
 def neighborhood_finder(
     node: list[str],
     neighbor_categories: list[str],
-    include_trapi: bool = False,
 ) -> Any:
     """Find category-filtered neighbors for one or more CURIEs using TCT.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         node: CURIEs whose neighboring nodes should be found.
         neighbor_categories: Biolink categories used to filter returned
             neighbors.
@@ -324,20 +318,18 @@ def neighborhood_finder(
         resources=resources,
     )
 
-    return with_trapi(result, "finder") if include_trapi else result
+    return result
 
 
+@capture_trapi("finder")
 def path_finder(
     start: str,
     end: str,
     intermediate_categories: list[str] | None = None,
-    include_trapi: bool = False,
 ) -> Any:
     """Find paths between two CURIEs using TCT.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         start: CURIE of the starting node.
         end: CURIE of the ending node.
         intermediate_categories: Optional Biolink categories allowed for
@@ -355,7 +347,7 @@ def path_finder(
         resources=resources,
     )
 
-    return with_trapi(result, "finder") if include_trapi else result
+    return result
 
 
 def validate_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
@@ -381,9 +373,8 @@ def validate_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
     return validate_workflow(workflow)
 
 
-def run_query_workflow(
-    workflow: dict[str, Any], include_trapi: bool = False
-) -> dict[str, Any]:
+@capture_trapi("workflow")
+def run_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
     """Execute a query DAG and return replayable evidence with row lineage.
 
     Use validate_query_workflow to inspect the recipe first. Query operations
@@ -402,8 +393,6 @@ def run_query_workflow(
             returned inline; callers are responsible for saving the bundle.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         workflow: Version-1 recipe described by validate_query_workflow.
 
     Returns:
@@ -413,11 +402,12 @@ def run_query_workflow(
     """
     result = run_workflow(workflow)
 
-    return with_trapi(result, "workflow") if include_trapi else result
+    return result
 
 
+@capture_trapi("workflow")
 def replay_query_workflow(
-    bundle: dict[str, Any], mode: str = "snapshot", include_trapi: bool = False
+    bundle: dict[str, Any], mode: str = "snapshot"
 ) -> dict[str, Any]:
     """Inspect saved query evidence offline, or explicitly rerun the recipe.
 
@@ -427,8 +417,6 @@ def replay_query_workflow(
     change results. Checksums detect modification, not evidence authenticity.
 
     Args:
-        include_trapi: Return {result, trapi} with an unvalidated TRAPI sidecar.
-            Default false preserves the native result. No extra network calls.
         bundle: Complete evidence bundle returned by run_query_workflow.
         mode: snapshot (offline, default) or live (new remote requests).
 
@@ -438,7 +426,7 @@ def replay_query_workflow(
     """
     result = replay_workflow(bundle, mode)
 
-    return with_trapi(result, "workflow") if include_trapi else result
+    return result
 
 
 TOOLS: tuple[Callable[..., Any], ...] = (

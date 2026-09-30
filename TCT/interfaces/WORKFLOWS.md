@@ -169,39 +169,32 @@ invocation exposed through the workflow interpreter.
 6. Build the user view: choose a returned path, walk backward through filters
    and joins, inspect supporting records, and export the replayable recipe.
 
-### Optional TRAPI representations
+### Optional TRAPI observation capture
 
-The shared CLI/MCP functions `query_knowledge_provider`, `parallel_query_apis`,
-`neighborhood_finder`, `path_finder`, `run_query_workflow`, and
-`replay_query_workflow` accept `include_trapi=True` (CLI: `--include-trapi`).
-By default they retain their existing return values. Opting in returns:
+The experimental `include_trapi` argument and return envelope have been removed.
+The six query/finder/workflow wrappers always return native results. Their
+introspected CLI/MCP signatures no longer advertise a representation flag.
 
-```json
-{
-  "result": "the unchanged native result",
-  "trapi": {
-    "representation_version": 1,
-    "schema_validation": "not_performed",
-    "artifacts": [],
-    "limitations": []
-  }
-}
+Python callers can opt into in-memory observations:
+
+```python
+from TCT import execution
+from TCT.interfaces.tools import run_query_workflow
+
+with execution({"trapi": True}) as observations:
+    bundle = run_query_workflow(recipe)
+# bundle is unchanged and can be replayed directly.
+# observations contains inputs, operation status, and detached representations.
 ```
 
-The representation is produced locally after the ordinary operation, without
-additional provider requests. Artifacts are detached copies. Provider messages
-and finder raw output are wrapped as response-shaped objects. Finder output may
-use path extensions or incomplete bindings; this is not a schema-validation or
-RIG-compliance guarantee. Parallel queries expose only a
-`knowledge_graph_fragment` containing merged edges, not an invented response.
-A provider's `None` result yields no artifact because emptiness and failure
-cannot be distinguished by that existing interface.
+Capture is disabled by default. An omitted setting inherits an enclosing context;
+explicit false temporarily disables capture. Langfuse is independently enabled
+through its existing environment setting and still observes interface invocations.
+This context neither writes files nor enables caching. It does not yet provide
+CLI/MCP execution configuration, durable replay state, or a validated TRAPI rollup.
 
-Workflow artifacts retain each executed query's resolved request and any saved
-response, tagged with `step_id` and `execution_status`. Failed requests are not
-represented as empty successful responses. Skipped queries have no artifact.
-Filters, joins, row lineage, and reproducibility remain in `result`; no single
-TRAPI query is synthesized for arbitrary composition. Pass `envelope["result"]`
-to replay, preserving the original bundle's checksums. Literal-only workflows
-have no TRAPI artifacts. Name resolution and normalization retain their native
-interfaces.
+Representations retain their prior limitations: provider failures and empty
+results may both return None; parallel results contain only merged edges; finder
+output is TRAPI-style and unvalidated. Workflow artifacts preserve individual
+query requests/responses, not a compiled query for arbitrary joins. Capture
+failures after execution are recorded without replacing the native return value.

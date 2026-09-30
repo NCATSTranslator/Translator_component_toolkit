@@ -4,8 +4,8 @@ from copy import deepcopy
 from typing import Any
 
 
-def with_trapi(result: Any, kind: str) -> dict[str, Any]:
-    """Keep the native result and attach detached, explicitly unvalidated artifacts.
+def represent_trapi(result: Any, kind: str) -> dict[str, Any]:
+    """Build detached, explicitly unvalidated artifacts from a native result.
 
     These artifacts describe retained data, not schema conformance or biological
     correctness. In particular, merged edges cannot recover provider bindings.
@@ -55,11 +55,8 @@ def with_trapi(result: Any, kind: str) -> dict[str, Any]:
     else:
         raise ValueError(f"Unknown TRAPI representation kind: {kind}")
     return {
-        "result": result,
-        "trapi": {
-            "representation_version": 1,
-            "schema_validation": "not_performed",
-            "artifacts": artifacts,
-            "limitations": limitations,
-        },
+        "representation_version": 1,
+        "schema_validation": "not_performed",
+        "artifacts": artifacts,
+        "limitations": limitations,
     }
