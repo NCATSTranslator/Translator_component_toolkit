@@ -31,7 +31,7 @@ _READ_ONLY_TOOLS = frozenset(
     {
         "ARS_neighborhood_finder",
         "ARS_pathfinder",
-        "submit_ars_query",
+        # submit_ars_query intentionally absent: it creates an ARS submission.
         "get_ars_status",
         "get_ars_results",
         "query_ars",
