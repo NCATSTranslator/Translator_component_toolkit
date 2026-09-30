@@ -16,6 +16,15 @@ from typing import Any
 
 from ..name_resolver import batch_lookup, lookup, synonyms
 from ..node_normalizer import get_normalized_nodes
+from ..Query_ARS import (
+    ARS_neighborhood_finder as _ars_neighborhood_finder,
+    ARS_pathfinder as _ars_pathfinder,
+    format_query_json_forARS_neighborhood as _format_query_json_forARS_neighborhood,
+    get_ARS_result as _get_ARS_result,
+    get_ARS_status as _get_ARS_status,
+    submit_ARS as _submit_ARS,
+)
+from ..TCT import _normalize_categories, _resolve_nodes
 from ..TCT import get_translator_resources as _get_translator_resources
 from ..TCT_neighborhood_finder import neighborhood_finder as tct_neighborhood_finder
 from ..TCT_pathfinder import query_TCT_pathfinder
@@ -336,6 +345,186 @@ def path_finder(
     )
 
 
+def ARS_neighborhood_finder(
+    json_file: dict[str, Any] | None = None,
+    node: list[str] | None = None,
+    neighbor_categories: list[str] | None = None,
+) -> Any:
+    """Find neighbors for concepts by querying every ARA through the ARS.
+
+    Args:
+        json_file: Parsed TRAPI query from an uploaded file. Submitted
+            unchanged, so both edge and path query graphs work. When given,
+            ``node`` and ``neighbor_categories`` must be omitted.
+        node: One or more names or CURIEs; a one-hop query is built instead.
+            Names are resolved to CURIEs before submission.
+        neighbor_categories: Biolink categories wanted for neighbors, with or
+            without the "biolink:" prefix (for example ["Drug"]).
+
+    Returns:
+        Resolved inputs plus ranked summary rows (rank, essence, predicates,
+        primary sources, ARAs). Blocks until the ARS finishes: expect ~15 s to
+        several minutes. Prefer submit_ars_query / get_ars_status /
+        get_ars_results when polling is better than waiting.
+    """
+    result = _ars_neighborhood_finder(
+        node=node,
+        neighbor_categories=neighbor_categories,
+        json_file=json_file,
+    )
+    if json_file is not None:
+        return {
+            "merged_pk": result.merged_pk,
+            "status": result.status.status,
+            "message": result.raw,
+        }
+    return {
+        "resolved_nodes": result.resolved_nodes,
+        "status": result.status.status,
+        "result_count": len(result.results),
+        "results": result.summarize(20),
+    }
+
+
+def ARS_pathfinder(
+    start: str = "",
+    end: str = "",
+    intermediate_categories: list[str] | None = None,
+    json_file: dict[str, Any] | None = None,
+) -> Any:
+    """Find paths between two concepts by querying every ARA through the ARS.
+
+    Args:
+        start: Name or CURIE of the starting node.
+        end: Name or CURIE of the ending node.
+        intermediate_categories: Optional single Biolink category restricting
+            intermediate path nodes (for example ["Gene"]).
+        json_file: Parsed TRAPI query from an uploaded file, submitted
+            unchanged instead of building a paths query.
+
+    Returns:
+        Resolved start and end nodes plus ranked summary rows. Blocks until
+        the ARS finishes: expect ~15 s to several minutes. Prefer
+        submit_ars_query / get_ars_status / get_ars_results when polling is
+        better than waiting.
+    """
+    if json_file is None and (not start or not end):
+        raise ValueError("Provide start and end, or json_file")
+    result = _ars_pathfinder(
+        start,
+        end,
+        intermediate_categories=intermediate_categories,
+        json_file=json_file,
+    )
+    if json_file is not None:
+        return {
+            "merged_pk": result.merged_pk,
+            "status": result.status.status,
+            "message": result.raw,
+        }
+    return {
+        "resolved_nodes": result.resolved_nodes,
+        "status": result.status.status,
+        "result_count": len(result.results),
+        "results": result.summarize(20),
+    }
+
+
+def submit_ars_query(
+    node: list[str],
+    neighbor_categories: list[str],
+    predicates: list[str] | None = None,
+) -> Any:
+    """Submit a one-hop biomedical query to the Translator ARS and return immediately.
+
+    The ARS fans the query out to every registered ARA and merges their answers;
+    completion typically takes ~15 s to several minutes, so this does NOT wait
+    for results. Track progress by passing the returned pk to get_ars_status
+    (poll every ~15 s) until its status is Done, then fetch answers with
+    get_ars_results.
+
+    Args:
+        node: One or more input nodes, as names ("asthma") or CURIEs
+            ("MONDO:0004979"). Names are resolved to CURIEs before submission.
+        neighbor_categories: Biolink categories wanted for neighbors, with or
+            without the "biolink:" prefix (for example ["Drug"]).
+        predicates: Optional edge predicates to require, for example
+            ["biolink:treated_by"]. Omit for any predicate; the ARS returns an
+            empty merge for some directional predicates. Defaults to
+            biolink:related_to, which spans directions.
+
+    Returns:
+        {"pk", "resolved_nodes", "status"}. Keep the pk for the follow-up calls.
+
+    Fails only on unresolvable inputs or submission rejection; later failure
+    shows up as status Error in get_ars_status.
+    """
+    resolved = _resolve_nodes(node)
+    pk = _submit_ARS(_format_query_json_forARS_neighborhood(
+        subject_ids=[resolved_node.curie for resolved_node in resolved],
+        object_categories=_normalize_categories(neighbor_categories),
+        predicates=predicates,
+    ))
+    return {
+        "pk": pk,
+        "resolved_nodes": {
+            f"node_{index}": resolved_node
+            for index, resolved_node in enumerate(resolved)
+        },
+        "status": _get_ARS_status(pk).status,
+    }
+
+
+def get_ars_status(pk: str) -> Any:
+    """Check progress of an ARS query submitted with submit_ars_query, without blocking.
+
+    Args:
+        pk: Parent message pk returned by submit_ars_query.
+
+    Returns:
+        Parent status ("Running", "Done", or "Error"), the merged message pk
+        once available, and one entry per ARA with its own status and result
+        count. Poll until status is Done, then call get_ars_results once.
+        "Done" with zero results means the query matched nothing and will not
+        change.
+    """
+    return _get_ARS_status(pk)
+
+
+def get_ars_results(pk: str, top_n: int = 20) -> Any:
+    """Fetch the merged answer of a finished ARS query as ranked summary rows.
+
+    Args:
+        pk: Parent message pk returned by submit_ars_query.
+        top_n: Number of ranked rows to return (default 20). Keep the default
+            unless explicitly asked for more; pass 0 only when exporting the
+            full merged TRAPI message, which can be tens of megabytes.
+
+    Returns:
+        {"pk", "merged_pk", "status", "ready", "result_count", "results"}. Rows
+        give rank, score, essence (answer node with name and categories),
+        predicates, primary knowledge sources, and contributing ARAs. When
+        ready is false the query is still running: poll get_ars_status instead
+        of retrying this.
+    """
+    status = _get_ARS_status(pk)
+    if not status.is_terminal:
+        return {"pk": pk, "merged_pk": status.merged_version, "status": status.status, "ready": False}
+    result = _get_ARS_result(status)
+    payload = {
+        "pk": result.pk,
+        "merged_pk": result.merged_pk,
+        "status": result.status.status,
+        "ready": True,
+        "result_count": len(result.results),
+    }
+    if top_n <= 0:
+        payload["message"] = result.raw
+    else:
+        payload["results"] = result.summarize(top_n)
+    return payload
+
+
 TOOLS: tuple[Callable[..., Any], ...] = (
     get_translator_resources,
     name_lookup,
@@ -353,6 +542,11 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     trapi_query_endpoint,
     neighborhood_finder,
     path_finder,
+    ARS_neighborhood_finder,
+    ARS_pathfinder,
+    submit_ars_query,
+    get_ars_status,
+    get_ars_results,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]
