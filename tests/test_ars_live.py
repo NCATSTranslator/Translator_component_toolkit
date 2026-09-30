@@ -139,3 +139,76 @@ def test_offline_fixtures_match_live_ars_shape():
         "offline ARS fixtures drifted from the live response shape:\n"
         + "\n".join(sorted(set(problems)))
     )
+
+# --------------------------------------------------------------------------- #
+# live MCP flow
+# --------------------------------------------------------------------------- #
+def test_live_mcp_ars_tools_full_flow():
+    """submit_ars_query, poll get_ars_status, then fetch ranked results."""
+    import TCT.interfaces.tools as tools
+
+    submitted = tools.submit_ars_query(["asthma"], ["ChemicalEntity"])
+    pk = submitted["pk"]
+    assert pk and submitted["status"].status in {"Running", "Done"}
+
+    deadline = 900.0
+    import time
+
+    start = time.monotonic()
+    status = submitted["status"]
+    while not status.is_terminal and time.monotonic() - start < deadline:
+        time.sleep(15.0)
+        status = tools.get_ars_status(pk)
+
+    assert status.status == "Done", f"ARS did not finish: {status.summary()}"
+    result = tools.get_ars_results(pk, top_n=5)
+    assert result["ready"] is True
+    assert result["status"] == "Done"
+    assert result["merged_pk"], "expected a merged message pk"
+    rows = result["results"]
+    assert rows and rows[0]["rank"] == 1
+
+def test_live_mcp_query_ars_background_task():
+    """query_ars end to end through an in-process MCP client as a task."""
+    import asyncio
+
+    from fastmcp import Client
+
+    from TCT.interfaces import mcp as mcp_module
+
+    async def scenario():
+        async with Client(mcp_module.mcp) as client:
+            task = await client.call_tool(
+                "query_ars",
+                {"node": ["asthma"], "neighbor_categories": ["ChemicalEntity"], "top_n": 3},
+                task=True,
+            )
+            result = await task.result()
+            data = result.data
+            assert data is not None
+            assert data["status"] == "Done"
+            assert data["result_count"] >= 1
+            assert data["results"] and data["results"][0]["rank"] == 1
+            return data
+
+    data = asyncio.run(scenario())
+    assert isinstance(data, dict)
+
+def test_live_mcp_query_ars_task_unaware_client():
+    """The same tool also answers a plain (blocking) call."""
+    import asyncio
+
+    from fastmcp import Client
+
+    from TCT.interfaces import mcp as mcp_module
+
+    async def scenario():
+        async with Client(mcp_module.mcp) as client:
+            return await client.call_tool(
+                "query_ars",
+                {"node": ["asthma"], "neighbor_categories": ["ChemicalEntity"], "top_n": 3},
+            )
+
+    result = asyncio.run(scenario())
+    data = result.data
+    assert data is not None and data["status"] == "Done"
