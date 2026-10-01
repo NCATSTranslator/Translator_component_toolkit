@@ -1,0 +1,154 @@
+{
+  "message": {
+    "auxiliary_graphs": {},
+    "knowledge_graph": {
+      "edges": {
+        "a1": {
+          "object": "EXAMPLE:gene1",
+          "predicate": "biolink:affects",
+          "sources": [
+            {
+              "resource_id": "infores:synthetic-a",
+              "resource_role": "primary_knowledge_source"
+            }
+          ],
+          "subject": "EXAMPLE:chemical1"
+        },
+        "a2": {
+          "object": "EXAMPLE:gene1",
+          "predicate": "biolink:related_to",
+          "sources": [
+            {
+              "resource_id": "infores:synthetic-a",
+              "resource_role": "primary_knowledge_source"
+            }
+          ],
+          "subject": "EXAMPLE:chemical2"
+        },
+        "a3": {
+          "object": "EXAMPLE:gene2",
+          "predicate": "biolink:affects",
+          "sources": [
+            {
+              "resource_id": "infores:synthetic-a",
+              "resource_role": "primary_knowledge_source"
+            }
+          ],
+          "subject": "EXAMPLE:chemical3"
+        }
+      },
+      "nodes": {
+        "EXAMPLE:chemical1": {
+          "categories": [
+            "biolink:ChemicalEntity"
+          ],
+          "name": "EXAMPLE:chemical1"
+        },
+        "EXAMPLE:chemical2": {
+          "categories": [
+            "biolink:ChemicalEntity"
+          ],
+          "name": "EXAMPLE:chemical2"
+        },
+        "EXAMPLE:chemical3": {
+          "categories": [
+            "biolink:ChemicalEntity"
+          ],
+          "name": "EXAMPLE:chemical3"
+        },
+        "EXAMPLE:gene1": {
+          "categories": [
+            "biolink:Gene"
+          ],
+          "name": "EXAMPLE:gene1"
+        },
+        "EXAMPLE:gene2": {
+          "categories": [
+            "biolink:Gene"
+          ],
+          "name": "EXAMPLE:gene2"
+        }
+      }
+    },
+    "results": [
+      {
+        "analyses": [
+          {
+            "edge_bindings": {
+              "e00": [
+                {
+                  "id": "a1"
+                }
+              ]
+            },
+            "resource_id": "infores:synthetic-provider"
+          }
+        ],
+        "node_bindings": {
+          "n0": [
+            {
+              "id": "EXAMPLE:chemical1"
+            }
+          ],
+          "n1": [
+            {
+              "id": "EXAMPLE:gene1"
+            }
+          ]
+        }
+      },
+      {
+        "analyses": [
+          {
+            "edge_bindings": {
+              "e00": [
+                {
+                  "id": "a2"
+                }
+              ]
+            },
+            "resource_id": "infores:synthetic-provider"
+          }
+        ],
+        "node_bindings": {
+          "n0": [
+            {
+              "id": "EXAMPLE:chemical2"
+            }
+          ],
+          "n1": [
+            {
+              "id": "EXAMPLE:gene1"
+            }
+          ]
+        }
+      },
+      {
+        "analyses": [
+          {
+            "edge_bindings": {
+              "e00": [
+                {
+                  "id": "a3"
+                }
+              ]
+            },
+            "resource_id": "infores:synthetic-provider"
+          }
+        ],
+        "node_bindings": {
+          "n0": [
+            {
+              "id": "EXAMPLE:chemical3"
+            }
+          ],
+          "n1": [
+            {
+              "id": "EXAMPLE:gene2"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

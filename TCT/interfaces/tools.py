@@ -30,6 +30,7 @@ from ..translator_query import (
 from ..trapi import query as trapi_query
 from ..execution import capture_trapi, capture_operation
 from ..workflow import replay_workflow, run_workflow, validate_workflow
+from ..evidence import evidence as _evidence
 
 
 @capture_operation()
@@ -441,6 +442,39 @@ def replay_query_workflow(
     return result
 
 
+@capture_operation()
+def evidence(request: dict[str, Any]) -> dict[str, Any]:
+    """Inspect captured evidence, replay composition, or export validated TRAPI.
+
+    Inspect first to obtain source IDs and local query graphs. Composition requires
+    closed=true, query_graph, sources, workflow and selection. sources maps each
+    source ID to nodes/edges/paths dictionaries mapping local query IDs to global
+    query IDs. Direction must be preserved; all local IDs need explicit mappings.
+
+    workflow uses the version-1 recipe described by validate_query_workflow, plus
+    source steps {id, op: "source", source_id} that provide recorded responses.
+    Network query steps are forbidden. Filters and joins use explicit references;
+    for example, rows can read a source at /message/knowledge_graph/edges.
+
+    selection has output (workflow output name), resource_id (composition producer),
+    nodes (query node ID to row JSON pointer), and edges/paths (query ID to an object
+    with source_id and path, a row pointer to original edge/auxiliary-graph IDs).
+    Each query element must be bound. The operation retains retrieved evidence
+    separately from selected answers. Schema validation does not establish
+    biomedical correctness or complete source coverage.
+
+    Args:
+        request: Object with action (inspect, replay, export), either events or
+            store/run_id, and an explicit composition for replay/export. Version
+            defaults to 1.5.0; 2.0.0-beta2 is an explicit prerelease target.
+
+    Returns:
+        Inventory, replay diagnostics, or a validated TRAPI response. No network
+        calls occur. Invalid or unsupported exports raise an error.
+    """
+    return _evidence(request)
+
+
 TOOLS: tuple[Callable[..., Any], ...] = (
     get_translator_resources,
     name_lookup,
@@ -461,6 +495,7 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     validate_query_workflow,
     run_query_workflow,
     replay_query_workflow,
+    evidence,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]

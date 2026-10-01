@@ -298,3 +298,108 @@ The single-NLQ frozen benchmark matched its native-output and final-answer golde
 through Python, CLI and registered MCP. A durable Python run retained 11 operation
 records and all four service bodies while issuing the same four requests. Live
 service tests, real-agent evaluations, semantic rollup and caching were not run.
+
+### Phase 4: deterministic evidence composition
+
+The new `evidence(request)` tool is shared by Python, CLI and MCP. Existing tool
+returns and ordinary execution are unchanged. The registry now has 19 working
+operations plus the existing unsupported `trapi_query_endpoint` placeholder.
+The request is one JSON object; it does not add a family of CLI flags.
+
+```python
+from TCT.interfaces.tools import evidence
+
+source = {"store": "./evidence", "run_id": "experiment-001"}
+inventory = evidence(source | {"action": "inspect"})
+# Use the returned source IDs and local query graphs to define composition.
+report = evidence(source | {"action": "replay", "composition": composition})
+response = evidence(source | {"action": "export", "composition": composition})
+```
+
+CLI uses `tct evidence --request '<JSON object>'`; MCP uses the same tool with a
+`request` object. Alternatively, provide `events` (an execution observation list)
+instead of `store`/`run_id`. Inspection lists sources, call/event origins, query
+graphs, counts, eligibility and failures. Replay returns the draft, diagnostics,
+identifier mappings and semantic rollup hash. Export returns only the validated
+TRAPI response, with provenance inside its `x-tct` extension. Invalid exports
+raise an error; inspect the replay report for details. None of these operations
+contacts a provider. Reading a journal checks its artifact digests and index
+identities without creating a missing store. An export may itself be recorded
+into the same run; its own pending journal row is excluded from its input set.
+
+A composition object has these fields:
+
+- `closed: true`: the caller declares its explicit source set complete. Referenced
+  sources must be present and successfully captured. Other unfinished journal
+  calls prevent finalization; failures and unmapped sources remain disclosed.
+- `query_graph`: the intended combined query, retaining edge direction and lookup
+  semantics. Exact node IDs, categories and predicates are checked for selected
+  answers. Biolink ancestor reasoning and inferred edges are not implemented.
+- `sources`: map each inspected source ID to `nodes`, `edges`, and optionally
+  `paths` dictionaries mapping local query IDs to combined query IDs. Every local
+  ID must be mapped once; mappings cannot collapse local IDs or reverse endpoints.
+- `workflow`: the existing version-1 DAG recipe. A `source` step with `id` and
+  `source_id` supplies a frozen response. `rows`, `filter`, `project`, `pluck` and
+  `join` use explicit references and run in dependency order. Network `query`
+  steps are forbidden. Other operations, including ranking, are unsupported.
+- `selection`: names a workflow `output`, the producing `resource_id`, `nodes`
+  (query node to row JSON pointer), and `edges`/`paths` (query ID to
+  `{source_id, path}`). Each query element must be explicitly bound. Supply an
+  appropriate producer identifier; the synthetic fixture's `infores:tct` is an
+  example identifier, not a claim of registration in the InfoRes catalogue.
+
+`tests/fixtures/rollup/composition.json` is a complete example for the original
+Alzheimer's NLQ. Its service fixtures and native-output goldens are unchanged
+copies from the Phase 1 worktree, with the attachment hash retained in `case.json`.
+The recipe uses recorded-source references and the same filters/join. It selects
+one chemical → gene → disease answer; all five retrieved edges, including the
+three distractors, remain in the accumulated knowledge graph.
+
+Accumulation is set union over canonical JSON event content: duplicate events do
+not multiply evidence, and insertion/completion order does not affect the result.
+Conflicting content for the same run/call identity is rejected. The semantic hash
+excludes capture IDs and workflow timestamps. It includes the explicit recipe,
+source mappings, selected answers, retained evidence, filter decisions and row
+lineage. This hash identifies a Phase 4 artifact; it is not the execution/cache
+identity planned for Phase 5. Reordering equivalent recipe definitions can still
+change this hash; no semantic query equivalences are assumed.
+
+Provider-local edge and auxiliary-graph IDs are deterministically namespaced.
+Bindings, supporting-graph references and known support-graph attributes are
+rewritten together. CURIE node IDs retain their identity. Conflicting node metadata
+has a deterministic display value, combined categories/attributes, and complete
+source-specific variants under `x-tct.node_variants`. Provider analyses, scores,
+node/edge/path bindings and support graphs survive under `x-tct.source_results`;
+they are retained as source evidence, not falsely presented as complete analyses
+of the combined query. Selected answers get an explicit composition analysis,
+source references and the workflow output row indices that produced them.
+
+Validation uses unmodified, checksum-pinned upstream schemas bundled under
+`TCT/schemas`, with OpenAPI 3.0 `nullable` adapted to JSON Schema at load time.
+Ordinary exports target TRAPI **1.5.0**. Required empty attribute arrays omitted
+by legacy responses are added structurally and listed in `structural_additions`.
+No predicates, evidence sources or knowledge-level classifications are invented.
+Validation proves structural conformance, with additional reducer reference and
+selection checks; it does not establish Biolink conformance or biological truth.
+
+**Version limitation:** the official repository had no final 2.0.0 tag when these
+schemas were pinned. Native path exports can explicitly target **2.0.0-beta2**;
+output and validation metadata retain that prerelease label. Requesting `2.0.0`
+is rejected. Automatic conversion from 1.5.0 or legacy finder path extensions to
+2.0 is unsupported, as are constrained paths, unsupported query constraints and
+provider query-graph rewrites. External schema references (such as a provider's
+workflow extension) that are not vendored produce an explicit validation error;
+validation never fetches them. Full response bodies remain in the execution
+journal even if no supported rollup can be produced.
+
+The endpoint remains opt-in: capture alone does not automatically compose answers,
+select mappings or enable caching. Phase 5 remains a separate trigger.
+
+Phase 4 acceptance: **260 offline tests passed**. The original single-NLQ service
+and native-output fixtures produce one validated, traceable TRAPI 1.5.0 answer.
+`rollup-golden.json` pins its semantic hash; duplicate events and eight shuffled
+completion orders give identical reports. Tests also cover collision remapping,
+retained provider analyses/support, dependency order, failed/missing inputs,
+journal checksums, same-run recording, schema failures, beta2 native paths and
+CLI/MCP/Python output parity. The built wheel includes both pinned schemas,
+manifest and license. No live provider or paid model calls were made.

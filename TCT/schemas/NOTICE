@@ -1,0 +1,5 @@
+TRAPI schemas: NCATSTranslator/ReasonerAPI, Apache 2.0 (as declared in
+info.license in each upstream document). Original YAML is retained unmodified.
+manifest.json pins source URLs, commits, checksums, and prerelease status.
+The OpenAPI 3.0 nullable keyword is adapted at validation time only.
+No final TRAPI 2.0.0 release was available when pinned; beta2 is explicitly opt-in.

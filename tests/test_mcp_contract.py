@@ -63,6 +63,7 @@ EXPECTED_SIGNATURES = {
     "validate_query_workflow": "(workflow: 'dict[str, Any]') -> 'dict[str, Any]'",
     "run_query_workflow": "(workflow: 'dict[str, Any]') -> 'dict[str, Any]'",
     "replay_query_workflow": "(bundle: 'dict[str, Any]', mode: 'str' = 'snapshot') -> 'dict[str, Any]'",
+    "evidence": "(request: 'dict[str, Any]') -> 'dict[str, Any]'",
 }
 
 
@@ -226,6 +227,10 @@ EXPECTED_INPUTS = {
         },
         ["start", "end"],
     ),
+    "evidence": (
+        {"request": {"type": "object", "additionalProperties": True}},
+        ["request"],
+    ),
 }
 
 
@@ -292,6 +297,7 @@ def test_tools_keep_unstructured_output_contract():
             "validate_query_workflow",
             "run_query_workflow",
             "replay_query_workflow",
+            "evidence",
         }:
             assert tool.output_schema is not None
         else:

@@ -328,7 +328,8 @@ def test_incomplete_requested_capture_surfaces_after_native_operation(
 
 def test_working_surface_coverage_and_unsupported_endpoint():
     assert {c[0] for c in CASES} == {f.__name__ for f in tools.TOOLS} - {
-        "trapi_query_endpoint"
+        "trapi_query_endpoint",
+        "evidence",
     }
     assert len(CASES) == 18
     with pytest.raises(TypeError):
