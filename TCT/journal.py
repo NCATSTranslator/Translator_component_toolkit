@@ -9,31 +9,13 @@ import sqlite3
 import tempfile
 
 
-class Journal:
+class ArtifactStore:
+    """Immutable bytes shared by recording and caching, enabled independently."""
+
     def __init__(self, store):
         self.root = Path(store).expanduser().resolve()
         self.artifacts = self.root / "artifacts"
         self.artifacts.mkdir(parents=True, exist_ok=True)
-        with self.connect() as db:
-            db.executescript("""
-                CREATE TABLE IF NOT EXISTS runs (
-                    run_id TEXT PRIMARY KEY, format_version INTEGER NOT NULL);
-                CREATE TABLE IF NOT EXISTS calls (
-                    run_id TEXT NOT NULL, step_id TEXT NOT NULL,
-                    call_id TEXT NOT NULL, parent_call_id TEXT,
-                    operation TEXT NOT NULL, status TEXT NOT NULL,
-                    input_hash TEXT NOT NULL, event_hash TEXT,
-                    PRIMARY KEY(run_id, step_id));
-            """)
-
-    @contextmanager
-    def connect(self):
-        connection = sqlite3.connect(self.root / "journal.sqlite3", timeout=30)
-        try:
-            with connection:
-                yield connection
-        finally:
-            connection.close()
 
     def artifact(self, value):
         from .interfaces.serialization import to_jsonable
@@ -67,6 +49,31 @@ class Journal:
             if os.path.exists(temporary):
                 os.unlink(temporary)
         return digest
+
+
+class Journal(ArtifactStore):
+    def __init__(self, store):
+        super().__init__(store)
+        with self.connect() as db:
+            db.executescript("""
+                CREATE TABLE IF NOT EXISTS runs (
+                    run_id TEXT PRIMARY KEY, format_version INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS calls (
+                    run_id TEXT NOT NULL, step_id TEXT NOT NULL,
+                    call_id TEXT NOT NULL, parent_call_id TEXT,
+                    operation TEXT NOT NULL, status TEXT NOT NULL,
+                    input_hash TEXT NOT NULL, event_hash TEXT,
+                    PRIMARY KEY(run_id, step_id));
+            """)
+
+    @contextmanager
+    def connect(self):
+        connection = sqlite3.connect(self.root / "journal.sqlite3", timeout=30)
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def begin(self, record):
         input_hash = self.artifact(record["inputs"])

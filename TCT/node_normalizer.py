@@ -18,7 +18,7 @@ def status():
     """
     Returns the status of the Node Normalizer API.
     """
-    response = capture_request(requests.get, urllib.parse.urljoin(service_url("node_normalizer"), "status"))
+    response = capture_request(requests.get, urllib.parse.urljoin(service_url("node_normalizer"), "status"), cache_kind="normalization", method="get")
     response.raise_for_status()
     return response.json()
 
@@ -64,9 +64,9 @@ def get_normalized_nodes(query: str | list[str],
             json_query = query
         if len(json_query) == 0:
             return {}
-        response = capture_request(requests.post, path, json={'curies': json_query, **kwargs})
+        response = capture_request(requests.post, path, json={'curies': json_query, **kwargs}, cache_kind="normalization", method="post")
     else:
-        response = capture_request(requests.get, path, params={'curie': query, **kwargs})
+        response = capture_request(requests.get, path, params={'curie': query, **kwargs}, cache_kind="normalization", method="get")
     if response.status_code == 200:
         result = response.json()
         normalized_dict = {}
@@ -173,7 +173,7 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list: list[str]) -> dict[str,
             "description": False,   # Change to True if you want descriptions from any identifiers we know about.
             "conflate": NODENORM_GENE_PROTEIN_CONFLATION,
             "drug_chemical_conflate": NODENORM_DRUG_CHEMICAL_CONFLATION,
-        })
+        }, cache_kind="normalization", method="post")
         if not response.ok:
             raise RuntimeError("Error: NodeNorm request failed with status code " + str(response.status_code))
 

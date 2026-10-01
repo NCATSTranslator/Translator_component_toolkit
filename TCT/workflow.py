@@ -446,16 +446,55 @@ def _check_query(query: Any) -> None:
             raise ValueError("query edge endpoints must reference query nodes")
 
 
-def _query(args: dict[str, Any], record: dict[str, Any]) -> Any:
-    _check_query(args["query"])
-    # No predicate pruning, retry, redirect, or implicit provider discovery.
-    with requests.post(
-        args["url"],
+def _read_response_bytes(response):
+    chunks = bytearray()
+    for chunk in response.iter_content(chunk_size=65536):
+        chunks.extend(chunk)
+        if len(chunks) > MAX_RESPONSE_BYTES:
+            raise ValueError(
+                f"response exceeds {MAX_RESPONSE_BYTES} bytes; no complete snapshot captured"
+            )
+    return bytes(chunks)
+
+
+def _workflow_request(args, record):
+    from .execution import cache_session
+
+    kwargs = dict(
         json=args["query"],
         timeout=args["timeout_seconds"],
         allow_redirects=False,
         stream=True,
-    ) as response:
+    )
+    cache = cache_session()
+    if cache is None:
+        return requests.post(args["url"], **kwargs)
+
+    def consume(response):
+        try:
+            body = _read_response_bytes(response)
+            response._content = body
+            response._content_consumed = True
+            return body
+        finally:
+            response.close()
+
+    receipt = record.setdefault("cache", {})
+    return cache.request(
+        requests.post,
+        args["url"],
+        kwargs,
+        method="post",
+        kind="trapi",
+        consume=consume,
+        receipt=receipt,
+    )
+
+
+def _query(args: dict[str, Any], record: dict[str, Any]) -> Any:
+    _check_query(args["query"])
+    # No predicate pruning, retry, redirect, or implicit provider discovery.
+    with _workflow_request(args, record) as response:
         record["evidence_origin"] = "provider_response"
         record["transport"] = {
             "status_code": response.status_code,
@@ -466,14 +505,7 @@ def _query(args: dict[str, Any], record: dict[str, Any]) -> Any:
                 if key in response.headers
             },
         }
-        chunks = bytearray()
-        for chunk in response.iter_content(chunk_size=65536):
-            chunks.extend(chunk)
-            if len(chunks) > MAX_RESPONSE_BYTES:
-                raise ValueError(
-                    f"response exceeds {MAX_RESPONSE_BYTES} bytes; no complete snapshot captured"
-                )
-        body = bytes(chunks).decode("utf-8")
+        body = _read_response_bytes(response).decode("utf-8")
         record["response_text"] = body
         payload = json.loads(body)
         _json(payload)  # Reject non-finite numbers before treating this as evidence.

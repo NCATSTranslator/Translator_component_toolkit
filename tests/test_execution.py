@@ -218,7 +218,7 @@ def test_pre_call_failure_does_not_execute(monkeypatch, tmp_path):
     "settings",
     [
         {"record": True},
-        {"cache": True},
+        {"cache": {"mode": "unknown"}},
         {"trapi": "yes"},
         {"unknown": True},
         {"depends_on": ["x"]},

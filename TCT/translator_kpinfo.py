@@ -48,7 +48,7 @@ def get_translator_kp_info() -> tuple[pd.DataFrame, dict[str, str]]:
     """
     # Get x-bte smartapi specs
     url = service_url("smartapi_registry")
-    response = capture_request(requests.get, url)
+    response = capture_request(requests.get, url, cache_kind="capabilities", method="get")
     try:
         response.raise_for_status()
     except Exception:

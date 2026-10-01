@@ -210,8 +210,8 @@ within the same run. Parent-call links describe nesting, not data dependencies.
 inherit from the enclosing Python context, and Langfuse otherwise uses the existing
 `TCT_LANGFUSE_ENABLED` setting. Explicit false disables the corresponding feature.
 A store path alone does not activate recording. Recording requires an explicit
-store. Unknown settings and invalid types fail before execution. `cache: false`
-is accepted; true is rejected until the caching phase is implemented.
+store. Unknown settings and invalid types fail before execution. `cache` is a
+fourth independent feature, disabled by default; see Phase 5 below.
 
 With all features disabled, no new persistence, evidence hashing, copying, or SDK
 loading occurs. Existing toolkit resource caching is unchanged. Langfuse failures
@@ -361,7 +361,7 @@ Conflicting content for the same run/call identity is rejected. The semantic has
 excludes capture IDs and workflow timestamps. It includes the explicit recipe,
 source mappings, selected answers, retained evidence, filter decisions and row
 lineage. This hash identifies a Phase 4 artifact; it is not the execution/cache
-identity planned for Phase 5. Reordering equivalent recipe definitions can still
+identity implemented in Phase 5. Reordering equivalent recipe definitions can still
 change this hash; no semantic query equivalences are assumed.
 
 Provider-local edge and auxiliary-graph IDs are deterministically namespaced.
@@ -393,7 +393,7 @@ validation never fetches them. Full response bodies remain in the execution
 journal even if no supported rollup can be produced.
 
 The endpoint remains opt-in: capture alone does not automatically compose answers,
-select mappings or enable caching. Phase 5 remains a separate trigger.
+select mappings or enable caching.
 
 Phase 4 acceptance: **260 offline tests passed**. The original single-NLQ service
 and native-output fixtures produce one validated, traceable TRAPI 1.5.0 answer.
@@ -403,3 +403,118 @@ retained provider analyses/support, dependency order, failed/missing inputs,
 journal checksums, same-run recording, schema failures, beta2 native paths and
 CLI/MCP/Python output parity. The built wheel includes both pinned schemas,
 manifest and license. No live provider or paid model calls were made.
+
+### Phase 5: response caching and execution epochs
+
+The same optional execution setting controls response caching. No additional CLI
+flags, MCP tools, or native result envelopes are introduced. `{"cache": true}`
+enables **within-run** reuse in memory. `cache: false` explicitly disables it.
+Nothing is persisted unless `store` is supplied. For reuse across separate CLI/MCP
+calls, supply both `store` and the same `run_id`; these interfaces reject persistent
+execution without a run ID. Python can generate an ID in its enclosing context.
+Existing resource caching is unchanged, and a resource-cache hit does not imply
+that fresh service evidence was observed. Clear that cache explicitly when an
+experiment requires a new service trajectory.
+
+Cross-run reuse is opt-in and requires an explicit authorization partition:
+
+```json
+{
+  "store": "./evidence",
+  "run_id": "experiment-002",
+  "cache": {
+    "scope": "cross_run",
+    "mode": "use",
+    "authorization_partition": "public-translator-ci",
+    "dataset_versions": {"provider-a": "release-2026-09"},
+    "epoch": "query-policy-1"
+  }
+}
+```
+
+Only include dataset versions you actually know. These fields declare dependencies;
+TCT does not make extra calls to discover versions. All declared dependency versions
+participate in identity, so changing an upstream normalizer/provider version, epoch,
+authorization partition, runtime environment, endpoint, or effective request causes
+a miss. The partition must change when access scope or implicit credentials change.
+Explicit credentials also participate in hashing; request bodies and credentials
+are not copied into the cache index. Execution recording remains a separate opt-in
+feature and retains its existing request observations.
+
+Cross-run lifetimes default to **24 hours for normalization/name resolution, one
+hour for capabilities, and 15 minutes for TRAPI**. Override individual durations
+with `cache.ttl`, in seconds (for example `{"trapi": 60}`). These are freshness
+policies, not guarantees that a live service is deterministic. Unknown service kinds
+are never reused across runs. Entries already used by a run stay pinned for that
+run; expiry is checked when a new run first looks up a shared entry. Warm hits do
+not extend shared expiry. There is no automatic disk eviction in this phase.
+
+Modes are `use`, `refresh`, `bypass`, and `replay`. Refresh issues a new service
+request and records a new observation; prior immutable snapshots remain available.
+Bypass issues a request without reading or populating reusable entries, but still
+records its snapshot when storage is requested. HTTP errors, invalid/non-JSON
+responses, reported application errors, and transport failures never populate a
+successful cache entry. A failed refresh leaves a previously successful entry intact.
+Legacy functions retain their existing return behavior (including `None`); cache
+receipts distinguish failure from a successful empty response.
+
+Three hashes serve distinct purposes:
+
+- `original_request_hash` identifies the request before toolkit reformulation.
+- `effective_execution_hash` includes the actual service request, its settings,
+  dependency versions, auth partition, epoch, and cache/canonicalizer/adapter versions.
+- `response_content_hash` identifies the exact response bytes, independent of the request.
+
+Canonicalization sorts JSON object keys only. It preserves arrays, query node IDs,
+predicate order, URLs and literal values. Semantic rewrites are not assumed to be
+equivalent. The existing provider predicate-pruning operation records
+`tct.optimize_query_json.v1` when it changes the original request. Mode, TTL and
+telemetry settings do not alter service-response identity. Unsupported non-JSON
+request options fail explicitly when caching is requested. Adapter behavior changes
+must update the corresponding identity version.
+
+To replay a saved run, use the original cache identity settings with
+`"mode": "replay", "snapshot_run": "experiment-002"` and a **different** `run_id`.
+Replay performs no service requests. Missing, exhausted or damaged snapshots fail
+locally; there is no fallback to live HTTP. Occurrences of the same effective request
+are consumed in their recorded order; independent requests can be interleaved.
+`replay.sqlite3` stores transactional cursors so continuation works across separate
+CLI processes and MCP calls. Use a fresh replay run ID to start again. The source
+cache index and artifacts remain unchanged. Transport exception classes can be
+replayed; original exception objects, sockets, elapsed timings and prepared-request
+objects are not reconstructed. Streaming workflow responses keep their 8 MiB limit;
+an incomplete response cannot be replayed as a successful snapshot.
+
+`cache.sqlite3` indexes immutable snapshots in the same content-addressed artifact
+store as optional recording. Cache-only execution creates no call journal and
+does not enable Langfuse or TRAPI capture. Python exposes receipts as
+`run.cache_events`; when capture is enabled, service observations and workflow
+steps carry the corresponding receipts. The `evidence` tool continues to export
+the validated TRAPI rollup from captured evidence without adding cache envelopes
+to ordinary tool results. Requested storage failures surface completed-call status.
+
+Nested cache policy objects inherit their outer fields; supplied fields replace
+those fields (including dependency and TTL maps). Explicit false disables caching
+until the nested context exits. Workers receive the caller's execution context.
+Simultaneous cold misses may issue multiple requests; this is not an exactly-once
+HTTP protocol. Replayed calls reserve an occurrence before returning it; a process
+crash after reservation requires inspection or a new replay run ID.
+
+This boundary covers the instrumented normalization, discovery, provider and
+pathfinder helpers plus workflow queries. Uninstrumented legacy functions, bulk
+graph downloads and the unsupported endpoint placeholder are outside its scope.
+The separate benchmark worktree labels the same NLQ as cold, warm, refreshed or
+replayed. Its warmup is a separate fixed trajectory; it never supplies an agent's
+answer or conversation history. Phase 6 comparative evaluation remains a separate
+user trigger.
+
+Phase 5 acceptance (2026-10-01): **306 offline regression tests and 33 benchmark
+tests passed**. The 46 cache tests cover default isolation, nested policies,
+independent capture, explicit CLI/MCP settings, worker propagation, expiration,
+dependency/authorization invalidation, canonicalization, refresh/bypass, failures,
+checksums, persistent replay cursors and bounded workflow responses. The same
+single NLQ retains its native goldens and Phase 4 rollup hash in all four cache
+scenarios. The benchmark's fixed trajectory uses 4/0/4/0 evaluation service calls
+for cold/warm/refreshed/replayed samples across Python, CLI and registered MCP.
+The sampled adapter test allows valid wording variation and retains its budget
+and resume controls. No live services, real models or paid providers were used.

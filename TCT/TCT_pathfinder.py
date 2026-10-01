@@ -388,7 +388,7 @@ def query_aragorn_pathfinder(node1_id:str, node1_category:str, node2_id:str, nod
     """
     aragorn_endpoint = service_url("aragorn")
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = capture_request(requests.post, aragorn_endpoint, json=query_current)
+    response = capture_request(requests.post, aragorn_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
 
@@ -417,7 +417,7 @@ def query_aragorn_pathfinder_with_constraints(node1_id:str, node1_category:str, 
         object_categories=node2_category,
         constraints=constraints
     )
-    response = capture_request(requests.post, aragorn_endpoint, json=query_current)
+    response = capture_request(requests.post, aragorn_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
 @capture_operation()
@@ -438,7 +438,7 @@ def query_arax_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_
     """
     ARAX_endpoint = service_url("arax")
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = capture_request(requests.post, ARAX_endpoint, json=query_current)
+    response = capture_request(requests.post, ARAX_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
 @capture_operation()
@@ -466,7 +466,7 @@ def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, nod
         object_categories=node2_category,
         constraints=constraints
     )
-    response = capture_request(requests.post, ARAX_endpoint, json=query_current)
+    response = capture_request(requests.post, ARAX_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
 @capture_operation()

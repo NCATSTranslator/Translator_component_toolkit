@@ -184,7 +184,9 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
     query_copy = deepcopy(query_json)
     # optimize on our private copy
     query_json_cur = optimize_query_json(query_copy, API_name_cur, API_predicates)
-    response = capture_request(requests.post, API_url_cur, json=query_json_cur)
+    response = capture_request(requests.post, API_url_cur, json=query_json_cur, cache_kind="trapi", method="post",
+                               original_arguments={"json": query_json},
+                               reformulation="tct.optimize_query_json.v1")
     if response.status_code == 200:
         result = response.json().get("message", {})
         kg = result.get("knowledge_graph", {})

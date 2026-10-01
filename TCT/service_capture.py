@@ -8,25 +8,54 @@ from base64 import b64encode
 from copy import deepcopy
 import json
 
-from .execution import observation_target
+from .execution import cache_session, observation_target
 
 
-def capture_request(request, /, url, **kwargs):
+def capture_request(
+    request,
+    /,
+    url,
+    *,
+    cache_kind="other",
+    method=None,
+    original_arguments=None,
+    reformulation=None,
+    **kwargs,
+):
     target = observation_target()
+    cache = cache_session()
+    receipt = {}
+
+    def perform():
+        if cache is None:
+            return request(url, **kwargs)
+        return cache.request(
+            request,
+            url,
+            kwargs,
+            method=method or request.__name__,
+            kind=cache_kind,
+            original=original_arguments,
+            reformulation=reformulation,
+            receipt=receipt,
+        )
+
     if target is None:
-        return request(url, **kwargs)
+        return perform()
     observation = {"kind": "service", "status": "pending"}
+    if cache is not None:
+        observation["cache"] = receipt
     target.setdefault("observations", []).append(observation)
     try:
         observation["request"] = {
-            "method": getattr(request, "__name__", "unknown"),
+            "method": method or getattr(request, "__name__", "unknown"),
             "url": url,
             "arguments": deepcopy(kwargs),
         }
     except Exception as error:
         target.setdefault("observation_errors", []).append(type(error).__name__)
     try:
-        response = request(url, **kwargs)
+        response = perform()
     except BaseException as error:
         observation.update(status="transport_error", error_type=type(error).__name__)
         raise

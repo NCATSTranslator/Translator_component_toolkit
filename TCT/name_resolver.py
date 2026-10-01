@@ -18,7 +18,7 @@ def status() -> str:
     """
     Returns the status of the Name Resolver API.
     """
-    response = capture_request(requests.get, urllib.parse.urljoin(service_url("name_resolver"), "status"))
+    response = capture_request(requests.get, urllib.parse.urljoin(service_url("name_resolver"), "status"), cache_kind="normalization", method="get")
     response.raise_for_status()
     return response.json()
 
@@ -64,7 +64,7 @@ def lookup(query: str, return_top_response:bool=True, return_synonyms:bool=False
     # set autocomplete to be false by default
     if 'autocomplete' not in kwargs:
         kwargs['autocomplete'] = False
-    response = capture_request(requests.get, path, params={'string': query, 'limit': limit, **kwargs})
+    response = capture_request(requests.get, path, params={'string': query, 'limit': limit, **kwargs}, cache_kind="normalization", method="get")
     if response.status_code == 200:
         result = response.json()
         if len(result) == 0:
@@ -100,7 +100,7 @@ def synonyms(query: str|list, **kwargs) -> dict[str, TranslatorNode]:
     """
     path = urllib.parse.urljoin(service_url("name_resolver"), 'synonyms')
     # set autocomplete to be false by default
-    response = capture_request(requests.get, path, params={'preferred_curies': query, **kwargs})
+    response = capture_request(requests.get, path, params={'preferred_curies': query, **kwargs}, cache_kind="normalization", method="get")
     if response.status_code == 200:
         result = response.json()
         if len(result) == 0:
@@ -162,7 +162,7 @@ def batch_lookup(strings:list[str], size: int=25, return_top_response:bool=True,
             "strings": chunk,
             **kwargs
         }
-        response = capture_request(requests.post, path, json = payload)
+        response = capture_request(requests.post, path, json = payload, cache_kind="normalization", method="post")
         if response.status_code == 200:
             result = response.json()
             if(len(result) == 0):
@@ -207,7 +207,7 @@ def batch_synonyms(strings:list[str], size:int=50, **kwargs) -> dict[str, Transl
     curies = {}
     for chunk in chunks:
         # set autocomplete to be false by default
-        response = capture_request(requests.post, path, json={'preferred_curies': chunk, **kwargs})
+        response = capture_request(requests.post, path, json={'preferred_curies': chunk, **kwargs}, cache_kind="normalization", method="post")
         if response.status_code == 200:
             result = response.json()
             if len(result) == 0:

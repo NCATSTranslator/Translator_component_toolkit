@@ -14,6 +14,7 @@ from .trapi_representation import represent_trapi
 _settings = ContextVar("tct_execution_settings", default=None)
 _run = ContextVar("tct_execution_run", default=None)
 _active = ContextVar("tct_execution_call", default=None)
+_cache = ContextVar("tct_execution_cache", default=None)
 logger = logging.getLogger(__name__)
 
 
@@ -36,6 +37,7 @@ class ExecutionRun(list):
         super().__init__()
         self.run_id = run_id
         self.journal = journal
+        self.cache_events = []
 
 
 def langfuse_override():
@@ -67,11 +69,13 @@ def validate_execution(config):
     }
     if not isinstance(config, dict) or set(config) - allowed:
         raise ValueError("Unknown execution settings")
-    for key in ("trapi", "record", "langfuse", "cache"):
+    for key in ("trapi", "record", "langfuse"):
         if key in config and type(config[key]) is not bool:
             raise ValueError(f"{key} must be a boolean")
-    if config.get("cache"):
-        raise ValueError("Execution caching is not implemented yet")
+    if "cache" in config and config["cache"] is not False:
+        from .response_cache import validate_policy
+
+        validate_policy(config["cache"], partial=True)
     for key in ("store", "run_id", "step_id"):
         if key in config and (
             not isinstance(config[key], str) or not config[key].strip()
@@ -83,24 +87,38 @@ def validate_execution(config):
         or len(set(config["depends_on"])) != len(config["depends_on"])
     ):
         raise ValueError("depends_on must contain distinct nonempty step IDs")
-    return dict(config)
+    return dict(config) | (
+        {"cache": deepcopy(config["cache"])}
+        if isinstance(config.get("cache"), dict)
+        else {}
+    )
+
+
+def _merge_settings(previous, supplied):
+    settings = previous | supplied
+    if isinstance(previous.get("cache"), dict) and isinstance(
+        supplied.get("cache"), dict
+    ):
+        settings["cache"] = previous["cache"] | supplied["cache"]
+    return settings
 
 
 @contextmanager
 def execution(config=None):
-    """Enable independent tracing, TRAPI capture, or durable recording.
+    """Enable independent tracing, TRAPI capture, recording, or response caching.
 
     Unspecified settings inherit. False explicitly disables a feature. Durable
     recording requires a store; Python can generate a run_id on first activation.
     """
     supplied = validate_execution({} if config is None else config)
     previous = _settings.get() or {}
-    settings = previous | supplied
+    settings = _merge_settings(previous, supplied)
     if settings.get("record") and not settings.get("store"):
         raise ValueError("record=true requires an explicit store")
     if settings.get("depends_on") and not settings.get("record"):
         raise ValueError("depends_on requires durable recording")
-    active = bool(settings.get("trapi") or settings.get("record"))
+    cache_enabled = settings.get("cache", False) is not False
+    active = bool(settings.get("trapi") or settings.get("record") or cache_enabled)
     run = _run.get() if active else None
     changed_run = any(
         key in supplied and supplied[key] != previous.get(key)
@@ -122,11 +140,19 @@ def execution(config=None):
                 ) from error
         run = ExecutionRun(run_id, journal)
         settings["run_id"] = run_id
+    cache = None
+    if cache_enabled:
+        from .response_cache import CacheSession, validate_policy
+
+        policy = validate_policy(settings["cache"])
+        cache = CacheSession(settings, policy, run, previous=_cache.get())
     setting_token = _settings.set(settings)
     run_token = _run.set(run)
+    cache_token = _cache.set(cache)
     try:
         yield run
     finally:
+        _cache.reset(cache_token)
         _run.reset(run_token)
         _settings.reset(setting_token)
 
@@ -134,9 +160,12 @@ def execution(config=None):
 @contextmanager
 def interface_execution(config=None):
     supplied = validate_execution({} if config is None else config)
-    merged = (_settings.get() or {}) | supplied
-    if merged.get("record") and not merged.get("run_id"):
-        raise ValueError("CLI/MCP durable recording requires an explicit run_id")
+    merged = _merge_settings(_settings.get() or {}, supplied)
+    persistent = merged.get("record") or (
+        merged.get("cache", False) is not False and merged.get("store")
+    )
+    if persistent and not merged.get("run_id"):
+        raise ValueError("CLI/MCP persistent execution requires an explicit run_id")
     with execution(supplied) as run:
         yield run
 
@@ -163,7 +192,8 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
     """One execution boundary shared by interface wrappers and decorators."""
     run = _run.get()
     settings = _settings.get() or {}
-    if interface is None and run is None:
+    capturing = run is not None and (settings.get("trapi") or settings.get("record"))
+    if interface is None and not capturing:
         enabled = settings.get("langfuse")
         if enabled is False or (
             enabled is None
@@ -173,7 +203,7 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
             return function(*args, **kwargs)
     record = None
     token = None
-    if run is not None:
+    if capturing:
         parent = _active.get()
         same_run = parent and parent["run_id"] == run.run_id
         call_id = uuid4().hex
@@ -284,7 +314,13 @@ capture_operation = capture_trapi
 
 def observation_target():
     """Internal capture sink; disabled execution must not inspect responses."""
-    return _active.get() if _run.get() is not None else None
+    settings = _settings.get() or {}
+    return _active.get() if settings.get("trapi") or settings.get("record") else None
+
+
+def cache_session():
+    """Internal HTTP boundary; reading it does not import hashing or persistence."""
+    return _cache.get()
 
 
 def observe_evidence(kind, **data):
