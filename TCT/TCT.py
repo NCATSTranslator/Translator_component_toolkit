@@ -1,3 +1,4 @@
+from .execution import capture_operation
 from dataclasses import dataclass
 from typing import Any, Optional, TypeAlias, Union
 
@@ -356,6 +357,7 @@ def select_concept(sub_list,obj_list,metaKG):
     df2 = metaKG.loc[(metaKG['Subject'].isin(obj_list)) & (metaKG['Object'].isin(sub_list))]
     df = pd.concat([df1,df2])
     return(set(list(df['Predicate'])))
+@capture_operation()
 def sele_predicates_API(input_node1_category,input_node2_category,metaKG, APInames):
     '''
     Selects predicates, APIs, and API URLs for the given input node categories.
@@ -964,6 +966,7 @@ class FinderResult:
 _DEFAULT_TRANSLATOR_RESOURCES: Optional[TranslatorResources] = None
 
 
+@capture_operation()
 def get_translator_resources(*, refresh: bool = False) -> TranslatorResources:
     """
     Return cached Translator API metadata, loading it on first use.
@@ -1072,6 +1075,7 @@ def _looks_like_curie(value: str) -> bool:
     return ":" in value and " " not in value
 
 
+@capture_operation()
 def _resolve_node(
     value: str,
     *,
@@ -1128,6 +1132,7 @@ def _resolve_node(
     )
 
 
+@capture_operation()
 def _resolve_nodes(
     values: Union[NodeInput, list[NodeInput]],
     *,
@@ -1195,6 +1200,7 @@ def _get_resources(
     )
 
 
+@capture_operation()
 def _build_finder_result(
     raw_output: dict[str, Any],
     *,

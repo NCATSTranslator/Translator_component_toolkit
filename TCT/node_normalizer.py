@@ -3,6 +3,9 @@ This is a wrapper around the Node Normalizer API.
 
 API docs: https://nodenorm.transltr.io/docs
 """
+from .service_capture import capture_request
+from .execution import capture_operation
+
 # reviewed by yjzhang, 2026-08-19
 import urllib.parse
 
@@ -15,11 +18,12 @@ def status():
     """
     Returns the status of the Node Normalizer API.
     """
-    response = requests.get(urllib.parse.urljoin(service_url("node_normalizer"), "status"))
+    response = capture_request(requests.get, urllib.parse.urljoin(service_url("node_normalizer"), "status"))
     response.raise_for_status()
     return response.json()
 
 
+@capture_operation()
 def get_normalized_nodes(query: str | list[str],
         return_equivalent_identifiers:bool=False,
         mode:str='get',
@@ -60,9 +64,9 @@ def get_normalized_nodes(query: str | list[str],
             json_query = query
         if len(json_query) == 0:
             return {}
-        response = requests.post(path, json={'curies': json_query, **kwargs})
+        response = capture_request(requests.post, path, json={'curies': json_query, **kwargs})
     else:
-        response = requests.get(path, params={'curie': query, **kwargs})
+        response = capture_request(requests.get, path, params={'curie': query, **kwargs})
     if response.status_code == 200:
         result = response.json()
         normalized_dict = {}
@@ -96,6 +100,7 @@ def get_normalized_nodes(query: str | list[str],
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code))
 
 
+@capture_operation()
 def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[str, str]:
     """
     Converts a list of CURIEs to their preferred names using NodeNorm. This calls get_normalized_nodes.
@@ -135,6 +140,7 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     return name_map
 
 
+@capture_operation()
 def ID_convert_to_preferred_name_nodeNormalizer(id_list: list[str]) -> dict[str, str]:
     '''
     Convert a list of CURIEs to their preferred names using NodeNorm.
@@ -162,7 +168,7 @@ def ID_convert_to_preferred_name_nodeNormalizer(id_list: list[str]) -> dict[str,
         # print(f"id_sublist: {id_sublist}")
 
         # Query NodeNorm with https://nodenorm.transltr.io/docs#/default/get_normalized_node_handler_get_normalized_nodes_get
-        response = requests.post(nodenorm_base_url + '/get_normalized_nodes', json={
+        response = capture_request(requests.post, nodenorm_base_url + '/get_normalized_nodes', json={
             "curies": id_sublist,
             "description": False,   # Change to True if you want descriptions from any identifiers we know about.
             "conflate": NODENORM_GENE_PROTEIN_CONFLATION,

@@ -34,8 +34,10 @@ def invoke(
     """Run a tool once and translate its exception for the calling interface."""
     try:
         kind = getattr(tool, "__tct_capture_kind__", None)
-        function = tool.__wrapped__ if kind is not None else tool
-        return execute(function, args, kwargs, interface=_interface or "shared", kind=kind)
+        function = tool.__wrapped__ if getattr(tool, "__tct_capture__", False) else tool
+        return execute(
+            function, args, kwargs, interface=_interface or "shared", kind=kind
+        )
     except ToolInvocationError:
         raise
     except Exception as error:

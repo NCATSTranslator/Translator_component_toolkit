@@ -1,3 +1,5 @@
+from .service_capture import capture_request
+from .execution import capture_operation
 import requests
 import json
 import pandas as pd
@@ -41,6 +43,7 @@ def find_link(name, use_new_url=True):
     return url
 
 
+@capture_operation()
 def get_KP_metadata(APInames:dict[str, str], use_new_url=True) -> pd.DataFrame:
     '''
     This function is used to get the metadata of the KPs in the APInames dictionary.
@@ -72,15 +75,15 @@ def get_KP_metadata(APInames:dict[str, str], use_new_url=True) -> pd.DataFrame:
     for KP in APInames.keys():
         json_text ={}
         if KP == "RTX KG2 - TRAPI 1.5.0": 
-            text =requests.get("https://smart-api.info/api/metakg/consolidated?size=20&q=%28api.x-translator.component%3AKP+AND+api.name%3ARTX+KG2+%5C-+TRAPI+1%5C.4%5C.0%29").text  # This works for the previous version
+            text =capture_request(requests.get, "https://smart-api.info/api/metakg/consolidated?size=20&q=%28api.x-translator.component%3AKP+AND+api.name%3ARTX+KG2+%5C-+TRAPI+1%5C.4%5C.0%29").text  # This works for the previous version
             json_text = json.loads(text)
         else:
-            text = requests.get(find_link(KP, use_new_url=use_new_url)).text
+            text = capture_request(requests.get, find_link(KP, use_new_url=use_new_url)).text
             json_text = json.loads(text)
             if 'hits' not in json_text:
                 if use_new_url:
                     #print(KP, '- no hits found in new metakg URL, trying old URL pattern')
-                    text = requests.get(find_link(KP, use_new_url=False)).text
+                    text = capture_request(requests.get, find_link(KP, use_new_url=False)).text
                     json_text = json.loads(text)
                 else:
                     print(KP, '- no hits found')
@@ -97,6 +100,7 @@ def get_KP_metadata(APInames:dict[str, str], use_new_url=True) -> pd.DataFrame:
     return(result_df)
 
 
+@capture_operation()
 def add_new_API_for_query(APInames:dict[str, str], metaKG:pd.DataFrame, newAPIname:str, newAPIurl:str, newAPIpredicate:str, newAPIsubject:str, newAPIobject:str):
     '''
     This function is used to add a new API beyond the current list of APIs for query
@@ -138,6 +142,7 @@ def add_new_API_for_query(APInames:dict[str, str], metaKG:pd.DataFrame, newAPIna
     return APInames, metaKG
 
 
+@capture_operation()
 def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[str, str], pd.DataFrame]:
     '''
     This function is used to add the Plover APIs developed by the CATRAX team to the APInames and metaKG.
@@ -171,7 +176,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     url = CI_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     try:
-        response = requests.get(url, timeout=5)
+        response = capture_request(requests.get, url, timeout=5)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
@@ -182,7 +187,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
                                                          data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -202,14 +207,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     url = CI_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     try: 
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
                 APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -226,14 +231,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     url_dev = DEV_URL_PREFIX + 'ctkp/meta_knowledge_graph'
     
     try: 
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
                 APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", CI_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -250,14 +255,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     #url = 'https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph'
     try:
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
                 APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", CI_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -274,14 +279,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     url_dev = DEV_URL_PREFIX + 'mokp/meta_knowledge_graph'
     #url = 'https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph'
     try:
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
                 APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -296,14 +301,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     url = CI_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     try:
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
                 APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", CI_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
-            response_dev = requests.get(url_dev, timeout=5)
+            response_dev = capture_request(requests.get, url_dev, timeout=5)
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
@@ -318,7 +323,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     url = 'https://kg2cploverdb.ci.transltr.io/meta_knowledge_graph'
     try:
-        response = requests.get(url)
+        response = capture_request(requests.get, url)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
@@ -330,6 +335,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     return APInames, metaKG
 
+@capture_operation()
 def load_translator_resources(use_new_metakg_url=False):
     """
     Load the necessary resources for the Translator.

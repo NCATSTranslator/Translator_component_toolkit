@@ -155,11 +155,11 @@ invocation exposed through the workflow interpreter.
 
 ## Next engineering milestones
 
-1. Record name resolution and normalization as explicit versioned operations,
-   retaining rejected candidates and selection criteria. Version 1 expects
-   resolved identifiers or caller-supplied literal data.
-2. Instrument the existing neighborhood/path finder internals using the same
-   evidence model, including per-provider failures and actual query rewrites.
+1. Promote captured name resolution and normalization into workflow operations
+   with explicit references. Version 1 recipes still expect resolved identifiers
+   or caller-supplied literal data.
+2. Define explicit data dependencies and query-graph mappings for captured
+   neighborhood/path finder operations, provider failures and query rewrites.
 3. Add operations over TRAPI result bindings, preserving analysis/support graphs
    while assembling paths; distinguish inference from retrieved assertions.
 4. Store large immutable artifacts by reference and expose inspection tools that
@@ -217,12 +217,15 @@ With all features disabled, no new persistence, evidence hashing, copying, or SD
 loading occurs. Existing toolkit resource caching is unchanged. Langfuse failures
 remain nonfatal. The shared invocation boundary unwraps decorated tools once so
 interface calls do not produce duplicate observations. Direct decorated Python
-calls use that same instrumentation; undecorated direct library calls do not yet
-receive automatic instrumentation.
+calls use that same instrumentation. All 18 working shared tools and their
+resolution, discovery, query, and finder conversion helpers are instrumented.
+Other legacy library operations are outside this capture surface. The nineteenth
+shared endpoint, `trapi_query_endpoint`, remains explicitly unsupported.
 
 With only `trapi: true`, observations remain in memory. Representations are
-unvalidated and retain their earlier limitations: merged provider results may
-contain only edges, and finder output is TRAPI-style. No full rollup is constructed.
+unvalidated: native merged provider results still contain only edges, and finder
+output is TRAPI-style. Full provider bodies are retained separately in execution
+observations. No full rollup is constructed.
 
 Durable recording writes content-addressed JSON observations under `artifacts/`
 and indexes calls in `journal.sqlite3`. Artifacts are written atomically and the
@@ -243,3 +246,55 @@ Thread-pool dispatch uses an explicit copied context for every worker. Context
 reset on scope exit prevents settings leaking into unrelated calls. No files or
 full responses are sent to Langfuse merely because local recording was enabled;
 existing Langfuse input/output capture runs only when tracing is independently on.
+
+### Phase 3 capture coverage
+
+`capture_operation()` uses the same execution boundary as `capture_trapi(kind)`;
+it does not add parameters or change native results. Interface adapters unwrap
+this boundary once. Nested library operations have their own observations and,
+when tracing is enabled, their own spans. Trace counts therefore increase even
+though the number of public tool calls and service requests does not.
+
+Each operation records bound inputs before execution, inputs after successful
+execution (including legacy mutations), and its native output or exception type.
+Buffered service requests retain the requested URL/arguments, HTTP status, exact
+body bytes as base64, and decoded JSON when available. Recording reads an already
+buffered body; it neither repeats the request nor calls `response.json()` again.
+This preserves normalization equivalences and unmatched identifiers, name lookup
+candidates and scores, discovery metadata, and full provider envelopes including
+nodes, bindings, analyses, qualifiers, sources, and supporting graphs.
+
+Transport exceptions, non-200 responses, malformed JSON, and valid empty results
+remain distinguishable in evidence even where a legacy function returns `None`.
+Provider merging records inputs, exclusions, and overwritten edge IDs. Query
+optimization, provider selection, finder assembly and scoring retain their actual
+input/output snapshots; their existing mutations and completion-order behavior
+are preserved. A requested recording failure is surfaced instead of being swallowed
+as a provider failure by parallel query execution.
+
+Workflow execution and snapshot replay continue to use the existing evidence
+bundle, with explicit dependencies, filter decisions and join lineage. The wrapper
+captures that bundle without introducing a second streaming-response reader or
+changing the workflow's size limits. Elsewhere, parent-call links remain nesting
+only: snapshots do not constitute complete data lineage or query-graph mappings.
+Deterministic semantic composition and schema validation belong to Phase 4.
+
+Capture starts when enabled. Resource-cache hits record the cached native value;
+they cannot recover the original HTTP bodies from a fetch made before capture.
+No extra fetch is performed to fill that gap. Missing/incompatible buffered bodies
+produce explicit capture diagnostics; durable recording reports a completed-call
+capture failure rather than silently claiming complete evidence.
+
+Compatibility fixtures in `tests/test_toolkit_capture.py` cover all 18 working
+boundaries across Python, shared invocation, CLI and registered MCP adapters.
+Boundary fixtures isolate delegation, return identity, mutations and exceptions;
+synthetic service fixtures execute real normalization, lookup, discovery, metadata
+updates, query pruning, provider merging, and finder assembly. The nineteenth
+endpoint's existing `TypeError` is retained. These fixtures are not biological
+goldens, fresh model evaluations, or tests of MCP's stdio transport.
+
+Phase 3 acceptance: 235 offline tests passed, including 71 new capture checks.
+The single-NLQ frozen benchmark matched its native-output and final-answer goldens
+through Python, CLI and registered MCP. A durable Python run retained 11 operation
+records and all four service bodies while issuing the same four requests. Live
+service tests, real-agent evaluations, semantic rollup and caching were not run.

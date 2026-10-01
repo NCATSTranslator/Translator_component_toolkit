@@ -25,7 +25,10 @@ def represent_trapi(result: Any, kind: str) -> dict[str, Any]:
             )
         else:
             add("response", {"message": result})
-            limitations.append("Original HTTP response envelope was not retained.")
+            limitations.append(
+                "This result-only representation omits the HTTP envelope; "
+                "instrumented provider calls retain it in service observations."
+            )
     elif kind == "finder":
         add("response", {"message": result.raw})
         limitations.append(
@@ -35,8 +38,9 @@ def represent_trapi(result: Any, kind: str) -> dict[str, Any]:
     elif kind == "edges":
         add("knowledge_graph_fragment", {"edges": result})
         limitations.append(
-            "Only merged edges remain; nodes, result bindings, auxiliary graphs "
-            "and provider failures cannot be recovered. This is not a TRAPI response."
+            "This result contains only merged edges. Consult provider observations "
+            "for nodes, bindings, supporting graphs and failures; no rollup is "
+            "constructed here. This is not a TRAPI response."
         )
     elif kind == "workflow":
         for step_id, step in result["steps"].items():

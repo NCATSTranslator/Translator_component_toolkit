@@ -1,3 +1,5 @@
+from .service_capture import capture_request
+from .execution import capture_operation
 
 # used May 30, 2025
 
@@ -24,6 +26,7 @@ def _select_provider_url(
 
 
 """This is the root URL for the resource."""
+@capture_operation()
 def get_translator_kp_info() -> tuple[pd.DataFrame, dict[str, str]]:
     """
     Get the SmartAPI Translator KP info from the smart-api.info API.
@@ -45,7 +48,7 @@ def get_translator_kp_info() -> tuple[pd.DataFrame, dict[str, str]]:
     """
     # Get x-bte smartapi specs
     url = service_url("smartapi_registry")
-    response = requests.get(url)
+    response = capture_request(requests.get, url)
     try:
         response.raise_for_status()
     except Exception:

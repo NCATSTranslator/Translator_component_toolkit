@@ -239,6 +239,10 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
             record["status"] = "succeeded"
             try:
                 record["output"] = deepcopy(result)
+                if "inputs" in record:
+                    record["inputs_after"] = deepcopy(dict(bound.arguments))
+                if record.get("observation_errors"):
+                    raise ValueError("Incomplete service observation")
                 if kind and settings.get("trapi"):
                     record["trapi"] = represent_trapi(result, kind)
             except Exception as error:
@@ -259,7 +263,7 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
             _active.reset(token)
 
 
-def capture_trapi(kind):
+def capture_trapi(kind=None):
     """Record separately from the native return; adapters avoid double wrapping."""
 
     def decorate(function):
@@ -268,6 +272,28 @@ def capture_trapi(kind):
             return execute(function, args, kwargs, kind=kind)
 
         captured.__tct_capture_kind__ = kind
+        captured.__tct_capture__ = True
         return captured
 
     return decorate
+
+
+# The same boundary also captures operations without a TRAPI result adapter.
+capture_operation = capture_trapi
+
+
+def observation_target():
+    """Internal capture sink; disabled execution must not inspect responses."""
+    return _active.get() if _run.get() is not None else None
+
+
+def observe_evidence(kind, **data):
+    """Attach explicitly supplied evidence; never infer dependencies from nesting."""
+    target = observation_target()
+    if target is not None:
+        try:
+            target.setdefault("observations", []).append(
+                {"kind": kind, **deepcopy(data)}
+            )
+        except Exception as error:
+            target.setdefault("observation_errors", []).append(type(error).__name__)

@@ -28,10 +28,11 @@ from ..translator_query import (
     query_KP,
 )
 from ..trapi import query as trapi_query
-from ..execution import capture_trapi
+from ..execution import capture_trapi, capture_operation
 from ..workflow import replay_workflow, run_workflow, validate_workflow
 
 
+@capture_operation()
 def get_translator_resources() -> Any:
     """Load the Translator resources used by the finder tools.
 
@@ -42,6 +43,7 @@ def get_translator_resources() -> Any:
     return _get_translator_resources()
 
 
+@capture_operation()
 def name_lookup(
     query: str,
     return_top_response: bool = True,
@@ -62,6 +64,7 @@ def name_lookup(
     return lookup(query, return_top_response, return_synonyms)
 
 
+@capture_operation()
 def get_name_synonyms(query: str) -> Any:
     """Return synonyms and Translator node information for a CURIE.
 
@@ -74,6 +77,7 @@ def get_name_synonyms(query: str) -> Any:
     return synonyms(query)
 
 
+@capture_operation()
 def batch_name_lookup(
     strings: list[str],
     size: int = 25,
@@ -96,6 +100,7 @@ def batch_name_lookup(
     return batch_lookup(strings, size, return_top_response, return_synonyms)
 
 
+@capture_operation()
 def normalize_nodes(
     query: str | list[str],
     return_equivalent_identifiers: bool = False,
@@ -123,6 +128,7 @@ def normalize_nodes(
     )
 
 
+@capture_operation()
 def get_kp_info() -> Any:
     """Return SmartAPI information for Translator Knowledge Providers.
 
@@ -133,6 +139,7 @@ def get_kp_info() -> Any:
     return get_translator_kp_info()
 
 
+@capture_operation()
 def get_metakg_data(api_names: dict[str, str]) -> Any:
     """Return MetaKG metadata for a set of Knowledge Providers.
 
@@ -145,6 +152,7 @@ def get_metakg_data(api_names: dict[str, str]) -> Any:
     return get_KP_metadata(api_names)
 
 
+@capture_operation()
 def add_custom_api_to_metakg(
     api_names: dict[str, str],
     metakg_df: Any,
@@ -179,6 +187,7 @@ def add_custom_api_to_metakg(
     )
 
 
+@capture_operation()
 def add_plover_apis_to_metakg(
     api_names: dict[str, str],
     metakg_df: Any,
@@ -195,6 +204,7 @@ def add_plover_apis_to_metakg(
     return add_plover_API(api_names, metakg_df)
 
 
+@capture_operation()
 def get_api_predicates() -> Any:
     """Return the predicates supported by Translator APIs.
 
@@ -205,6 +215,7 @@ def get_api_predicates() -> Any:
     return get_translator_API_predicates()
 
 
+@capture_operation()
 def optimize_query_for_api(
     query_json: dict[str, Any],
     api_name: str,
@@ -350,6 +361,7 @@ def path_finder(
     return result
 
 
+@capture_operation()
 def validate_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
     """Validate a composable query recipe without contacting any providers.
 

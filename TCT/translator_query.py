@@ -1,9 +1,12 @@
+from .service_capture import capture_request
+from .execution import capture_operation, observe_evidence, observation_target, ExecutionRecordingError
 import requests
 from copy import deepcopy
 import pandas
 from TCT import translator_metakg
 from TCT import translator_kpinfo
 
+@capture_operation()
 def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
     '''
     Get the predicates supported by each API.
@@ -65,6 +68,7 @@ def build_attribute_constraint(attribute_id:str, operator:str, value, name=None,
     return output
 
 
+@capture_operation()
 def format_query_json(subject_ids:list[str],
         object_ids:list[str]|None = None,
         subject_categories:list[str]|None = None,
@@ -133,6 +137,7 @@ def format_query_json(subject_ids:list[str],
 
 
 
+@capture_operation()
 def optimize_query_json(query_json, API_name_cur, API_predicates):
     '''
     Optimize the query JSON by removing predicates that are not supported by the selected APIs.
@@ -168,6 +173,7 @@ def optimize_query_json(query_json, API_name_cur, API_predicates):
 
     return query_json_cur
 
+@capture_operation()
 def query_KP(API_name_cur, query_json, APInames, API_predicates):
     """
     Query an individual API with a TRAPI 1.5.0 query JSON,
@@ -178,7 +184,7 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
     query_copy = deepcopy(query_json)
     # optimize on our private copy
     query_json_cur = optimize_query_json(query_copy, API_name_cur, API_predicates)
-    response = requests.post(API_url_cur, json=query_json_cur)
+    response = capture_request(requests.post, API_url_cur, json=query_json_cur)
     if response.status_code == 200:
         result = response.json().get("message", {})
         kg = result.get("knowledge_graph", {})
@@ -193,6 +199,7 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
         #print(f"{API_name_cur}: Warning Code: {response.status_code}")
         return None
 
+@capture_operation()
 def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_workers=1):
     '''
     Queries multiple APIs in parallel and merges the results into a single knowledge graph.
@@ -232,8 +239,13 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
                 data = future.result()
                 if 'knowledge_graph' in data:
                     result.append(data)
-            except Exception:
+                    observe_evidence("merge_input", provider=url, message=data)
+            except ExecutionRecordingError:
+                # Requested durable capture failure must not become an empty KP.
+                raise
+            except Exception as error:
                 no_results_returned.append(url)
+                observe_evidence("merge_exclusion", provider=url, error_type=type(error).__name__)
     
     included_KP_ID = []
     for i in range(0,len(result)):
@@ -245,6 +257,12 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
 
     result_merged = {}
     for i in included_KP_ID:
+        if observation_target() is not None:
+            observe_evidence(
+                "edge_merge", input_index=i,
+                overwritten_edge_ids=sorted(set(result_merged).intersection(result[i]['knowledge_graph']['edges'])),
+                policy="later_completion_overwrites",
+            )
         result_merged = {**result_merged, **result[i]['knowledge_graph']['edges']}
 
     len(result_merged)
