@@ -281,5 +281,5 @@ def test_query_ars_is_registered_as_optional_task(mcp_module):
     task_tool = tools_registry["query_ars"]
     assert task_tool.task_config is not None
     assert task_tool.task_config.mode == "optional"
-    assert task_tool.annotations.readOnlyHint is True
+    assert task_tool.annotations.readOnlyHint is False
     assert "progress" in inspect.signature(task_tool.fn).parameters
