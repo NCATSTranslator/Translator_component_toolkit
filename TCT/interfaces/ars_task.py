@@ -89,5 +89,5 @@ def register(mcp) -> Any:
     return mcp.tool(
         name="query_ars",
         task=TaskConfig(mode="optional"),
-        annotations={"readOnlyHint": True, "openWorldHint": True},
+        annotations={"readOnlyHint": False, "openWorldHint": True},
     )(query_ars)  # pragma: no cover - registration wrapper
