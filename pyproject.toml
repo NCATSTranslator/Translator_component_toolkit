@@ -27,6 +27,8 @@ dependencies = [
     "igraph",
     "pyvis",
     "zstandard",
+    "jsonschema>=4.18",
+    "PyYAML>=6",
 ]
 
 [project.optional-dependencies]

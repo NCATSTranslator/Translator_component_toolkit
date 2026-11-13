@@ -1,0 +1,111 @@
+{
+  "message": {
+    "auxiliary_graphs": {},
+    "knowledge_graph": {
+      "edges": {
+        "b1": {
+          "object": "MONDO:0004975",
+          "predicate": "biolink:associated_with",
+          "sources": [
+            {
+              "resource_id": "infores:synthetic-b",
+              "resource_role": "primary_knowledge_source"
+            }
+          ],
+          "subject": "EXAMPLE:gene1"
+        },
+        "b2": {
+          "object": "EXAMPLE:other-disease",
+          "predicate": "biolink:associated_with",
+          "sources": [
+            {
+              "resource_id": "infores:synthetic-b",
+              "resource_role": "primary_knowledge_source"
+            }
+          ],
+          "subject": "EXAMPLE:gene2"
+        }
+      },
+      "nodes": {
+        "EXAMPLE:gene1": {
+          "categories": [
+            "biolink:Gene"
+          ],
+          "name": "EXAMPLE:gene1"
+        },
+        "EXAMPLE:gene2": {
+          "categories": [
+            "biolink:Gene"
+          ],
+          "name": "EXAMPLE:gene2"
+        },
+        "EXAMPLE:other-disease": {
+          "categories": [
+            "biolink:Disease"
+          ],
+          "name": "EXAMPLE:other-disease"
+        },
+        "MONDO:0004975": {
+          "categories": [
+            "biolink:Disease"
+          ],
+          "name": "MONDO:0004975"
+        }
+      }
+    },
+    "results": [
+      {
+        "analyses": [
+          {
+            "edge_bindings": {
+              "e00": [
+                {
+                  "id": "b1"
+                }
+              ]
+            },
+            "resource_id": "infores:synthetic-provider"
+          }
+        ],
+        "node_bindings": {
+          "n0": [
+            {
+              "id": "EXAMPLE:gene1"
+            }
+          ],
+          "n1": [
+            {
+              "id": "MONDO:0004975"
+            }
+          ]
+        }
+      },
+      {
+        "analyses": [
+          {
+            "edge_bindings": {
+              "e00": [
+                {
+                  "id": "b2"
+                }
+              ]
+            },
+            "resource_id": "infores:synthetic-provider"
+          }
+        ],
+        "node_bindings": {
+          "n0": [
+            {
+              "id": "EXAMPLE:gene2"
+            }
+          ],
+          "n1": [
+            {
+              "id": "EXAMPLE:other-disease"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

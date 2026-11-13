@@ -1,0 +1,15 @@
+{
+  "reducer_version": 1,
+  "trapi_version": "1.5.0",
+  "rollup_hash": "9c2acd024df2eec85dda1a22bd911a7b2921e8fc4d156f6efdd505d94dc4383e",
+  "selected_result_count": 1,
+  "accumulated_edge_count": 5,
+  "source_ids": [
+    "source:a62cfd67b86ab9ed05a4baa1f70ff162d900943a4bf7a2bd3f0f7a2b192acaac",
+    "source:eac1467c7b45817aeb8e47d133d9d0e19dbf69fb0eb7948e938feea18f23f4f4"
+  ],
+  "selected_original_edges": [
+    "a1",
+    "b1"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "hits": [
+    {
+      "_id": "chemical-provider",
+      "info": {
+        "title": "chemical-provider"
+      },
+      "servers": [
+        {
+          "url": "https://fixture.invalid/chemical",
+          "x-maturity": "production"
+        }
+      ]
+    },
+    {
+      "_id": "gene-provider",
+      "info": {
+        "title": "gene-provider"
+      },
+      "servers": [
+        {
+          "url": "https://fixture.invalid/gene",
+          "x-maturity": "production"
+        }
+      ]
+    }
+  ]
+}

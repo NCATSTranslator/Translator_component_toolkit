@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "description": "Synthetic offline demonstration of evidence flow; these are not biological findings.",
+  "steps": [
+    {
+      "id": "first_hop",
+      "op": "literal",
+      "description": "Caller-supplied synthetic edge records, not a provider response.",
+      "value": [
+        {"subject": "EXAMPLE:compound", "predicate": "biolink:affects", "object": "EXAMPLE:gene1", "evidence": "fixture:first"},
+        {"subject": "EXAMPLE:compound", "predicate": "biolink:related_to", "object": "EXAMPLE:gene2", "evidence": "fixture:excluded"}
+      ]
+    },
+    {
+      "id": "filtered",
+      "op": "filter",
+      "description": "Retain the exact requested predicate; this is not a causality assessment.",
+      "input": {"$ref": "first_hop"},
+      "conditions": [{"path": "/predicate", "operator": "eq", "value": "biolink:affects"}]
+    },
+    {
+      "id": "intermediates",
+      "op": "pluck",
+      "input": {"$ref": "filtered"},
+      "path": "/object",
+      "unique": true
+    },
+    {
+      "id": "second_hop",
+      "op": "literal",
+      "description": "Independent synthetic branch with both matched and unmatched rows.",
+      "value": [
+        {"subject": "EXAMPLE:gene1", "predicate": "biolink:associated_with", "object": "EXAMPLE:condition", "evidence": "fixture:second"},
+        {"subject": "EXAMPLE:gene2", "predicate": "biolink:associated_with", "object": "EXAMPLE:condition", "evidence": "fixture:unmatched"}
+      ]
+    },
+    {
+      "id": "joined",
+      "op": "join",
+      "left": {"$ref": "filtered"},
+      "right": {"$ref": "second_hop"},
+      "left_on": "/object",
+      "right_on": "/subject"
+    },
+    {
+      "id": "pathways",
+      "op": "project",
+      "input": {"$ref": "joined"},
+      "fields": {"start": "/left/subject", "intermediate": "/left/object", "end": "/right/object"}
+    }
+  ],
+  "outputs": {
+    "pathways": {"$ref": "pathways"},
+    "supporting_rows": {"$ref": "joined"},
+    "intermediate_ids": {"$ref": "intermediates"}
+  }
+}

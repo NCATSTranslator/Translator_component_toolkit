@@ -1,0 +1,400 @@
+{
+  "final": {
+    "answer": "In this synthetic snapshot, EXAMPLE:chemical1 affects EXAMPLE:gene1, which is associated with MONDO:0004975. This is not evidence of treatment efficacy.",
+    "coverage": "Complete for this frozen synthetic snapshot only; not a live or exhaustive biomedical answer.",
+    "paths": [
+      {
+        "chemical": "EXAMPLE:chemical1",
+        "disease": "MONDO:0004975",
+        "evidence": [
+          "a1",
+          "b1"
+        ],
+        "gene": "EXAMPLE:gene1"
+      }
+    ],
+    "sources": [
+      "infores:synthetic-a",
+      "infores:synthetic-b"
+    ]
+  },
+  "history": [
+    {
+      "native_type": "TranslatorNode",
+      "output": {
+        "attributes": null,
+        "curie": "MONDO:0004975",
+        "curie_synonyms": [
+          "MONDO:0004975"
+        ],
+        "label": "Alzheimer disease",
+        "synonyms": [
+          "Alzheimer disease"
+        ],
+        "taxa": null,
+        "types": [
+          "biolink:Disease"
+        ]
+      },
+      "tool": "normalize_nodes"
+    },
+    {
+      "native_type": "tuple",
+      "output": [
+        [
+          {
+            "ci_url": null,
+            "id": "https://smart-api.info/ui/chemical-provider",
+            "prod_url": "https://fixture.invalid/chemical/query/",
+            "test_url": null,
+            "title": "chemical-provider"
+          },
+          {
+            "ci_url": null,
+            "id": "https://smart-api.info/ui/gene-provider",
+            "prod_url": "https://fixture.invalid/gene/query/",
+            "test_url": null,
+            "title": "gene-provider"
+          }
+        ],
+        {
+          "chemical-provider": "https://fixture.invalid/chemical/query/",
+          "gene-provider": "https://fixture.invalid/gene/query/"
+        }
+      ],
+      "tool": "get_kp_info"
+    },
+    {
+      "native_type": "dict",
+      "output": {
+        "auxiliary_graphs": {},
+        "knowledge_graph": {
+          "edges": {
+            "b1": {
+              "object": "MONDO:0004975",
+              "predicate": "biolink:associated_with",
+              "sources": [
+                {
+                  "resource_id": "infores:synthetic-b",
+                  "resource_role": "primary_knowledge_source"
+                }
+              ],
+              "subject": "EXAMPLE:gene1"
+            },
+            "b2": {
+              "object": "EXAMPLE:other-disease",
+              "predicate": "biolink:associated_with",
+              "sources": [
+                {
+                  "resource_id": "infores:synthetic-b",
+                  "resource_role": "primary_knowledge_source"
+                }
+              ],
+              "subject": "EXAMPLE:gene2"
+            }
+          },
+          "nodes": {
+            "EXAMPLE:gene1": {
+              "categories": [
+                "biolink:Gene"
+              ],
+              "name": "EXAMPLE:gene1"
+            },
+            "EXAMPLE:gene2": {
+              "categories": [
+                "biolink:Gene"
+              ],
+              "name": "EXAMPLE:gene2"
+            },
+            "EXAMPLE:other-disease": {
+              "categories": [
+                "biolink:Disease"
+              ],
+              "name": "EXAMPLE:other-disease"
+            },
+            "MONDO:0004975": {
+              "categories": [
+                "biolink:Disease"
+              ],
+              "name": "MONDO:0004975"
+            }
+          }
+        },
+        "results": [
+          {
+            "analyses": [
+              {
+                "edge_bindings": {
+                  "e00": [
+                    {
+                      "id": "b1"
+                    }
+                  ]
+                },
+                "resource_id": "infores:synthetic-provider"
+              }
+            ],
+            "node_bindings": {
+              "n0": [
+                {
+                  "id": "EXAMPLE:gene1"
+                }
+              ],
+              "n1": [
+                {
+                  "id": "MONDO:0004975"
+                }
+              ]
+            }
+          },
+          {
+            "analyses": [
+              {
+                "edge_bindings": {
+                  "e00": [
+                    {
+                      "id": "b2"
+                    }
+                  ]
+                },
+                "resource_id": "infores:synthetic-provider"
+              }
+            ],
+            "node_bindings": {
+              "n0": [
+                {
+                  "id": "EXAMPLE:gene2"
+                }
+              ],
+              "n1": [
+                {
+                  "id": "EXAMPLE:other-disease"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "tool": "query_knowledge_provider"
+    },
+    {
+      "native_type": "dict",
+      "output": {
+        "auxiliary_graphs": {},
+        "knowledge_graph": {
+          "edges": {
+            "a1": {
+              "object": "EXAMPLE:gene1",
+              "predicate": "biolink:affects",
+              "sources": [
+                {
+                  "resource_id": "infores:synthetic-a",
+                  "resource_role": "primary_knowledge_source"
+                }
+              ],
+              "subject": "EXAMPLE:chemical1"
+            },
+            "a2": {
+              "object": "EXAMPLE:gene1",
+              "predicate": "biolink:related_to",
+              "sources": [
+                {
+                  "resource_id": "infores:synthetic-a",
+                  "resource_role": "primary_knowledge_source"
+                }
+              ],
+              "subject": "EXAMPLE:chemical2"
+            },
+            "a3": {
+              "object": "EXAMPLE:gene2",
+              "predicate": "biolink:affects",
+              "sources": [
+                {
+                  "resource_id": "infores:synthetic-a",
+                  "resource_role": "primary_knowledge_source"
+                }
+              ],
+              "subject": "EXAMPLE:chemical3"
+            }
+          },
+          "nodes": {
+            "EXAMPLE:chemical1": {
+              "categories": [
+                "biolink:ChemicalEntity"
+              ],
+              "name": "EXAMPLE:chemical1"
+            },
+            "EXAMPLE:chemical2": {
+              "categories": [
+                "biolink:ChemicalEntity"
+              ],
+              "name": "EXAMPLE:chemical2"
+            },
+            "EXAMPLE:chemical3": {
+              "categories": [
+                "biolink:ChemicalEntity"
+              ],
+              "name": "EXAMPLE:chemical3"
+            },
+            "EXAMPLE:gene1": {
+              "categories": [
+                "biolink:Gene"
+              ],
+              "name": "EXAMPLE:gene1"
+            },
+            "EXAMPLE:gene2": {
+              "categories": [
+                "biolink:Gene"
+              ],
+              "name": "EXAMPLE:gene2"
+            }
+          }
+        },
+        "results": [
+          {
+            "analyses": [
+              {
+                "edge_bindings": {
+                  "e00": [
+                    {
+                      "id": "a1"
+                    }
+                  ]
+                },
+                "resource_id": "infores:synthetic-provider"
+              }
+            ],
+            "node_bindings": {
+              "n0": [
+                {
+                  "id": "EXAMPLE:chemical1"
+                }
+              ],
+              "n1": [
+                {
+                  "id": "EXAMPLE:gene1"
+                }
+              ]
+            }
+          },
+          {
+            "analyses": [
+              {
+                "edge_bindings": {
+                  "e00": [
+                    {
+                      "id": "a2"
+                    }
+                  ]
+                },
+                "resource_id": "infores:synthetic-provider"
+              }
+            ],
+            "node_bindings": {
+              "n0": [
+                {
+                  "id": "EXAMPLE:chemical2"
+                }
+              ],
+              "n1": [
+                {
+                  "id": "EXAMPLE:gene1"
+                }
+              ]
+            }
+          },
+          {
+            "analyses": [
+              {
+                "edge_bindings": {
+                  "e00": [
+                    {
+                      "id": "a3"
+                    }
+                  ]
+                },
+                "resource_id": "infores:synthetic-provider"
+              }
+            ],
+            "node_bindings": {
+              "n0": [
+                {
+                  "id": "EXAMPLE:chemical3"
+                }
+              ],
+              "n1": [
+                {
+                  "id": "EXAMPLE:gene2"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "tool": "query_knowledge_provider"
+    },
+    {
+      "native_type": "dict",
+      "output": {
+        "outputs": {
+          "paths": [
+            {
+              "left": {
+                "key": "a1",
+                "value": {
+                  "object": "EXAMPLE:gene1",
+                  "predicate": "biolink:affects",
+                  "sources": [
+                    {
+                      "resource_id": "infores:synthetic-a",
+                      "resource_role": "primary_knowledge_source"
+                    }
+                  ],
+                  "subject": "EXAMPLE:chemical1"
+                }
+              },
+              "right": {
+                "key": "b1",
+                "value": {
+                  "object": "MONDO:0004975",
+                  "predicate": "biolink:associated_with",
+                  "sources": [
+                    {
+                      "resource_id": "infores:synthetic-b",
+                      "resource_role": "primary_knowledge_source"
+                    }
+                  ],
+                  "subject": "EXAMPLE:gene1"
+                }
+              }
+            }
+          ],
+          "summary": [
+            {
+              "chemical": "EXAMPLE:chemical1",
+              "chemical_edge": "a1",
+              "disease": "MONDO:0004975",
+              "gene": "EXAMPLE:gene1",
+              "gene_edge": "b1"
+            }
+          ]
+        },
+        "status": "succeeded"
+      },
+      "tool": "run_query_workflow"
+    }
+  ],
+  "limitations": [
+    "MCP currently renders the discovery DataFrame as text rather than structured rows.",
+    "query_KP prints a success line on stdout, so CLI output is not a single JSON document."
+  ],
+  "mcp_registry_output": [
+    "                                            id  ... test_url\n0  https://smart-api.info/ui/chemical-provider  ...     None\n1      https://smart-api.info/ui/gene-provider  ...     None\n\n[2 rows x 5 columns]",
+    {
+      "chemical-provider": "https://fixture.invalid/chemical/query/",
+      "gene-provider": "https://fixture.invalid/gene/query/"
+    }
+  ],
+  "origin": "Reviewed projection of baseline c8a2200 fixed trajectory; synthetic records only",
+  "service_call_count": 4
+}

@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .serialization import ResultSerializationError, dumps_result, to_jsonable
-from .telemetry import observe_invocation
+from ..execution import execute
 
 
 class ToolInvocationError(RuntimeError):
@@ -33,10 +33,11 @@ def invoke(
 ) -> Any:
     """Run a tool once and translate its exception for the calling interface."""
     try:
-        with observe_invocation(tool, args, kwargs, _interface) as record_result:
-            result = tool(*args, **kwargs)
-            record_result(result)
-            return result
+        kind = getattr(tool, "__tct_capture_kind__", None)
+        function = tool.__wrapped__ if getattr(tool, "__tct_capture__", False) else tool
+        return execute(
+            function, args, kwargs, interface=_interface or "shared", kind=kind
+        )
     except ToolInvocationError:
         raise
     except Exception as error:

@@ -1,3 +1,5 @@
+from .service_capture import capture_request
+from .execution import capture_operation
 # TCT Pathfinder...
 # reviewed by yjzhang, 2026-08-20
 import requests
@@ -23,6 +25,7 @@ from .TCT import (
 
 
 
+@capture_operation()
 def format_query_json_for_pathfinder_with_constraints(subject_ids:str,
         object_ids:str,
         subject_categories=None,
@@ -114,6 +117,7 @@ def format_query_json_for_pathfinder_with_constraints(subject_ids:str,
   
     return q
 
+@capture_operation()
 def build_query_graph(start_node_id:str, end_node_id:str, start_node_categories=None, end_node_categories=None, constraints_path=None):
     """
     start_node_categories and end_node_categories are lists of categories.
@@ -153,6 +157,7 @@ def build_query_graph(start_node_id:str, end_node_id:str, start_node_categories=
     return q
 
 
+@capture_operation()
 def generate_score_results(results:dict, method='infores'):
     """
     Generates a score dict, and a list of "analyses".
@@ -191,6 +196,7 @@ def generate_score_results(results:dict, method='infores'):
     return graph_scores, graph_scores_formatted
 
 
+@capture_operation()
 def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dict, result2:dict,
         start_node_categories=None, end_node_categories=None,
         get_node_info=True,
@@ -314,6 +320,7 @@ def parse_results_for_pathfinder(start_node_id:str, end_node_id:str, result1:dic
 
 
 # define a function that uses the query_json as an template and change the ids and categories of the nodes
+@capture_operation()
 def format_pathfinder_query(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> dict:
     '''
     Formats a query to the Pathfinder API.
@@ -363,6 +370,7 @@ def format_pathfinder_query(node1_id:str, node1_category:str, node2_id:str, node
     return query_json
 
 
+@capture_operation()
 def query_aragorn_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
     """
     This queries the ARAGORN Pathfinder API.
@@ -380,10 +388,11 @@ def query_aragorn_pathfinder(node1_id:str, node1_category:str, node2_id:str, nod
     """
     aragorn_endpoint = service_url("aragorn")
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = requests.post(aragorn_endpoint, json=query_current)
+    response = capture_request(requests.post, aragorn_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
 
+@capture_operation()
 def query_aragorn_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
     """
     This queries the ARAGORN Pathfinder API with a list of constraints.
@@ -408,9 +417,10 @@ def query_aragorn_pathfinder_with_constraints(node1_id:str, node1_category:str, 
         object_categories=node2_category,
         constraints=constraints
     )
-    response = requests.post(aragorn_endpoint, json=query_current)
+    response = capture_request(requests.post, aragorn_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
+@capture_operation()
 def query_arax_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_category:str) -> str:
     """
     This queries the ARAX Pathfinder API.
@@ -428,9 +438,10 @@ def query_arax_pathfinder(node1_id:str, node1_category:str, node2_id:str, node2_
     """
     ARAX_endpoint = service_url("arax")
     query_current = format_pathfinder_query(node1_id, node1_category, node2_id, node2_category)
-    response = requests.post(ARAX_endpoint, json=query_current)
+    response = capture_request(requests.post, ARAX_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
+@capture_operation()
 def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, node2_id:str, node2_category:str, constraints:list) -> str:
     """
     This queries the ARAX Pathfinder API with a list of constraints.
@@ -455,9 +466,10 @@ def query_arax_pathfinder_with_constraints(node1_id:str, node1_category:str, nod
         object_categories=node2_category,
         constraints=constraints
     )
-    response = requests.post(ARAX_endpoint, json=query_current)
+    response = capture_request(requests.post, ARAX_endpoint, json=query_current, cache_kind="trapi", method="post")
     return response
 
+@capture_operation()
 def query_TCT_pathfinder(
     start: NodeInput,
     end: NodeInput,

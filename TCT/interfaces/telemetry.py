@@ -132,7 +132,10 @@ def observe_invocation(
     interface: str | None,
 ) -> Generator[Callable[[Any], None], None, None]:
     """Measure an invocation; recording failures never replace tool outcomes."""
+    from ..execution import execution_metadata
+
     metadata = {
+        **execution_metadata(),
         "tct.interface": interface or "shared",
         "tct.module": tool.__module__,
         "tct.tool": tool.__name__,
@@ -149,6 +152,7 @@ def observe_invocation(
         input_factory=trace_input,
         metadata=metadata,
     ) as observation:
+
         def record_result(result: Any) -> None:
             if observation is None:
                 return
@@ -159,6 +163,8 @@ def observe_invocation(
                     metadata=_payload_metadata("tct.output", output),
                 )
             except Exception as error:
-                logger.warning("Unable to record tool telemetry (%s)", type(error).__name__)
+                logger.warning(
+                    "Unable to record tool telemetry (%s)", type(error).__name__
+                )
 
         yield record_result

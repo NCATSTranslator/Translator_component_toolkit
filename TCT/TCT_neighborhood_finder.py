@@ -1,3 +1,4 @@
+from .execution import capture_operation
 # reviewed by yjzhang, 2026-08-19
 from collections import Counter
 
@@ -18,6 +19,7 @@ from .TCT import (
 )
 from .TCT_pathfinder import generate_score_results, build_query_graph
 
+@capture_operation()
 def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
         start_node_categories:list|None=None, end_node_categories:list|None=None,
         get_node_info:bool=True,
@@ -126,6 +128,7 @@ def parse_results_for_neighborhood_finder(start_node_id:str, results:dict,
     return output
 
 
+@capture_operation()
 def parse_results_for_neighborhood_finder_multiple_inputs(start_node_ids:list[str], results:dict,
         start_node_categories:list|None=None, end_node_categories:list|None=None,
         get_node_info:bool=True,
@@ -216,6 +219,7 @@ def parse_results_for_neighborhood_finder_multiple_inputs(start_node_ids:list[st
                     output['knowledge_graph']['nodes'][node_id] = {'name': nn.label, 'categories': nn.types}
     return output
 
+@capture_operation()
 def neighborhood_finder(
     node: Union[NodeInput, list[NodeInput]],
     neighbor_categories: CategoryList,

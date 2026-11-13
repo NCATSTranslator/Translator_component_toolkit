@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from functools import wraps
+from inspect import signature, Parameter
+
+from ..execution import interface_execution, ExecutionRecordingError
 from typing import Any
 
 from fastmcp import FastMCP
@@ -58,8 +61,9 @@ class _TraceContextMiddleware(Middleware):
             message = message.model_copy(update={"arguments": arguments})
             context = context.copy(message=message)
 
-        with use_incoming_trace_context(metadata):
-            return await call_next(context)
+        with interface_execution(arguments.get("execution")):
+            with use_incoming_trace_context(metadata):
+                return await call_next(context)
 
 
 mcp.add_middleware(_TraceContextMiddleware())
@@ -73,15 +77,40 @@ def _register_tool(
     @wraps(tool)
     def invoke(*args: Any, **kwargs: Any) -> Any:
         try:
-            return invoke_tool(tool, *args, _interface="mcp", **kwargs)
-        except ToolInvocationError as error:
+            settings = kwargs.pop("execution", None)
+            with interface_execution(settings):
+                return invoke_tool(tool, *args, _interface="mcp", **kwargs)
+        except (
+            ToolInvocationError,
+            ExecutionRecordingError,
+            ValueError,
+            OSError,
+        ) as error:
             raise McpError(
                 ErrorData(
                     code=INTERNAL_ERROR,
-                    message=error.contextual_message,
+                    message=error.contextual_message
+                    if isinstance(error, ToolInvocationError)
+                    else str(error),
                 )
             ) from error
 
+    invoke.__annotations__ = {
+        **tool.__annotations__,
+        "execution": dict[str, Any] | None,
+    }
+    original = signature(tool)
+    invoke.__signature__ = original.replace(
+        parameters=[
+            *original.parameters.values(),
+            Parameter(
+                "execution",
+                Parameter.KEYWORD_ONLY,
+                default=None,
+                annotation=dict[str, Any] | None,
+            ),
+        ]
+    )
     return mcp.tool()(invoke)
 
 
