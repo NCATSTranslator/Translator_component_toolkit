@@ -1,0 +1,17 @@
+{
+  "MONDO:0004975": {
+    "equivalent_identifiers": [
+      {
+        "identifier": "MONDO:0004975",
+        "label": "Alzheimer disease"
+      }
+    ],
+    "id": {
+      "identifier": "MONDO:0004975",
+      "label": "Alzheimer disease"
+    },
+    "type": [
+      "biolink:Disease"
+    ]
+  }
+}

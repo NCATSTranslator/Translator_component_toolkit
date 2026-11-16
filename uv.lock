@@ -3977,10 +3977,12 @@ version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "igraph" },
+    { name = "jsonschema" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
     { name = "pyvis" },
+    { name = "pyyaml" },
     { name = "requests" },
     { name = "zstandard" },
 ]
@@ -4017,6 +4019,7 @@ requires-dist = [
     { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=2.14.7,<3" },
     { name = "igraph" },
     { name = "ipycytoscape", marker = "extra == 'vision'" },
+    { name = "jsonschema", specifier = ">=4.18" },
     { name = "langfuse", marker = "extra == 'langfuse'", specifier = ">=3.63.0" },
     { name = "matplotlib", marker = "extra == 'vision'" },
     { name = "networkx", marker = "extra == 'vision'" },
@@ -4024,6 +4027,7 @@ requires-dist = [
     { name = "pandas" },
     { name = "pyvis" },
     { name = "pyvis", marker = "extra == 'vision'" },
+    { name = "pyyaml", specifier = ">=6" },
     { name = "requests" },
     { name = "seaborn", marker = "extra == 'vision'" },
     { name = "zstandard" },

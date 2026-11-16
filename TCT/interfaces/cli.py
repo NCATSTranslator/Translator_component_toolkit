@@ -7,6 +7,9 @@ import inspect
 import json
 import sys
 import types
+from pathlib import Path
+
+from ..execution import interface_execution, ExecutionRecordingError
 from collections.abc import Callable
 from typing import Any, Union, get_args, get_origin, get_type_hints
 
@@ -141,6 +144,12 @@ def _add_tool_parser(
 
         parser.add_argument(option, **options)
 
+    parser.add_argument(
+        "--execution",
+        type=Path,
+        default=None,
+        help="Optional execution settings JSON file (tracing and recording).",
+    )
     parser.set_defaults(_tool=tool)
 
 
@@ -171,14 +180,17 @@ def main(argv: list[str] | None = None) -> int:
     values = vars(namespace)
     tool = values.pop("_tool")
     command = values.pop("command")
+    execution_path = values.pop("execution")
     try:
-        result = invoke(tool, _interface="cli", **values)
-    except ToolInvocationError as error:
+        settings = json.loads(execution_path.read_text()) if execution_path else None
+        with interface_execution(settings):
+            try:
+                result = invoke(tool, _interface="cli", **values)
+            finally:
+                flush_observability()
+    except (ToolInvocationError, ExecutionRecordingError, ValueError, OSError) as error:
         print(f"{parser.prog}: {command}: {error}", file=sys.stderr)
         return 1
-    finally:
-        # The CLI is short-lived, so ensure queued observations are delivered.
-        flush_observability()
     try:
         output = dumps_result(result)
     except ResultSerializationError as error:

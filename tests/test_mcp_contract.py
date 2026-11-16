@@ -60,6 +60,10 @@ EXPECTED_SIGNATURES = {
         "(start: 'str', end: 'str', "
         "intermediate_categories: 'list[str] | None' = None) -> 'Any'"
     ),
+    "validate_query_workflow": "(workflow: 'dict[str, Any]') -> 'dict[str, Any]'",
+    "run_query_workflow": "(workflow: 'dict[str, Any]') -> 'dict[str, Any]'",
+    "replay_query_workflow": "(bundle: 'dict[str, Any]', mode: 'str' = 'snapshot') -> 'dict[str, Any]'",
+    "evidence": "(request: 'dict[str, Any]') -> 'dict[str, Any]'",
 }
 
 
@@ -223,6 +227,10 @@ EXPECTED_INPUTS = {
         },
         ["start", "end"],
     ),
+    "evidence": (
+        {"request": {"type": "object", "additionalProperties": True}},
+        ["request"],
+    ),
 }
 
 
@@ -243,7 +251,20 @@ def test_published_tool_names_signatures_and_docs_are_stable():
     assert list(tools) == list(EXPECTED_SIGNATURES)
     for name, expected_signature in EXPECTED_SIGNATURES.items():
         tool = tools[name]
-        assert str(inspect.signature(tool.fn)) == expected_signature
+        actual = inspect.signature(tool.fn)
+        assert actual.parameters["execution"].default is None
+        assert (
+            str(
+                actual.replace(
+                    parameters=[
+                        p
+                        for name, p in actual.parameters.items()
+                        if name != "execution"
+                    ]
+                )
+            )
+            == expected_signature
+        )
         assert tool.description == inspect.getdoc(tool.fn)
         assert tool.description
 
@@ -255,12 +276,69 @@ def test_generated_mcp_input_schemas_are_stable():
     for name, (properties, required) in EXPECTED_INPUTS.items():
         schema = _without_titles(tools[name].parameters)
         assert schema["type"] == "object"
-        assert schema["properties"] == properties
+        expected = dict(properties)
+        expected["execution"] = {
+            "anyOf": [
+                {"type": "object", "additionalProperties": True},
+                {"type": "null"},
+            ],
+            "default": None,
+        }
+        assert schema["properties"] == expected
         assert schema.get("required", []) == required
 
 
 def test_tools_keep_unstructured_output_contract():
-    """Adding annotations must not silently enable structured MCP outputs."""
+    """Existing tools keep their outputs; new workflows use structured results."""
     tools = asyncio.run(mcp.get_tools())
 
-    assert all(tool.output_schema is None for tool in tools.values())
+    for name, tool in tools.items():
+        if name in {
+            "validate_query_workflow",
+            "run_query_workflow",
+            "replay_query_workflow",
+            "evidence",
+        }:
+            assert tool.output_schema is not None
+        else:
+            assert tool.output_schema is None
+
+
+def test_workflow_tool_inputs_are_explicit_json_objects():
+    tools = asyncio.run(mcp.get_tools())
+    for name in ("validate_query_workflow", "run_query_workflow"):
+        schema = _without_titles(tools[name].parameters)
+        properties = dict(schema["properties"])
+        assert properties.pop("execution")["default"] is None
+        assert properties == {
+            "workflow": {"type": "object", "additionalProperties": True}
+        }
+        assert schema["required"] == ["workflow"]
+    schema = _without_titles(tools["replay_query_workflow"].parameters)
+    properties = dict(schema["properties"])
+    assert properties.pop("execution")["default"] is None
+    assert properties == {
+        "bundle": {"type": "object", "additionalProperties": True},
+        "mode": {"type": "string", "default": "snapshot"},
+    }
+    assert schema["required"] == ["bundle"]
+
+
+def test_mcp_workflow_returns_structured_replayable_evidence():
+    """Exercise the actual registered MCP adapters, including JSON output."""
+
+    async def roundtrip():
+        tools = await mcp.get_tools()
+        workflow = {
+            "schema_version": 1,
+            "steps": [{"id": "data", "op": "literal", "value": ["EXAMPLE:1"]}],
+            "outputs": {"ids": {"$ref": "data"}},
+        }
+        result = await tools["run_query_workflow"].run({"workflow": workflow})
+        bundle = result.structured_content
+        replayed = await tools["replay_query_workflow"].run({"bundle": bundle})
+        assert bundle["status"] == "succeeded"
+        assert replayed.structured_content["outputs"] == {"ids": ["EXAMPLE:1"]}
+        assert replayed.structured_content["replayed_from"] == bundle["bundle_sha256"]
+
+    asyncio.run(roundtrip())

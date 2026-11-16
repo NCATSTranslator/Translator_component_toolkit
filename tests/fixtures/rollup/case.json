@@ -1,0 +1,90 @@
+{
+  "attachment_sha256": "1862b4b01ef8d49e72fd96ec6ac17cddfd878cb8b8bb9a8bd762a91dcff07324",
+  "baseline_commit": "c8a2200",
+  "expected_paths": [
+    {
+      "chemical": "EXAMPLE:chemical1",
+      "disease": "MONDO:0004975",
+      "evidence": [
+        "a1",
+        "b1"
+      ],
+      "gene": "EXAMPLE:gene1"
+    }
+  ],
+  "id": "alzheimer-two-hop-lookup-v1",
+  "limitations": [
+    "Responses intentionally contain nonmatching distractor edges to exercise explicit filtering.",
+    "No medical validity claim or live completeness claim.",
+    "No TRAPI rollup validator exists at this phase."
+  ],
+  "origin": "synthetic; no biological truth asserted",
+  "queries": {
+    "chemicals": {
+      "message": {
+        "query_graph": {
+          "edges": {
+            "e00": {
+              "knowledge_type": "lookup",
+              "object": "n1",
+              "predicates": [
+                "biolink:affects"
+              ],
+              "subject": "n0"
+            }
+          },
+          "nodes": {
+            "n0": {
+              "categories": [
+                "biolink:ChemicalEntity"
+              ]
+            },
+            "n1": {
+              "categories": [
+                "biolink:Gene"
+              ],
+              "ids": [
+                "EXAMPLE:gene1",
+                "EXAMPLE:gene2"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "genes": {
+      "message": {
+        "query_graph": {
+          "edges": {
+            "e00": {
+              "knowledge_type": "lookup",
+              "object": "n1",
+              "predicates": [
+                "biolink:associated_with"
+              ],
+              "subject": "n0"
+            }
+          },
+          "nodes": {
+            "n0": {
+              "categories": [
+                "biolink:Gene"
+              ]
+            },
+            "n1": {
+              "categories": [
+                "biolink:Disease"
+              ],
+              "ids": [
+                "MONDO:0004975"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "question": "Which chemicals are recorded as affecting genes associated with Alzheimer\u2019s disease? Show the intermediate genes and the supporting evidence for each connection.",
+  "schema_validation": "not_performed",
+  "source": "User-provided HelmsDeep NLQ corpus, A4"
+}

@@ -28,8 +28,12 @@ from ..translator_query import (
     query_KP,
 )
 from ..trapi import query as trapi_query
+from ..execution import capture_trapi, capture_operation
+from ..workflow import replay_workflow, run_workflow, validate_workflow
+from ..evidence import evidence as _evidence
 
 
+@capture_operation()
 def get_translator_resources() -> Any:
     """Load the Translator resources used by the finder tools.
 
@@ -40,6 +44,7 @@ def get_translator_resources() -> Any:
     return _get_translator_resources()
 
 
+@capture_operation()
 def name_lookup(
     query: str,
     return_top_response: bool = True,
@@ -60,6 +65,7 @@ def name_lookup(
     return lookup(query, return_top_response, return_synonyms)
 
 
+@capture_operation()
 def get_name_synonyms(query: str) -> Any:
     """Return synonyms and Translator node information for a CURIE.
 
@@ -72,6 +78,7 @@ def get_name_synonyms(query: str) -> Any:
     return synonyms(query)
 
 
+@capture_operation()
 def batch_name_lookup(
     strings: list[str],
     size: int = 25,
@@ -94,6 +101,7 @@ def batch_name_lookup(
     return batch_lookup(strings, size, return_top_response, return_synonyms)
 
 
+@capture_operation()
 def normalize_nodes(
     query: str | list[str],
     return_equivalent_identifiers: bool = False,
@@ -121,6 +129,7 @@ def normalize_nodes(
     )
 
 
+@capture_operation()
 def get_kp_info() -> Any:
     """Return SmartAPI information for Translator Knowledge Providers.
 
@@ -131,6 +140,7 @@ def get_kp_info() -> Any:
     return get_translator_kp_info()
 
 
+@capture_operation()
 def get_metakg_data(api_names: dict[str, str]) -> Any:
     """Return MetaKG metadata for a set of Knowledge Providers.
 
@@ -143,6 +153,7 @@ def get_metakg_data(api_names: dict[str, str]) -> Any:
     return get_KP_metadata(api_names)
 
 
+@capture_operation()
 def add_custom_api_to_metakg(
     api_names: dict[str, str],
     metakg_df: Any,
@@ -177,6 +188,7 @@ def add_custom_api_to_metakg(
     )
 
 
+@capture_operation()
 def add_plover_apis_to_metakg(
     api_names: dict[str, str],
     metakg_df: Any,
@@ -193,6 +205,7 @@ def add_plover_apis_to_metakg(
     return add_plover_API(api_names, metakg_df)
 
 
+@capture_operation()
 def get_api_predicates() -> Any:
     """Return the predicates supported by Translator APIs.
 
@@ -203,6 +216,7 @@ def get_api_predicates() -> Any:
     return get_translator_API_predicates()
 
 
+@capture_operation()
 def optimize_query_for_api(
     query_json: dict[str, Any],
     api_name: str,
@@ -221,6 +235,7 @@ def optimize_query_for_api(
     return optimize_query_json(query_json, api_name, api_predicates)
 
 
+@capture_trapi("message")
 def query_knowledge_provider(
     api_name: str,
     query_json: dict[str, Any],
@@ -239,9 +254,12 @@ def query_knowledge_provider(
         The provider's knowledge graph, or ``None`` when the response contains
         no knowledge-graph edges.
     """
-    return query_KP(api_name, query_json, api_names, api_predicates)
+    result = query_KP(api_name, query_json, api_names, api_predicates)
+
+    return result
 
 
+@capture_trapi("edges")
 def parallel_query_apis(
     query_json: dict[str, Any],
     selected_apis: list[str],
@@ -261,13 +279,15 @@ def parallel_query_apis(
     Returns:
         A merged knowledge graph from successful provider responses.
     """
-    return parallel_api_query(
+    result = parallel_api_query(
         query_json,
         selected_apis,
         api_names,
         api_predicates,
         max_workers,
     )
+
+    return result
 
 
 def trapi_query_endpoint(url: str) -> Any:
@@ -287,6 +307,7 @@ def trapi_query_endpoint(url: str) -> Any:
     return trapi_query(url)
 
 
+@capture_trapi("finder")
 def neighborhood_finder(
     node: list[str],
     neighbor_categories: list[str],
@@ -303,13 +324,16 @@ def neighborhood_finder(
         graph, results, auxiliary graphs, and raw parsed response.
     """
     resources = _get_translator_resources()
-    return tct_neighborhood_finder(
+    result = tct_neighborhood_finder(
         node=node,
         neighbor_categories=neighbor_categories,
         resources=resources,
     )
 
+    return result
 
+
+@capture_trapi("finder")
 def path_finder(
     start: str,
     end: str,
@@ -328,12 +352,127 @@ def path_finder(
         graph, results, auxiliary graphs, and raw parsed response.
     """
     resources = _get_translator_resources()
-    return query_TCT_pathfinder(
+    result = query_TCT_pathfinder(
         start,
         end,
         intermediate_categories=intermediate_categories,
         resources=resources,
     )
+
+    return result
+
+
+@capture_operation()
+def validate_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Validate a composable query recipe without contacting any providers.
+
+    Recipes have schema_version=1, steps, and named outputs. Each step has
+    id and op. Data references are {"$ref": "step_id", "path": "/json/pointer"}.
+    Supported operations: literal (value); query (url, query, timeout_seconds);
+    rows (input object); filter (input, conditions); project (input, fields);
+    pluck (input, path, unique); join (left, right, left_on, right_on).
+    Transformation inputs and named outputs must be references. Filters AND
+    conditions with path/operator/value; operators are eq, ne, in, not_in,
+    gt, gte, lt, lte, exists. Joins are exact inner joins. Paths are JSON
+    pointers, not Python expressions. Descriptions are caller-supplied intent.
+
+    Args:
+        workflow: Versioned JSON recipe with steps and named output references.
+
+    Returns:
+        Normalized recipe, execution order, and explicit step dependencies.
+        Dynamic paths and types are checked only when upstream outputs exist.
+    """
+    return validate_workflow(workflow)
+
+
+@capture_trapi("workflow")
+def run_query_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Execute a query DAG and return replayable evidence with row lineage.
+
+    Use validate_query_workflow to inspect the recipe first. Query operations
+    POST explicit TRAPI bodies to explicit URLs without pruning predicates,
+    retries, redirects, or automatic provider expansion. Full synchronous
+    responses, resolved requests, filter decisions, and join lineage are saved.
+    Errors remain distinct from valid empty results; dependent steps are skipped.
+    Check the returned status and output_errors before interpreting outputs.
+
+    Agent effort (advisory):
+        Routine: Execute an agreed, bounded recipe using resolved identifiers.
+        Escalate: Review identifiers, direction, qualifiers, source selection,
+            and evidence before interpreting a joined path as a mechanism.
+        Execution: Up to 100 steps, 10,000 transformation rows, 8 MiB per
+            response, and 120 seconds per query socket timeout. Evidence is
+            returned inline; callers are responsible for saving the bundle.
+
+    Args:
+        workflow: Version-1 recipe described by validate_query_workflow.
+
+    Returns:
+        Structured bundle containing recipe, per-step evidence and failures,
+        row lineage, named outputs, timestamps, versions, and content hashes.
+        A traceable graph connection does not establish biological causality.
+    """
+    result = run_workflow(workflow)
+
+    return result
+
+
+@capture_trapi("workflow")
+def replay_query_workflow(
+    bundle: dict[str, Any], mode: str = "snapshot"
+) -> dict[str, Any]:
+    """Inspect saved query evidence offline, or explicitly rerun the recipe.
+
+    Snapshot mode makes no network calls: it verifies bundle checksums, reuses
+    saved query responses, and recomputes filters, projections, and joins.
+    Live mode contacts the recorded endpoints again; changing remote data can
+    change results. Checksums detect modification, not evidence authenticity.
+
+    Args:
+        bundle: Complete evidence bundle returned by run_query_workflow.
+        mode: snapshot (offline, default) or live (new remote requests).
+
+    Returns:
+        New bundle linked to the original, with replayed or freshly queried
+        evidence. Snapshot replay requires the same workflow engine version.
+    """
+    result = replay_workflow(bundle, mode)
+
+    return result
+
+
+@capture_operation()
+def evidence(request: dict[str, Any]) -> dict[str, Any]:
+    """Inspect captured evidence, replay composition, or export validated TRAPI.
+
+    Inspect first to obtain source IDs and local query graphs. Composition requires
+    closed=true, query_graph, sources, workflow and selection. sources maps each
+    source ID to nodes/edges/paths dictionaries mapping local query IDs to global
+    query IDs. Direction must be preserved; all local IDs need explicit mappings.
+
+    workflow uses the version-1 recipe described by validate_query_workflow, plus
+    source steps {id, op: "source", source_id} that provide recorded responses.
+    Network query steps are forbidden. Filters and joins use explicit references;
+    for example, rows can read a source at /message/knowledge_graph/edges.
+
+    selection has output (workflow output name), resource_id (composition producer),
+    nodes (query node ID to row JSON pointer), and edges/paths (query ID to an object
+    with source_id and path, a row pointer to original edge/auxiliary-graph IDs).
+    Each query element must be bound. The operation retains retrieved evidence
+    separately from selected answers. Schema validation does not establish
+    biomedical correctness or complete source coverage.
+
+    Args:
+        request: Object with action (inspect, replay, export), either events or
+            store/run_id, and an explicit composition for replay/export. Version
+            defaults to 1.5.0; 2.0.0-beta2 is an explicit prerelease target.
+
+    Returns:
+        Inventory, replay diagnostics, or a validated TRAPI response. No network
+        calls occur. Invalid or unsupported exports raise an error.
+    """
+    return _evidence(request)
 
 
 TOOLS: tuple[Callable[..., Any], ...] = (
@@ -353,6 +492,10 @@ TOOLS: tuple[Callable[..., Any], ...] = (
     trapi_query_endpoint,
     neighborhood_finder,
     path_finder,
+    validate_query_workflow,
+    run_query_workflow,
+    replay_query_workflow,
+    evidence,
 )
 
 __all__ = [tool.__name__ for tool in TOOLS] + ["TOOLS"]

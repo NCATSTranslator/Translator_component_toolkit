@@ -1,0 +1,8 @@
+{
+  "chemical-provider": [
+    "biolink:affects"
+  ],
+  "gene-provider": [
+    "biolink:associated_with"
+  ]
+}

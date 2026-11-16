@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from functools import wraps
+from inspect import signature, Parameter
+
+from ..execution import interface_execution, ExecutionRecordingError
 from typing import Any
 
 from fastmcp import FastMCP
@@ -43,6 +46,10 @@ _READ_ONLY_TOOLS = frozenset(
         "trapi_query_endpoint",
         "neighborhood_finder",
         "path_finder",
+        "validate_query_workflow",
+        "run_query_workflow",
+        "replay_query_workflow",
+        "evidence",
     }
 )
 
@@ -78,8 +85,9 @@ class _TraceContextMiddleware(Middleware):
             message = message.model_copy(update={"arguments": arguments})
             context = context.copy(message=message)
 
-        with use_incoming_trace_context(metadata):
-            return await call_next(context)
+        with interface_execution(arguments.get("execution")):
+            with use_incoming_trace_context(metadata):
+                return await call_next(context)
 
 
 mcp.add_middleware(_TraceContextMiddleware())
@@ -93,12 +101,39 @@ def _register_tool(
     @wraps(tool)
     def invoke(*args: Any, **kwargs: Any) -> Any:
         try:
-            return invoke_tool(tool, *args, _interface="mcp", **kwargs)
-        except ToolInvocationError as error:
+            settings = kwargs.pop("execution", None)
+            with interface_execution(settings):
+                return invoke_tool(tool, *args, _interface="mcp", **kwargs)
+        except (
+            ToolInvocationError,
+            ExecutionRecordingError,
+            ValueError,
+            OSError,
+        ) as error:
             # FastMCP converts ToolError into a protocol-level tool error result
             # carrying the contextual message.
-            raise ToolError(error.contextual_message) from error
+            raise ToolError(
+                error.contextual_message
+                if isinstance(error, ToolInvocationError)
+                else str(error)
+            ) from error
 
+    invoke.__annotations__ = {
+        **tool.__annotations__,
+        "execution": dict[str, Any] | None,
+    }
+    original = signature(tool)
+    invoke.__signature__ = original.replace(
+        parameters=[
+            *original.parameters.values(),
+            Parameter(
+                "execution",
+                Parameter.KEYWORD_ONLY,
+                default=None,
+                annotation=dict[str, Any] | None,
+            ),
+        ]
+    )
     annotations = {
         "readOnlyHint": tool.__name__ in _READ_ONLY_TOOLS,
         "openWorldHint": True,

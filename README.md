@@ -120,6 +120,22 @@ uv sync --extra mcp --extra langfuse
 
 ## Python, CLI, and MCP interfaces
 
+### Experimental explainable query workflows
+
+TCT can execute explicit query workflows and return a portable evidence bundle:
+the recipe, complete provider responses, filter decisions, and row lineage through
+joins. `validate_query_workflow`, `run_query_workflow`, and
+`replay_query_workflow` expose this through MCP and the CLI; Python callers use
+`TCT.validate_workflow`, `TCT.run_workflow`, and `TCT.replay_workflow`.
+Offline replay recomputes transformations using saved responses. Live reruns are
+explicit and may change when remote data changes. Existing tools keep their
+return formats and are not automatically instrumented as workflows.
+
+See [workflow recipes and limitations](TCT/interfaces/WORKFLOWS.md) and the
+[synthetic offline pathway example](examples/workflows/offline_pathway.json).
+
+### Shared operations
+
 TCT exposes one curated set of well-documented operations through three
 interfaces:
 
@@ -248,6 +264,7 @@ Python names in snake_case.
 | MetaKG extension | `add-custom-api-to-metakg`, `add-plover-apis-to-metakg` |
 | TRAPI query preparation and execution | `optimize-query-for-api`, `query-knowledge-provider`, `parallel-query-apis` |
 | Graph finding | `neighborhood-finder`, `path-finder` |
+| Explainable workflows | `validate-query-workflow`, `run-query-workflow`, `replay-query-workflow` |
 | Legacy compatibility | `trapi-query-endpoint` |
 
 `trapi-query-endpoint` preserves the existing public tool contract but is a

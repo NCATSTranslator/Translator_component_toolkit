@@ -1,0 +1,4 @@
+{
+  "chemical-provider": "https://fixture.invalid/chemical/query",
+  "gene-provider": "https://fixture.invalid/gene/query"
+}

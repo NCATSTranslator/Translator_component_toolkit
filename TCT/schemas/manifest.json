@@ -1,0 +1,14 @@
+{
+  "1.5.0": {
+    "url": "https://raw.githubusercontent.com/NCATSTranslator/ReasonerAPI/4edf6c6ea31c9da29d344abb876998c9d19e4ba5/TranslatorReasonerAPI.yaml",
+    "commit": "4edf6c6ea31c9da29d344abb876998c9d19e4ba5",
+    "sha256": "92ea525f3a931a9b7e0952e2e17b2e4f71405765664ad802ff82b18f32ada147",
+    "prerelease": false
+  },
+  "2.0.0-beta2": {
+    "url": "https://raw.githubusercontent.com/NCATSTranslator/ReasonerAPI/14638b662fdad1b131487d8b7d4001b70f98e956/TranslatorReasonerAPI.yaml",
+    "commit": "14638b662fdad1b131487d8b7d4001b70f98e956",
+    "sha256": "7a43d77303824b9e419ce5f32484b4c76daac564d94fba6960392ce5542da41e",
+    "prerelease": true
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "closed": true,
+  "query_graph": {
+    "nodes": {
+      "chemical": {
+        "categories": [
+          "biolink:ChemicalEntity"
+        ]
+      },
+      "gene": {
+        "categories": [
+          "biolink:Gene"
+        ]
+      },
+      "disease": {
+        "categories": [
+          "biolink:Disease"
+        ],
+        "ids": [
+          "MONDO:0004975"
+        ]
+      }
+    },
+    "edges": {
+      "affects": {
+        "subject": "chemical",
+        "object": "gene",
+        "predicates": [
+          "biolink:affects"
+        ],
+        "knowledge_type": "lookup"
+      },
+      "associated": {
+        "subject": "gene",
+        "object": "disease",
+        "predicates": [
+          "biolink:associated_with"
+        ],
+        "knowledge_type": "lookup"
+      }
+    }
+  },
+  "sources": {
+    "source:eac1467c7b45817aeb8e47d133d9d0e19dbf69fb0eb7948e938feea18f23f4f4": {
+      "nodes": {
+        "n0": "gene",
+        "n1": "disease"
+      },
+      "edges": {
+        "e00": "associated"
+      }
+    },
+    "source:a62cfd67b86ab9ed05a4baa1f70ff162d900943a4bf7a2bd3f0f7a2b192acaac": {
+      "nodes": {
+        "n0": "chemical",
+        "n1": "gene"
+      },
+      "edges": {
+        "e00": "affects"
+      }
+    }
+  },
+  "workflow": {
+    "schema_version": 1,
+    "steps": [
+      {
+        "id": "genes",
+        "op": "source",
+        "source_id": "source:eac1467c7b45817aeb8e47d133d9d0e19dbf69fb0eb7948e938feea18f23f4f4"
+      },
+      {
+        "id": "chemicals",
+        "op": "source",
+        "source_id": "source:a62cfd67b86ab9ed05a4baa1f70ff162d900943a4bf7a2bd3f0f7a2b192acaac"
+      },
+      {
+        "id": "gene_rows",
+        "op": "rows",
+        "input": {
+          "$ref": "genes",
+          "path": "/message/knowledge_graph/edges"
+        }
+      },
+      {
+        "id": "chemical_rows",
+        "op": "rows",
+        "input": {
+          "$ref": "chemicals",
+          "path": "/message/knowledge_graph/edges"
+        }
+      },
+      {
+        "id": "gene_matches",
+        "op": "filter",
+        "input": {
+          "$ref": "gene_rows"
+        },
+        "conditions": [
+          {
+            "path": "/value/predicate",
+            "operator": "eq",
+            "value": "biolink:associated_with"
+          },
+          {
+            "path": "/value/object",
+            "operator": "eq",
+            "value": "MONDO:0004975"
+          }
+        ]
+      },
+      {
+        "id": "chemical_matches",
+        "op": "filter",
+        "input": {
+          "$ref": "chemical_rows"
+        },
+        "conditions": [
+          {
+            "path": "/value/predicate",
+            "operator": "eq",
+            "value": "biolink:affects"
+          }
+        ]
+      },
+      {
+        "id": "paths",
+        "op": "join",
+        "left": {
+          "$ref": "chemical_matches"
+        },
+        "right": {
+          "$ref": "gene_matches"
+        },
+        "left_on": "/value/object",
+        "right_on": "/value/subject"
+      },
+      {
+        "id": "summary",
+        "op": "project",
+        "input": {
+          "$ref": "paths"
+        },
+        "fields": {
+          "chemical": "/left/value/subject",
+          "gene": "/left/value/object",
+          "disease": "/right/value/object",
+          "chemical_edge": "/left/key",
+          "gene_edge": "/right/key"
+        }
+      }
+    ],
+    "outputs": {
+      "paths": {
+        "$ref": "paths"
+      },
+      "summary": {
+        "$ref": "summary"
+      }
+    }
+  },
+  "selection": {
+    "output": "summary",
+    "resource_id": "infores:tct",
+    "nodes": {
+      "chemical": "/chemical",
+      "gene": "/gene",
+      "disease": "/disease"
+    },
+    "edges": {
+      "affects": {
+        "source_id": "source:a62cfd67b86ab9ed05a4baa1f70ff162d900943a4bf7a2bd3f0f7a2b192acaac",
+        "path": "/chemical_edge"
+      },
+      "associated": {
+        "source_id": "source:eac1467c7b45817aeb8e47d133d9d0e19dbf69fb0eb7948e938feea18f23f4f4",
+        "path": "/gene_edge"
+      }
+    }
+  }
+}
