@@ -13,11 +13,9 @@ from functools import wraps
 from typing import Any
 
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.tools.tool import ToolResult
-from mcp import types as mcp_types
-from mcp.shared.exceptions import McpError
-from mcp.types import INTERNAL_ERROR, ErrorData
 
 from . import tools as shared_tools
 from .invocation import ToolInvocationError, invoke as invoke_tool
@@ -25,6 +23,28 @@ from .observability import flush_observability, use_incoming_trace_context
 
 
 mcp = FastMCP("TCT")
+
+# Tools that only read data or produce derived copies; everything else may
+# mutate the metadata structures passed in. All tools reach out to network
+# services, so openWorldHint is always true.
+_READ_ONLY_TOOLS = frozenset(
+    {
+        "get_translator_resources",
+        "name_lookup",
+        "get_name_synonyms",
+        "batch_name_lookup",
+        "normalize_nodes",
+        "get_kp_info",
+        "get_metakg_data",
+        "get_api_predicates",
+        "optimize_query_for_api",
+        "query_knowledge_provider",
+        "parallel_query_apis",
+        "trapi_query_endpoint",
+        "neighborhood_finder",
+        "path_finder",
+    }
+)
 
 
 def _metadata_mapping(value: Any) -> dict[str, Any]:
@@ -42,7 +62,7 @@ class _TraceContextMiddleware(Middleware):
 
     async def on_call_tool(
         self,
-        context: MiddlewareContext[mcp_types.CallToolRequestParams],
+        context: MiddlewareContext,
         call_next: Any,
     ) -> ToolResult:
         message = context.message
@@ -75,14 +95,15 @@ def _register_tool(
         try:
             return invoke_tool(tool, *args, _interface="mcp", **kwargs)
         except ToolInvocationError as error:
-            raise McpError(
-                ErrorData(
-                    code=INTERNAL_ERROR,
-                    message=error.contextual_message,
-                )
-            ) from error
+            # FastMCP converts ToolError into a protocol-level tool error result
+            # carrying the contextual message.
+            raise ToolError(error.contextual_message) from error
 
-    return mcp.tool()(invoke)
+    annotations = {
+        "readOnlyHint": tool.__name__ in _READ_ONLY_TOOLS,
+        "openWorldHint": True,
+    }
+    return mcp.tool(annotations=annotations)(invoke)
 
 
 for _tool in shared_tools.TOOLS:
