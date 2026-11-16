@@ -4,6 +4,10 @@ import pandas
 from TCT import translator_metakg
 from TCT import translator_kpinfo
 
+# (connect, read) seconds for one provider query. Without it a provider that
+# never accepts the connection holds the query for as long as the OS allows.
+PROVIDER_TIMEOUT = (10, 300)
+
 def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
     '''
     Get the predicates supported by each API.
@@ -178,7 +182,7 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
     query_copy = deepcopy(query_json)
     # optimize on our private copy
     query_json_cur = optimize_query_json(query_copy, API_name_cur, API_predicates)
-    response = requests.post(API_url_cur, json=query_json_cur)
+    response = requests.post(API_url_cur, json=query_json_cur, timeout=PROVIDER_TIMEOUT)
     if response.status_code == 200:
         result = response.json().get("message", {})
         kg = result.get("knowledge_graph", {})
@@ -225,14 +229,24 @@ def parallel_api_query(query_json, select_APIs, APInames, API_predicates,max_wor
         query_json_cur = deepcopy(query_json)
         future_to_url = {executor.submit(query_KP, API_name_cur, query_json_cur, APInames, API_predicates): API_name_cur for API_name_cur in select_APIs}
 
+        responses = {}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
             try:
                 data = future.result()
-                if 'knowledge_graph' in data:
-                    result.append(data)
             except Exception:
                 no_results_returned.append(url)
+                continue
+            if data is None:
+                # query_KP returns None for an answer with no edges and for a
+                # non-200 response. Neither is an exception.
+                no_results_returned.append(url)
+            elif 'knowledge_graph' in data:
+                responses[url] = data
+
+    # Merge in provider-name order. Where two providers return the same edge
+    # ID the later name wins, whichever response arrived first.
+    result = [responses[name] for name in sorted(responses)]
     
     included_KP_ID = []
     for i in range(0,len(result)):
