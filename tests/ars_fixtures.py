@@ -50,7 +50,7 @@ def trace(status, merged=None, children=()):
     }
 
 
-def done_trace(merged=MERGED, merge_status="Done"):
+def done_trace(merged: str | None = MERGED, merge_status: str = "Done"):
     """A parent trace whose merge agent has finished."""
     return trace(
         "Done",

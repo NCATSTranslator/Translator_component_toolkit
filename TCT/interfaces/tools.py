@@ -484,9 +484,10 @@ def get_ars_status(pk: str) -> Any:
     Returns:
         Parent status ("Running", "Done", or "Error"), the merged message pk
         once available, and one entry per ARA with its own status and result
-        count. Poll until status is Done, then call get_ars_results once.
-        "Done" with zero results means the query matched nothing and will not
-        change.
+        count. Poll until status is Done, then call get_ars_results; it
+        reports ready false until the ARS merge agent has saved the merged
+        message, so keep polling until ready is true. "Done" with ready true
+        and zero results means the query matched nothing and will not change.
     """
     return _get_ARS_status(pk)
 
@@ -504,11 +505,13 @@ def get_ars_results(pk: str, top_n: int = 20) -> Any:
         {"pk", "merged_pk", "status", "ready", "result_count", "results"}. Rows
         give rank, score, essence (answer node with name and categories),
         predicates, primary knowledge sources, and contributing ARAs. When
-        ready is false the query is still running: poll get_ars_status instead
-        of retrying this.
+        ready is false the query is still running, or the ARS merge agent is
+        still saving the merged message after the parent reported Done
+        (NCATSTranslator/Relay#621): poll get_ars_status and retry instead of
+        reporting zero results.
     """
     status = _get_ARS_status(pk)
-    if not status.is_terminal:
+    if not status.is_terminal or status.merge_pending:
         return {"pk": pk, "merged_pk": status.merged_version, "status": status.status, "ready": False}
     result = _get_ARS_result(status)
     payload = {

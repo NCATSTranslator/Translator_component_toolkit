@@ -53,12 +53,25 @@ def _resolved(values):
 def test_one_hop_input_matches_notebook_query(monkeypatch):
     captured = {}
 
+    def fake_resolve(values, **kwargs):
+        inputs = [values] if isinstance(values, str) else list(values)
+        return [
+            ResolvedNode(
+                input_value=value,
+                curie=value,
+                label=value,
+                categories=["biolink:Disease"],
+            )
+            for value in inputs
+        ]
+
     def fake_query(query_json, *, url=None):
         captured.setdefault("query", query_json)
         return PARENT
 
     status = ars.parse_trace(PARENT, done_trace())
     message = merged_message()
+    monkeypatch.setattr(ars, "_resolve_nodes", fake_resolve)
     monkeypatch.setattr(ars, "submit_ARS", fake_query)
     monkeypatch.setattr(ars, "wait_for_ARS", lambda pk, **kwargs: status)
     monkeypatch.setattr(
@@ -113,6 +126,22 @@ def test_pathfinder_query_uses_shared_query_graph_builder(monkeypatch):
 def test_pathfinder_query_requires_both_endpoint_curies():
     with pytest.raises(ValueError, match="start_node_id and end_node_id"):
         ars.format_query_json_forARS_pathfinder("", "MONDO:0018874")
+
+def test_pathfinder_requires_endpoints_without_json_file():
+    with pytest.raises(ValueError, match="start and end"):
+        ARS_pathfinder()
+
+def test_pathfinder_accepts_json_file_without_endpoints(monkeypatch):
+    status = ars.parse_trace(PARENT, done_trace())
+    message = merged_message()
+    monkeypatch.setattr(ars, "submit_ARS", lambda query, *, url=None: PARENT)
+    monkeypatch.setattr(ars, "wait_for_ARS", lambda pk, **kwargs: status)
+    monkeypatch.setattr(ars, "fetch_ars_results", lambda pk, *, url=None: envelope(message))
+
+    result = ARS_pathfinder(json_file={"message": {"query_graph": {}}})
+
+    assert result.merged_pk == MERGED
+    assert result.resolved_nodes == {}
 
 
 def test_pathfinder_resolves_and_keys_resolved_nodes(monkeypatch):
@@ -205,6 +234,23 @@ def test_submit_rejects_http_failures_and_missing_pk(monkeypatch):
     with pytest.raises(ValueError, match="did not return a message pk"):
         ars.submit_ARS({"message": {"query_graph": {}}})
 
+
+def test_submit_annotates_missing_submitter_without_mutating_input(monkeypatch):
+    posted = {}
+
+    def fake_post(url, json_body):
+        posted["json"] = json_body
+        return FakeResponse({"pk": PARENT}, 201)
+
+    monkeypatch.setattr(ars, "_post", fake_post)
+
+    query = {"message": {"query_graph": {}}}
+    ars.submit_ARS(query)
+    assert posted["json"]["submitter"] == "TCT"
+    assert "submitter" not in query
+
+    ars.submit_ARS({**query, "submitter": "some-agent"})
+    assert posted["json"]["submitter"] == "some-agent"
 
 def test_parse_trace_reads_children_and_merge_state():
     status = ars.parse_trace(PARENT, done_trace())
@@ -350,6 +396,25 @@ def test_pending_result_raises(monkeypatch):
     )
     with pytest.raises(ars.ARSPendingError):
         ars.get_ARS_result(PARENT)
+
+def test_result_stays_pending_while_merge_agent_is_saving(monkeypatch):
+    # NCATSTranslator/Relay#621: parent Done, merge child still Running and
+    # merged_version empty. Reading the parent payload here would report zero
+    # results for a query that has answers.
+    status = ars.parse_trace(PARENT, done_trace(merged=None, merge_status="Running"))
+    assert status.is_terminal
+    assert not status.merged_ready
+    assert status.merge_pending
+    monkeypatch.setattr(
+        ars, "_get", lambda *a, **k: pytest.fail("must not fetch while merge is saving")
+    )
+    with pytest.raises(ars.ARSPendingError):
+        ars.get_ARS_result(status)
+
+    # A merge child that reached a terminal state without a merged version
+    # means no merge is coming: the parent fallback applies instead.
+    no_merge = ars.parse_trace(PARENT, trace("Done", None, [child("ars-ars-agent", "Done")]))
+    assert not no_merge.merge_pending
 
 
 def test_empty_shell_returned_without_merged_message(monkeypatch):

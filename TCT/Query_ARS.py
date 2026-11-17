@@ -156,6 +156,23 @@ class ARSStatus:
         merge = self.merge_child
         return bool(self.merged_version) and merge is not None and merge.status == "Done"
 
+    @property
+    def merge_pending(self) -> bool:
+        """True while the parent is done but the merge agent is still saving.
+
+        Covers the NCATSTranslator/Relay#621 window: the parent reads ``Done``
+        a few seconds before the merge agent has saved, and reading the
+        parent's own payload in that window returns zero results for a query
+        that has answers.
+        """
+        merge = self.merge_child
+        return (
+            self.is_terminal
+            and not self.merged_ready
+            and merge is not None
+            and merge.status not in TERMINAL_STATUSES
+        )
+
     def summary(self) -> str:
         """One-line summary of child statuses for logs and error messages."""
         parts = [f"{child.agent}={child.status}" for child in self.children]
@@ -290,6 +307,11 @@ def submit_ARS(query_json: dict[str, Any], *, url: str | None = None) -> str:
     message = query_json.get("message") if isinstance(query_json, dict) else None
     if not isinstance(message, dict) or not isinstance(message.get("query_graph"), dict):
         raise ValueError("ARS input must be a JSON object with message.query_graph")
+    if not query_json.get("submitter"):
+        # Agent-driven requests must name a submitter so the ARS can trace
+        # them (Translator #engineering-committee, 2026-10-22); uploaded
+        # queries may carry none. Copy so the caller's dict is not mutated.
+        query_json = {**query_json, "submitter": "TCT"}
 
     response = _post(f"{_ars_root(url)}/submit", query_json)
     if response.status_code not in (200, 201):
@@ -481,14 +503,16 @@ def get_ARS_result(
     """Fetch the merged answer for a finished query as an :class:`ARSResult`.
 
     Falls back to the parent message's own payload when the ARS produced no
-    merged version.
+    merged version. Raises :class:`ARSPendingError` while the parent is still
+    running or the merge agent is still saving (NCATSTranslator/Relay#621);
+    use :func:`wait_for_ARS` first for blocking callers.
     """
     status = (
         pk_or_status
         if isinstance(pk_or_status, ARSStatus)
         else get_ARS_status(pk_or_status, url=url)
     )
-    if not status.is_terminal:
+    if not status.is_terminal or status.merge_pending:
         raise ARSPendingError(status)
     target = status.merged_version or status.pk
     message = _message_from_envelope(fetch_ars_results(target, url=url))
@@ -711,13 +735,11 @@ def ARS_neighborhood_finder(
 
 
 def ARS_pathfinder(
-    start: NodeInput,
-    end: NodeInput,
+    start: NodeInput | None = None,
+    end: NodeInput | None = None,
     *,
     intermediate_categories: CategoryList | None = None,
-    predicates: list[str] | None = None,
     json_file: dict[str, Any] | None = None,
-    attribute_constraints: list[dict[str, Any]] | None = None,
     max_retries: int = 15,
     poll_interval: float = 30.0,
     merge_grace: float = 30.0,
@@ -730,7 +752,8 @@ def ARS_pathfinder(
     ARA instead of using locally selected knowledge providers. At most one
     ``intermediate_categories`` value is applied, mirroring the local
     pathfinder. A ``json_file`` with a complete TRAPI query (``paths`` or
-    ``edges`` query graph) is submitted unchanged instead.
+    ``edges`` query graph) is submitted unchanged instead; ``start`` and
+    ``end`` may then be omitted.
 
     Returns
     -------
@@ -742,6 +765,8 @@ def ARS_pathfinder(
         query = json_file
         resolved: dict[str, Any] = {}
     else:
+        if start is None or end is None:
+            raise ValueError("Provide start and end, or json_file")
         resolved_list = _resolve_nodes(
             [start, end],
             name_resolver_kwargs=name_resolver_kwargs,

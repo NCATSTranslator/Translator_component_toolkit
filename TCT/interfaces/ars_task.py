@@ -49,13 +49,13 @@ async def query_ars(
         The pk, merged pk, final status, resolved input nodes, and either
         ranked summary rows or the full merged TRAPI message.
     """
-    resolved = shared_tools._resolve_nodes(node)
+    resolved = await asyncio_to_thread(shared_tools._resolve_nodes, node)
     query = ars.format_query_json_forARS_neighborhood(
         subject_ids=[resolved_node.curie for resolved_node in resolved],
         object_categories=shared_tools._normalize_categories(neighbor_categories),
         predicates=predicates,
     )
-    pk = ars.submit_ARS(query)
+    pk = await asyncio_to_thread(ars.submit_ARS, query)
 
     await progress.set_total(2)
     await progress.set_message("submitted; waiting for ARA answers")

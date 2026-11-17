@@ -135,14 +135,43 @@ def test_get_ars_results_top_n_zero_returns_full_message(ars_mocks):
     assert result["ready"] is True
     assert "message" not in result or result.get("message") is not None
 
+def test_get_ars_results_merge_saving_reports_not_ready(monkeypatch):
+    # NCATSTranslator/Relay#621: parent Done but the merge agent is still
+    # saving, so reporting ready with zero results would be wrong.
+    monkeypatch.setattr(
+        tools, "_get_ARS_status",
+        lambda pk: ars.parse_trace(PARENT, done_trace(merged=None, merge_status="Running")),
+    )
+    monkeypatch.setattr(
+        tools, "_get_ARS_result", lambda status: pytest.fail("must not fetch while merge is saving")
+    )
+    result = tools.get_ars_results(PARENT)
+
+    assert result["ready"] is False
+    assert result["status"] == "Done"
+    assert result["merged_pk"] is None
+
+def test_get_ars_results_done_without_merge_agent_is_ready(monkeypatch, ars_mocks):
+    # No merge agent child at all: the query finished without a merged
+    # message, and the parent payload fallback is the final answer.
+    monkeypatch.setattr(
+        tools, "_get_ARS_status",
+        lambda pk: ars.parse_trace(PARENT, trace("Done", None, [child("ara-x", "Done")])),
+    )
+    result = tools.get_ars_results(PARENT)
+
+    assert result["ready"] is True
+    assert result["merged_pk"] is None
+
 
 # --------------------------------------------------------------------------- #
 # finder tools
 # --------------------------------------------------------------------------- #
 def test_ars_neighborhood_finder_shapes_finder_result(monkeypatch, ars_mocks):
     ars_mocks["finished"]["finished"] = True
+    # The finder resolves nodes inside TCT.Query_ARS, not in the tools module.
     monkeypatch.setattr(
-        tools, "_resolve_nodes", lambda node: [_resolved()], raising=True
+        ars, "_resolve_nodes", lambda values, **kwargs: [_resolved()], raising=True
     )
     result = tools.ARS_neighborhood_finder(node=["asthma"], neighbor_categories=["Drug"])
 
@@ -160,7 +189,8 @@ def test_ars_neighborhood_finder_json_file_returns_message(monkeypatch, ars_mock
     result = tools.ARS_neighborhood_finder(json_file=query)
 
     submitted = ars_mocks["submit"][0][1]
-    assert submitted == query
+    # The query is submitted unchanged except for the submitter annotation.
+    assert submitted == {**query, "submitter": "TCT"}
     assert result["status"] == "Done"
     assert result["merged_pk"] == MERGED
     assert result["message"]["results"]
@@ -169,7 +199,8 @@ def test_ars_neighborhood_finder_json_file_returns_message(monkeypatch, ars_mock
 def test_ars_pathfinder_shapes_finder_result(monkeypatch, ars_mocks):
     ars_mocks["finished"]["finished"] = True
     monkeypatch.setattr(
-        tools, "_resolve_nodes", lambda node: [_resolved(), _resolved("CHEBI:906", "albuterol")],
+        ars, "_resolve_nodes",
+        lambda values, **kwargs: [_resolved(), _resolved("CHEBI:906", "albuterol")],
         raising=True,
     )
     result = tools.ARS_pathfinder("asthma", "albuterol", intermediate_categories=["Gene"])
@@ -184,7 +215,7 @@ def test_ars_pathfinder_json_file_returns_message(monkeypatch, ars_mocks):
     result = tools.ARS_pathfinder(json_file=query)
 
     assert result["message"]["results"]
-    assert ars_mocks["submit"][0][1] == query
+    assert ars_mocks["submit"][0][1] == {**query, "submitter": "TCT"}
 
 
 # --------------------------------------------------------------------------- #
@@ -283,3 +314,37 @@ def test_query_ars_is_registered_as_optional_task(mcp_module):
     assert task_tool.task_config.mode == "optional"
     assert task_tool.annotations.readOnlyHint is False
     assert "progress" in inspect.signature(task_tool.fn).parameters
+
+def test_query_ars_runs_blocking_calls_off_the_event_loop(mcp_module, ars_mocks, monkeypatch):
+    # Node resolution and submission make HTTP calls with timeouts up to
+    # 120 s; they must not block the event loop serving other MCP requests.
+    import threading
+
+    ars_mocks["finished"]["finished"] = True
+    resolve_threads = []
+    submit_threads = []
+
+    def recording_resolve(node):
+        resolve_threads.append(threading.current_thread())
+        return [_resolved()]
+
+    def recording_submit(query, *, url=None):
+        submit_threads.append(threading.current_thread())
+        return PARENT
+
+    monkeypatch.setattr(tools, "_resolve_nodes", recording_resolve)
+    monkeypatch.setattr(ars, "submit_ARS", recording_submit)
+
+    async def scenario():
+        async with _client(mcp_module) as client:
+            result = await client.call_tool(
+                "query_ars",
+                {"node": ["asthma"], "neighbor_categories": ["Drug"], "top_n": 1},
+            )
+            assert result.data["status"] == "Done"
+
+    asyncio.run(scenario())
+
+    assert resolve_threads and submit_threads
+    assert all(thread is not threading.main_thread() for thread in resolve_threads)
+    assert all(thread is not threading.main_thread() for thread in submit_threads)
