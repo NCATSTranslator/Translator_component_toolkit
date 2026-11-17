@@ -168,8 +168,10 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     import requests
     CI_URL_PREFIX = "https://multiomics.ci.transltr.io/"
     DEV_URL_PREFIX = "https://multiomics.rtx.ai:9990/"
+    TEST_URL_PREFIX = "https://multiomics.test.transltr.io/"
     url = CI_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     try:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
@@ -184,13 +186,24 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve BigGIM_DrugResponse_PerformancePhase; registered CATRAX BigGIM DrugResponse Performance Phase KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
                                                              DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query", 
                                                              data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase and " + DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = requests.get(url_test, timeout=5)
+                if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve BigGIM_DrugResponse_PerformancePhase; registered CATRAX BigGIM DrugResponse Performance Phase KP from the test environment. Queries will use " + TEST_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query")
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
+                                                                 TEST_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query", 
+                                                                 data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    print("Warning: Failed to retrieve data from the CI, dev, and test URLs. Status codes:", response.status_code, response_dev.status_code, response_test.status_code)
         else:
             print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase. Status code:", response.status_code)
 
@@ -201,6 +214,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     url = CI_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     try: 
         response = requests.get(url)
         if response.status_code == 200:
@@ -211,11 +225,20 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve PharmacogenomicsKG; registered CATRAX Pharmacogenomics KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "PharmacogenomicsKG/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "PharmacogenomicsKG and " + DEV_URL_PREFIX + "PharmacogenomicsKG. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = requests.get(url_test, timeout=5)
+                if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve PharmacogenomicsKG; registered CATRAX Pharmacogenomics KP from the test environment. Queries will use " + TEST_URL_PREFIX + "PharmacogenomicsKG/query")
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    print("Warning: Failed to retrieve data from the CI, dev, and test URLs. Status codes:", response.status_code, response_dev.status_code, response_test.status_code)
         else:
             print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "PharmacogenomicsKG. Status code:", response.status_code)
     except requests.exceptions.RequestException:
@@ -247,6 +270,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
 
     url = CI_URL_PREFIX + 'dakp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'dakp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'dakp/meta_knowledge_graph'
 
     #url = 'https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph'
     try:
@@ -259,19 +283,29 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve dakp; registered Drug Approvals KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "dakp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", DEV_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "dakp and " + DEV_URL_PREFIX + "dakp. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = requests.get(url_test, timeout=5)
+                if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve dakp; registered Drug Approvals KP from the test environment. Queries will use " + TEST_URL_PREFIX + "dakp/query")
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", TEST_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    print("Warning: Failed to retrieve data from the CI, dev, and test URLs. Status codes:", response.status_code, response_dev.status_code, response_test.status_code)
         else:
             print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "dakp. Status code:", response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "dakp")
+        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "dakp!" )
     
 
     url = CI_URL_PREFIX + 'mokp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'mokp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'mokp/meta_knowledge_graph'
     #url = 'https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph'
     try:
         response = requests.get(url)
@@ -283,20 +317,30 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mokp; registered Multiomics KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "mokp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mokp and " + DEV_URL_PREFIX + "mokp. Status codes:", response.status_code, response_dev.status_code)
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mokp. Status code:", response.status_code)
+            # Try the test URL if the CI URL returns a non-404 status code
+            response_test = requests.get(url_test, timeout=5)
+            if response_test.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mokp; registered Multiomics KP from the test environment. Queries will use " + TEST_URL_PREFIX + "mokp/query")
+                data = response_test.json()
+                for i in range(len(data["edges"])):
+                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+            else:
+                print("Warning: Failed to retrieve data from the CI and test URLs. Status codes:", response.status_code, response_test.status_code)
     except requests.exceptions.RequestException:
         print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mokp")
     
     url = CI_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'mbkp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
@@ -305,13 +349,22 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mbkp; registered Microbiome KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "mbkp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mbkp and " + DEV_URL_PREFIX + "mbkp. Status codes:", response.status_code, response_dev.status_code)
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mbkp. Status code:", response.status_code)
+            # Try the test URL if the CI URL returns a non-404 status code
+            response_test = requests.get(url_test, timeout=5)
+            if response_test.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mbkp; registered Microbiome KP from the test environment. Queries will use " + TEST_URL_PREFIX + "mbkp/query")
+                data = response_test.json()
+                for i in range(len(data["edges"])):
+                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+            else:
+                print("Warning: Failed to retrieve data from the CI and test URLs. Status codes:", response.status_code, response_test.status_code)
     except requests.exceptions.RequestException:
         print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mbkp")
     

@@ -93,7 +93,12 @@ def get_normalized_nodes(query: str | list[str],
             return normalized_dict[query]
         return normalized_dict
     else:
-        raise requests.RequestException('Response from server had error, code ' + str(response.status_code))
+        raise requests.HTTPError(
+            f"Node Normalizer request failed with status {response.status_code} "
+            f"for {response.url}",
+            response=response,
+            request=response.request,
+        )
 
 
 def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[str, str]:

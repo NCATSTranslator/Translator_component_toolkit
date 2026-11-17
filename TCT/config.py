@@ -33,8 +33,9 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         ci="https://name-lookup.ci.transltr.io/",
     ),
     "node_normalizer": ServiceEndpoint(
+        # The CI hostname returns 404; use production in all environments
+        # unless the caller supplies an explicit service override.
         prod="https://nodenorm.transltr.io/",
-        ci="https://nodenorm.transltr.io/",
     ),
     "node_annotator": ServiceEndpoint(
         prod="https://annotator.transltr.io/",
@@ -58,6 +59,13 @@ SERVICE_ENDPOINTS: dict[str, ServiceEndpoint] = {
         prod="https://shepherd.prod.transltr.io/aragorn/query",
         ci="https://shepherd.ci.transltr.io/aragorn/query",
         test="https://shepherd.test.transltr.io/aragorn/query",
+    ),
+    "ars": ServiceEndpoint(
+        # Autonomous Relay System REST root; TCT.Query_ARS appends submit/ and
+        # messages/ paths to this base.
+        prod="https://ars-prod.transltr.io/ars/api/",
+        ci="https://ars.ci.transltr.io/ars/api/",
+        test="https://ars.test.transltr.io/ars/api/",
     ),
 }
 
