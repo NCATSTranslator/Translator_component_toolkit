@@ -186,6 +186,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve BigGIM_DrugResponse_PerformancePhase; registered CATRAX BigGIM DrugResponse Performance Phase KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
@@ -195,6 +196,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
                 # Try the test URL if both the CI and dev URLs return a 404
                 response_test = requests.get(url_test, timeout=5)
                 if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve BigGIM_DrugResponse_PerformancePhase; registered CATRAX BigGIM DrugResponse Performance Phase KP from the test environment. Queries will use " + TEST_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query")
                     data = response_test.json()
                     for i in range(len(data["edges"])):
                         APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
@@ -223,6 +225,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve PharmacogenomicsKG; registered CATRAX Pharmacogenomics KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "PharmacogenomicsKG/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -230,6 +233,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
                 # Try the test URL if both the CI and dev URLs return a 404
                 response_test = requests.get(url_test, timeout=5)
                 if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve PharmacogenomicsKG; registered CATRAX Pharmacogenomics KP from the test environment. Queries will use " + TEST_URL_PREFIX + "PharmacogenomicsKG/query")
                     data = response_test.json()
                     for i in range(len(data["edges"])):
                         APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -279,6 +283,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve dakp; registered Drug Approvals KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "dakp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", DEV_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -286,6 +291,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
                 # Try the test URL if both the CI and dev URLs return a 404
                 response_test = requests.get(url_test, timeout=5)
                 if response_test.status_code == 200:
+                    print("Warning: The higher-priority environments did not serve dakp; registered Drug Approvals KP from the test environment. Queries will use " + TEST_URL_PREFIX + "dakp/query")
                     data = response_test.json()
                     for i in range(len(data["edges"])):
                         APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", TEST_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -311,6 +317,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mokp; registered Multiomics KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "mokp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -320,6 +327,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the test URL if the CI URL returns a non-404 status code
             response_test = requests.get(url_test, timeout=5)
             if response_test.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mokp; registered Multiomics KP from the test environment. Queries will use " + TEST_URL_PREFIX + "mokp/query")
                 data = response_test.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -341,6 +349,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = requests.get(url_dev, timeout=5)
             if response_dev.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mbkp; registered Microbiome KP from the dev environment. Queries will use " + DEV_URL_PREFIX + "mbkp/query")
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
@@ -350,6 +359,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the test URL if the CI URL returns a non-404 status code
             response_test = requests.get(url_test, timeout=5)
             if response_test.status_code == 200:
+                print("Warning: The higher-priority environments did not serve mbkp; registered Microbiome KP from the test environment. Queries will use " + TEST_URL_PREFIX + "mbkp/query")
                 data = response_test.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
