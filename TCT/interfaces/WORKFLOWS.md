@@ -472,9 +472,9 @@ Three hashes serve distinct purposes:
   dependency versions, auth partition, epoch, and cache/canonicalizer/adapter versions.
 - `response_content_hash` identifies the exact response bytes, independent of the request.
 
-Canonicalization sorts JSON object keys only. It preserves arrays, query node IDs,
-predicate order, URLs and literal values. Semantic rewrites are not assumed to be
-equivalent. The existing provider predicate-pruning operation records
+Canonicalization sorts JSON object keys and encodes Requests' connect/read
+timeout tuple separately. It preserves arrays, query node IDs, predicate order,
+URLs, and literal values. The provider predicate-pruning operation records
 `tct.optimize_query_json.v1` when it changes the original request. Mode, TTL and
 telemetry settings do not alter service-response identity. Unsupported non-JSON
 request options fail explicitly when caching is requested. Adapter behavior changes

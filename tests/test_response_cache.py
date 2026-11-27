@@ -167,12 +167,61 @@ def test_three_hashes_and_only_declared_equivalences(transport):
     assert len(calls) == 3
 
 
-@pytest.mark.parametrize("arguments", [{"json": {1: "value"}}, {"timeout": (1, 2)}])
+@pytest.mark.parametrize(
+    "arguments",
+    [{"json": {1: "value"}}, {"json": {"timeout": (1, 2)}}, {"params": (1, 2)}],
+)
 def test_undeclared_json_coercions_are_rejected(transport, arguments):
     send, calls = transport
     with execution({"cache": True}), pytest.raises(CacheError, match="JSON"):
         fetch(send, **arguments)
     assert calls == []
+
+
+@pytest.mark.parametrize("timeout", [(10,), (10, 300, 60), (10, "300"), (True, 300)])
+def test_invalid_connect_read_timeout_tuple_is_rejected(transport, timeout):
+    send, calls = transport
+    with execution({"cache": True}), pytest.raises(CacheError, match="timeout tuple"):
+        fetch(send, timeout=timeout)
+    assert calls == []
+
+
+def test_connect_read_timeout_is_distinct_and_forwarded(transport):
+    send, calls = transport
+    with execution({"cache": True}) as run:
+        fetch(send, timeout=(10, 300), original_arguments={"timeout": (10, 300)})
+        fetch(send, timeout=(10, 300))
+        fetch(send, timeout=(300, 10))
+        fetch(send, timeout=[10, 300])
+        fetch(send, timeout=(None, 300))
+
+    assert [event["outcome"] for event in run.cache_events] == [
+        "cold",
+        "warm",
+        "cold",
+        "cold",
+        "cold",
+    ]
+    assert [call["timeout"] for call in calls] == [
+        (10, 300),
+        (300, 10),
+        [10, 300],
+        (None, 300),
+    ]
+
+
+def test_connect_read_timeout_replays_from_store(tmp_path, transport):
+    send, calls = transport
+    settings = {"store": str(tmp_path), "run_id": "original", "cache": True}
+    with execution(settings):
+        fetch(send, timeout=(10, 300))
+    with execution(
+        settings
+        | {"run_id": "replay", "cache": {"mode": "replay", "snapshot_run": "original"}}
+    ) as replay:
+        assert fetch(send, timeout=(10, 300)).json() == {"value": 1}
+    assert [event["outcome"] for event in replay.cache_events] == ["replayed"]
+    assert calls == [{"timeout": (10, 300)}]
 
 
 def test_reformulation_records_original_and_effective_requests(transport):
