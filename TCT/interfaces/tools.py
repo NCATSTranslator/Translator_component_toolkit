@@ -448,7 +448,8 @@ def evidence(request: dict[str, Any]) -> dict[str, Any]:
 
     Export with view="trace" for recorded calls or view="providers" for service
     outcomes, view="edges" for merge provenance, or view="page" for a
-    standalone HTML report. These views work offline from captured evidence.
+    standalone HTML report. Use view="diff" with an against object containing
+    events or a store and run_id to compare two recorded runs offline.
     Inspect first to obtain source IDs and local query graphs. Composition requires
     closed=true, query_graph, sources, workflow and selection. sources maps each
     source ID to nodes/edges/paths dictionaries mapping local query IDs to global

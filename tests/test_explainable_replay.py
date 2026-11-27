@@ -181,3 +181,13 @@ def test_finder_recording_reads_and_replays_offline(monkeypatch, tmp_path):
         assert query_urls["error"] in report
         assert "http_error" in report
         assert "infores:fixture" in report
+
+    assert evidence(
+        {
+            "action": "export",
+            "view": "diff",
+            "store": str(tmp_path),
+            "run_id": replay.run_id,
+            "against": {"store": str(tmp_path), "run_id": source.run_id},
+        }
+    ) == {"edge_changes": [], "request_changes": []}
