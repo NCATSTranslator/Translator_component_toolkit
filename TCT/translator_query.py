@@ -159,17 +159,18 @@ def optimize_query_json(query_json, API_name_cur, API_predicates):
     --------
     >>> 
     '''
-    query_json_cur = query_json.copy()  # copy the query_json to avoid modifying the original query_json
-    # Get the list of APIs that support the predicates in the query
-    shared_predicates = list(set(API_predicates[API_name_cur]).intersection(query_json_cur['message']['query_graph']['edges']['e00']['predicates'] ))
-    
-    if len(shared_predicates) > 0:
-        query_json_cur['message']['query_graph']['edges']['e00']['predicates'] = shared_predicates
-        #print(API_name_cur + ": Predicates optimized to: " + str(shared_predicates))
-    else:
-        #print(API_name_cur + ": No shared predicates found. Using all predicates in the query.")
-        # If no shared predicates, keep the original predicates
-        query_json_cur['message']['query_graph']['edges']['e00']['predicates'] = query_json_cur['message']['query_graph']['edges']['e00']['predicates']
+    query_json_cur = query_json.copy()
+    edge = query_json_cur["message"]["query_graph"]["edges"]["e00"]
+    supported = set(API_predicates[API_name_cur])
+    # Keep the request order so equivalent recorded calls produce the same
+    # cache identity across Python processes.
+    shared_predicates = list(
+        dict.fromkeys(
+            predicate for predicate in edge["predicates"] if predicate in supported
+        )
+    )
+    if shared_predicates:
+        edge["predicates"] = shared_predicates
 
     return query_json_cur
 

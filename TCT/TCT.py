@@ -367,9 +367,13 @@ def sele_predicates_API(input_node1_category,input_node2_category,metaKG, APInam
     >>> sele_predicates, sele_APIs, API_URLs = sele_predicates_API(input_node1_category,input_node2_category,metaKG, APInames)
 
     '''
-    sele_predicates = list(set(select_concept(sub_list=input_node1_category,
-                                                 obj_list=input_node2_category,
-                                                 metaKG=metaKG)))
+    sele_predicates = sorted(
+        select_concept(
+            sub_list=input_node1_category,
+            obj_list=input_node2_category,
+            metaKG=metaKG,
+        )
+    )
     sele_APIs = select_API(sub_list=input_node1_category,
                            obj_list=input_node2_category,
                            metaKG=metaKG)

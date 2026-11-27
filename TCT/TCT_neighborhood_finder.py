@@ -300,7 +300,8 @@ def neighborhood_finder(
         resolved_resources.api_names,
     )
     if predicates_subset is not None:
-        predicates = list(set(predicates).intersection(predicates_subset))
+        allowed = set(predicates_subset)
+        predicates = [predicate for predicate in predicates if predicate in allowed]
     if len(predicates) == 0:
         predicates = ["biolink:related_to"]
 

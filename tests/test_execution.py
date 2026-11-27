@@ -67,6 +67,34 @@ def test_durable_native_identity_and_artifact_checksums(tmp_path):
     assert saved[0][1]["output"] == {"message": {"results": []}}
 
 
+def test_large_fields_share_artifacts_and_read_back(tmp_path):
+    from TCT.evidence import EvidenceError, accumulate, read_run
+    from TCT.journal import INLINE_LIMIT
+
+    value = "x" * INLINE_LIMIT
+    with execution({"record": True, "store": str(tmp_path)}) as run:
+        echo(value)
+        echo(value)
+
+    first, second = (record for _, record in records(tmp_path))
+    assert first["format_version"] == second["format_version"] == 2
+    references = first["artifact_references"]
+    assert references == second["artifact_references"]
+    assert references["inputs"] == references["inputs_after"]
+    assert set(references) == {"inputs", "inputs_after", "output"}
+    assert (tmp_path / "artifacts" / references["output"]).read_bytes().startswith(
+        b"\x1f\x8b"
+    )
+    assert sum(path.stat().st_size for path in (tmp_path / "artifacts").iterdir()) < (
+        INLINE_LIMIT
+    )
+    assert read_run(tmp_path, run.run_id) == accumulate(run)
+
+    (tmp_path / "artifacts" / references["output"]).write_text('"tampered"')
+    with pytest.raises(EvidenceError, match="checksum mismatch"):
+        read_run(tmp_path, run.run_id)
+
+
 def test_tracing_and_recording_are_independent(monkeypatch, tmp_path):
     monkeypatch.setenv("TCT_LANGFUSE_ENABLED", "true")
     with execution({"record": True, "store": str(tmp_path), "langfuse": False}):
@@ -164,6 +192,8 @@ def test_async_runs_are_isolated():
 
 
 def test_original_failure_survives_journal_failure(monkeypatch, tmp_path):
+    from TCT.evidence import evidence
+
     error = RuntimeError("original")
 
     @capture_trapi("message")
@@ -174,11 +204,22 @@ def test_original_failure_survives_journal_failure(monkeypatch, tmp_path):
         raise OSError("disk unavailable")
 
     monkeypatch.setattr(Journal, "finish", broken)
-    with execution({"record": True, "store": str(tmp_path)}):
+    with execution({"record": True, "store": str(tmp_path)}) as run:
         with pytest.raises(RuntimeError) as caught:
             fail()
     assert caught.value is error
     assert records(tmp_path) == [("running", None)]
+    trace = evidence(
+        {
+            "action": "export",
+            "view": "trace",
+            "store": str(tmp_path),
+            "run_id": run.run_id,
+        }
+    )
+    (pending,) = trace["calls"]
+    assert pending["operation"] == "fail"
+    assert pending["status"] == "running"
 
 
 def test_successful_call_reports_storage_failure(monkeypatch, tmp_path):

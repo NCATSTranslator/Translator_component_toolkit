@@ -134,6 +134,18 @@ return formats and are not automatically instrumented as workflows.
 See [workflow recipes and limitations](TCT/interfaces/WORKFLOWS.md) and the
 [synthetic offline pathway example](examples/workflows/offline_pathway.json).
 
+To inspect a recorded run offline, pass its store and run ID to the shared
+`evidence` tool:
+
+```bash
+tct evidence --request '{"action":"export","view":"trace","store":"./recordings","run_id":"my-run"}'
+```
+
+Use `"view":"providers"` for service outcomes and recorded request timings,
+or `"view":"edges"` to see which providers contributed each merged edge.
+These views also accept in-memory `events` and are available through MCP and
+Python. The trace lists parent call IDs so consumers can reconstruct nesting.
+
 ### Shared operations
 
 TCT exposes one curated set of well-documented operations through three

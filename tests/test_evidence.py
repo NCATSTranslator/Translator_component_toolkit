@@ -96,6 +96,40 @@ def captured(monkeypatch, tmp_path):
     return records, load("composition"), tmp_path, run.run_id
 
 
+def test_trace_export_reads_a_run_without_composition(captured, capsys):
+    from TCT.interfaces.cli import main
+    from TCT.interfaces.mcp import mcp
+
+    events, _, store, run_id = captured
+    request = {
+        "action": "export",
+        "view": "trace",
+        "store": str(store),
+        "run_id": run_id,
+    }
+    trace = tools.evidence(request)
+    assert trace == evidence(
+        {"action": "export", "view": "trace", "events": list(reversed(events))}
+    )
+    assert main(["evidence", "--request", json.dumps(request)]) == 0
+    assert json.loads(capsys.readouterr().out) == trace
+
+    async def mcp_trace():
+        tool = (await mcp.get_tools())["evidence"]
+        return (await tool.run({"request": request})).structured_content
+
+    assert asyncio.run(mcp_trace()) == trace
+    assert trace["call_count"] == len(events)
+    calls = {call["call_id"]: call for call in trace["calls"]}
+    assert all(
+        call["parent_call_id"] in calls
+        for call in calls.values()
+        if call["parent_call_id"]
+    )
+    assert any(call["label"] != call["operation"] for call in calls.values())
+    assert sum(call["observation_count"] for call in calls.values()) >= 4
+
+
 def test_single_nlq_valid_rollup_and_lineage(captured):
     events, composition, _, _ = captured
     report = reduce_evidence(events, composition)
