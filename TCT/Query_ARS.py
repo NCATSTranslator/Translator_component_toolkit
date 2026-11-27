@@ -167,7 +167,7 @@ class ARSStatus:
         """
         merge = self.merge_child
         return (
-            self.is_terminal
+            self.status == "Done"
             and not self.merged_ready
             and merge is not None
             and merge.status not in TERMINAL_STATUSES
@@ -412,11 +412,11 @@ def check_ars_results(
 ) -> str | None:
     """Poll the parent ARS message and return its merged message identifier.
 
-    Return ``None`` when ARS finishes without a merged result. Raise
-    :class:`ARSTimeoutError` (a ``TimeoutError``) if the message never reaches a
-    terminal state. The parent reads ``Done`` before the merge agent has saved
-    (NCATSTranslator/Relay#621), so polling continues until the merge child is
-    also ``Done`` or ``merge_grace`` seconds elapse after the parent finished.
+    Return ``None`` when ARS finishes without a merged result. The parent can
+    read ``Done`` before the merge agent has saved (NCATSTranslator/Relay#621).
+    An active merge keeps polling within the retry budget. If that budget
+    expires, raise :class:`ARSTimeoutError` (a ``TimeoutError``). The
+    ``merge_grace`` period applies when no merge is ready or active.
     """
     return wait_for_ARS(
         response_pk,
@@ -438,9 +438,9 @@ def wait_for_ARS(
     """Poll a parent message until the ARS has finished and merged the answers.
 
     Returns when the parent status is ``Done`` **and** the merge agent's child
-    reports ``Done``. If the parent is ``Done`` but no merged message becomes
-    ready within ``merge_grace`` seconds (for example, a query with no ARA
-    results), the last observed status is returned instead.
+    reports ``Done``. Polling continues within the retry budget while the merge
+    child remains active. If the parent has been ``Done`` for ``merge_grace``
+    seconds and no merge is ready or active, return the last observed status.
 
     Raises
     ------
@@ -469,7 +469,7 @@ def wait_for_ARS(
             now = time.monotonic()
             if parent_done_at is None:
                 parent_done_at = now
-            if now - parent_done_at >= merge_grace:
+            if not status.merge_pending and now - parent_done_at >= merge_grace:
                 logger.warning(
                     "ARS %s: parent Done but merged message not ready after %.0fs; "
                     "returning as is",
@@ -506,12 +506,17 @@ def get_ARS_result(
     merged version. Raises :class:`ARSPendingError` while the parent is still
     running or the merge agent is still saving (NCATSTranslator/Relay#621);
     use :func:`wait_for_ARS` first for blocking callers.
+    Raises :class:`ARSError` if the parent finished with status ``Error``.
     """
     status = (
         pk_or_status
         if isinstance(pk_or_status, ARSStatus)
         else get_ARS_status(pk_or_status, url=url)
     )
+    if status.status == "Error":
+        raise ARSError(
+            f"ARS query {status.pk} finished with status Error ({status.summary()})"
+        )
     if not status.is_terminal or status.merge_pending:
         raise ARSPendingError(status)
     target = status.merged_version or status.pk

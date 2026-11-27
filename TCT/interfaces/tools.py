@@ -508,7 +508,7 @@ def get_ars_results(pk: str, top_n: int = 20) -> Any:
         ready is false the query is still running, or the ARS merge agent is
         still saving the merged message after the parent reported Done
         (NCATSTranslator/Relay#621): poll get_ars_status and retry instead of
-        reporting zero results.
+        reporting zero results. A failed ARS query raises an error.
     """
     status = _get_ARS_status(pk)
     if not status.is_terminal or status.merge_pending:

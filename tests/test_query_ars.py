@@ -326,16 +326,28 @@ def test_wait_returns_once_parent_and_merge_child_are_done(monkeypatch, no_sleep
 
 def test_wait_keeps_polling_when_parent_done_but_merge_child_still_running(monkeypatch, no_sleep):
     # NCATSTranslator/Relay#621: the parent flips to Done before the merged
-    # message is saved. The merge child must also be Done before we return.
+    # message is saved. An active merge outlives the grace period.
+    saving = done_trace(merged=None, merge_status="Running")
     calls = _poll_sequence(
         monkeypatch,
-        [done_trace(merge_status="Running"), done_trace(merge_status="Running"), done_trace()],
+        [saving, saving, done_trace()],
     )
 
-    status = ars.wait_for_ARS(PARENT, poll_interval=1, max_retries=60)
+    status = ars.wait_for_ARS(PARENT, poll_interval=1, max_retries=60, merge_grace=0)
 
     assert status.merged_ready
     assert len(calls) == 3
+
+
+def test_wait_times_out_if_active_merge_exhausts_poll_budget(monkeypatch, no_sleep):
+    saving = done_trace(merged=None, merge_status="Running")
+    calls = _poll_sequence(monkeypatch, [saving])
+
+    with pytest.raises(ars.ARSTimeoutError) as error:
+        ars.wait_for_ARS(PARENT, poll_interval=1, max_retries=2, merge_grace=0)
+
+    assert error.value.status.merge_pending
+    assert len(calls) == 2
 
 
 def test_wait_returns_after_grace_when_no_merged_message_appears(monkeypatch, no_sleep):

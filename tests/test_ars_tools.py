@@ -12,6 +12,7 @@ import importlib
 import inspect
 
 import pytest
+import requests
 from mcp.shared.exceptions import McpError
 
 ars = importlib.import_module("TCT.Query_ARS")
@@ -29,6 +30,36 @@ from tests.ars_fixtures import (  # noqa: E402
 
 # The tools package is importable under both names.
 shared_tools = tools
+
+
+def test_plover_fallback_logs_without_writing_to_stdout(monkeypatch, caplog, capsys):
+    dev_query = (
+        "https://multiomics.rtx.ai:9990/BigGIM_DrugResponse_PerformancePhase/query"
+    )
+    dev_metakg = dev_query.removesuffix("query") + "meta_knowledge_graph"
+    ci_metakg = (
+        "https://multiomics.ci.transltr.io/BigGIM_DrugResponse_PerformancePhase/"
+        "meta_knowledge_graph"
+    )
+    edge = {
+        "subject": "biolink:Gene",
+        "predicate": "biolink:affects",
+        "object": "biolink:Disease",
+    }
+
+    def get(url, **kwargs):
+        if url == ci_metakg:
+            return FakeResponse({}, 404)
+        return FakeResponse({"edges": [edge] if url == dev_metakg else []}, 200)
+
+    monkeypatch.setattr(requests, "get", get)
+
+    api_names, _ = tools.add_plover_apis_to_metakg({}, None)
+
+    assert list(api_names.values()) == [dev_query]
+    assert "dev fallback" in caplog.text
+    assert dev_query in caplog.text
+    assert capsys.readouterr().out == ""
 
 
 @pytest.fixture(autouse=True)
@@ -162,6 +193,21 @@ def test_get_ars_results_done_without_merge_agent_is_ready(monkeypatch, ars_mock
 
     assert result["ready"] is True
     assert result["merged_pk"] is None
+
+
+def test_get_ars_results_reports_failed_query_without_fetching(monkeypatch):
+    failed = ars.parse_trace(
+        PARENT, trace("Error", None, [child(ars.MERGE_AGENT, "Running")])
+    )
+    monkeypatch.setattr(tools, "_get_ARS_status", lambda pk: failed)
+
+    def unexpected_fetch(*args, **kwargs):
+        pytest.fail("must not fetch results for a failed query")
+
+    monkeypatch.setattr(ars, "fetch_ars_results", unexpected_fetch)
+
+    with pytest.raises(ars.ARSError, match="status Error"):
+        tools.get_ars_results(PARENT)
 
 
 # --------------------------------------------------------------------------- #
