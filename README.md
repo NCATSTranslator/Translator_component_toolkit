@@ -71,6 +71,11 @@ cd Translator_component_toolkit
 uv sync
 ```
 
+Run the same offline test selection used for pull requests with
+`uv run pytest -m "not live_service"`. Use `uv run pytest -m live_service`
+to check deployed services. Live ARS tests also require `TCT_LIVE_ARS=1`.
+CI runs the full suite on pushes to `main`.
+
 ### Service environment
 
 TCT uses CI service URLs by default. Select another environment explicitly when

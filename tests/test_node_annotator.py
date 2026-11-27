@@ -3,6 +3,9 @@ import pytest
 from TCT.config import reset_config
 
 
+pytestmark = pytest.mark.live_service
+
+
 @pytest.fixture(autouse=True)
 def use_node_annotator_prod():
     """Run legacy Node Annotator expectations against production."""

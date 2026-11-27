@@ -25,10 +25,13 @@ from tests.ars_fixtures import (  # noqa: E402
     trace,
 )
 
-pytestmark = pytest.mark.skipif(
-    os.getenv("TCT_LIVE_ARS") != "1",
-    reason="live ARS checks run only with TCT_LIVE_ARS=1",
-)
+pytestmark = [
+    pytest.mark.live_service,
+    pytest.mark.skipif(
+        os.getenv("TCT_LIVE_ARS") != "1",
+        reason="live ARS checks run only with TCT_LIVE_ARS=1",
+    ),
+]
 
 
 def test_live_ARS_neighborhood_finder_returns_finder_shaped_result():
