@@ -447,8 +447,8 @@ def evidence(request: dict[str, Any]) -> dict[str, Any]:
     """Inspect captured evidence, replay composition, or export validated TRAPI.
 
     Export with view="trace" for recorded calls or view="providers" for service
-    outcomes, or view="edges" for merge provenance. These views work offline
-    from captured evidence.
+    outcomes, view="edges" for merge provenance, or view="page" for a
+    standalone HTML report. These views work offline from captured evidence.
     Inspect first to obtain source IDs and local query graphs. Composition requires
     closed=true, query_graph, sources, workflow and selection. sources maps each
     source ID to nodes/edges/paths dictionaries mapping local query IDs to global
