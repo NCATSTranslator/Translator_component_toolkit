@@ -42,6 +42,64 @@ def _raw_output():
     }
 
 
+@pytest.mark.parametrize(
+    "ara,expected_service,constraints,timeout,expected_timeout",
+    [
+        (" ARAGORN ", "aragorn", None, {}, 300.0),
+        ("ARAX", "arax", ["biolink:Gene"], {"timeout": 15}, 15),
+        ("arax", "arax", None, {"timeout": None}, None),
+    ],
+)
+def test_query_pathfinder_selects_service_and_applies_timeout(
+    monkeypatch, ara, expected_service, constraints, timeout, expected_timeout
+):
+    sent = []
+    response = object()
+
+    def post(url, *, json, timeout):
+        sent.append((url, json, timeout))
+        return response
+
+    monkeypatch.setattr(
+        tct_pathfinder, "service_url", lambda name: f"https://{name}.invalid"
+    )
+    monkeypatch.setattr(tct_pathfinder.requests, "post", post)
+
+    result = tct_pathfinder.query_pathfinder(
+        ara,
+        "EXAMPLE:1",
+        "biolink:Disease",
+        "EXAMPLE:2",
+        "biolink:Drug",
+        constraints=constraints,
+        **timeout,
+    )
+
+    assert result is response
+    ((url, body, request_timeout),) = sent
+    assert url == f"https://{expected_service}.invalid"
+    assert request_timeout == expected_timeout
+    graph = body["message"]["query_graph"]
+    if constraints:
+        assert graph["paths"]["p0"]["constraints"] == [
+            {"intermediate_categories": constraints}
+        ]
+    else:
+        assert "constraints" not in graph["paths"]["qpath"]
+
+
+def test_query_pathfinder_rejects_unknown_ara_without_posting(monkeypatch):
+    def unexpected_post(*args, **kwargs):
+        pytest.fail("unknown ARA reached the HTTP request")
+
+    monkeypatch.setattr(tct_pathfinder.requests, "post", unexpected_post)
+
+    with pytest.raises(ValueError, match="unknown pathfinder ARA"):
+        tct_pathfinder.query_pathfinder(
+            "unknown", "EXAMPLE:1", "biolink:Disease", "EXAMPLE:2", "biolink:Drug"
+        )
+
+
 def test_normalize_category_accepts_short_and_prefixed_names():
     assert tct_main._normalize_category("Gene") == "biolink:Gene"
     assert tct_main._normalize_category("biolink:Disease") == "biolink:Disease"
