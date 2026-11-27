@@ -170,7 +170,62 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
     for tool in shared_tools.TOOLS:
         _add_tool_parser(subparsers, tool)
+    view = subparsers.add_parser("view", help="Open an offline recording report.")
+    view.add_argument("store", type=Path, help="Directory containing the journal.")
+    view.add_argument("run_id", nargs="?", help="Optional for a single-run store.")
+    mode = view.add_mutually_exclusive_group()
+    mode.add_argument("--text", action="store_true", help="Print the trace as JSON.")
+    mode.add_argument("--output", type=Path, help="Save HTML to a new file.")
     return parser
+
+
+def _view_recording(store, run_id, text, output):
+    from sqlite3 import Error as SQLiteError
+    from tempfile import NamedTemporaryFile
+
+    from ..evidence import evidence, recorded_run_ids
+
+    try:
+        if run_id is None:
+            runs = recorded_run_ids(store)
+            if len(runs) != 1:
+                raise ValueError(
+                    "Provide a run ID when the store has multiple runs or is empty"
+                )
+            (run_id,) = runs
+        view = evidence(
+            {
+                "action": "export",
+                "view": "trace" if text else "page",
+                "store": str(store),
+                "run_id": run_id,
+            }
+        )
+        if text:
+            print(dumps_result(view))
+            return 0
+        if output is not None:
+            destination = output.expanduser().absolute()
+            with destination.open("x", encoding="utf-8") as report:
+                report.write(view["html"])
+        else:
+            import webbrowser
+
+            with NamedTemporaryFile(
+                mode="w",
+                encoding="utf-8",
+                prefix="tct-run-",
+                suffix=".html",
+                delete=False,
+            ) as report:
+                report.write(view["html"])
+            destination = Path(report.name)
+            webbrowser.open(destination.as_uri())
+    except (OSError, SQLiteError, ValueError, ResultSerializationError) as error:
+        print(f"tct: view: {error}", file=sys.stderr)
+        return 1
+    print(destination)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -178,8 +233,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     namespace = parser.parse_args(argv)
     values = vars(namespace)
-    tool = values.pop("_tool")
     command = values.pop("command")
+    if command == "view":
+        return _view_recording(**values)
+    tool = values.pop("_tool")
     execution_path = values.pop("execution")
     try:
         settings = json.loads(execution_path.read_text()) if execution_path else None

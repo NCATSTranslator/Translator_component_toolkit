@@ -146,6 +146,23 @@ or `"view":"edges"` to see which providers contributed each merged edge.
 These views also accept in-memory `events` and are available through MCP and
 Python. The trace lists parent call IDs so consumers can reconstruct nesting.
 
+`tct view ./recordings my-run` opens a standalone HTML report on the local
+machine. Add `--output report.html` to save it without opening a browser, or
+`--text` to print the trace as JSON. You can omit the run ID when the store
+contains a single run. The report works offline.
+
+The [metformin recording example](examples/workflows/record_metformin.py)
+uses an explicit Node Normalizer URL and one or two provider URLs in CI. Use
+`record` for the live capture and `verify` to replay it from disk:
+
+```bash
+uv run python examples/workflows/record_metformin.py record ./metformin-run \
+  --normalizer https://nodenorm-es.ci.transltr.io/ \
+  --provider https://multiomics.ci.transltr.io/dakp/query
+uv run python examples/workflows/record_metformin.py verify ./metformin-run
+tct view ./metformin-run
+```
+
 ### Shared operations
 
 TCT exposes one curated set of well-documented operations through three

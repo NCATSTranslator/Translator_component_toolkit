@@ -118,4 +118,11 @@ def edges(events):
     return {"merges": merges}
 
 
-VIEWS = {"trace": trace, "providers": providers, "edges": edges}
+def page(events):
+    """Return the self-contained HTML report for a run."""
+    from .evidence_page import render_page
+
+    return {"html": render_page(events)}
+
+
+VIEWS = {"trace": trace, "providers": providers, "edges": edges, "page": page}

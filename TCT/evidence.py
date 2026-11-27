@@ -4,6 +4,7 @@ Evidence is a set of immutable events. Composition is an explicit, closed recipe
 Call nesting is never interpreted as data lineage.
 """
 
+from contextlib import closing
 from copy import deepcopy
 import gzip
 import hashlib
@@ -81,15 +82,30 @@ def _read_artifact(root, checksum):
         raise EvidenceError("Cannot read execution artifact") from error
 
 
-def read_run(store, run_id):
-    """Read a journal snapshot without creating files or trusting artifact names."""
-    root = Path(store).expanduser().resolve()
+def _open_journal(root):
     database = root / "journal.sqlite3"
     if not database.is_file():
         raise EvidenceError("Execution journal does not exist")
+    return closing(sqlite3.connect(database.as_uri() + "?mode=ro", uri=True))
+
+
+def recorded_run_ids(store):
+    """List the IDs of runs with recorded calls."""
+    root = Path(store).expanduser().resolve()
+    with _open_journal(root) as connection:
+        return [
+            run_id
+            for (run_id,) in connection.execute(
+                "SELECT DISTINCT run_id FROM calls ORDER BY run_id"
+            )
+        ]
+
+
+def read_run(store, run_id):
+    """Read a journal snapshot without creating files or trusting artifact names."""
+    root = Path(store).expanduser().resolve()
     records = []
-    connection = sqlite3.connect(database.as_uri() + "?mode=ro", uri=True)
-    try:
+    with _open_journal(root) as connection:
         rows = connection.execute(
             """SELECT call_id, step_id, parent_call_id, operation, status, event_hash
                FROM calls WHERE run_id=? ORDER BY step_id""",
@@ -136,8 +152,6 @@ def read_run(store, run_id):
             ) != (run_id, call_id, step_id, status):
                 raise EvidenceError("Journal index and execution artifact disagree")
             records.append(record)
-    finally:
-        connection.close()
     return accumulate(records)
 
 

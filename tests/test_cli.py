@@ -19,7 +19,39 @@ def test_cli_exposes_every_shared_tool_as_a_kebab_case_command():
 
     assert list(subparsers.choices) == [
         tool.__name__.replace("_", "-") for tool in tools.TOOLS
-    ]
+    ] + ["view"]
+
+
+def test_cli_view_writes_offline_report_and_trace(tmp_path, capsys):
+    from TCT.execution import capture_operation, execution
+
+    @capture_operation()
+    def recorded():
+        """Trace <script>unsafe</script>."""
+
+    store = tmp_path / "recordings"
+    with execution({"store": str(store), "record": True, "run_id": "first"}):
+        recorded()
+
+    assert cli.main(["view", str(store), "--text"]) == 0
+    trace = json.loads(capsys.readouterr().out)
+    assert trace["calls"][0]["operation"] == "recorded"
+    assert trace["calls"][0]["run_id"] == "first"
+
+    output = tmp_path / "report.html"
+    args = ["view", str(store), "first", "--output", str(output)]
+    assert cli.main(args) == 0
+    report = output.read_text()
+    assert report.startswith("<!doctype html>")
+    assert "Trace &lt;script&gt;unsafe&lt;/script&gt;" in report
+    assert "<script>" not in report
+    assert cli.main(args) == 1
+    assert output.read_text() == report
+
+    with execution({"store": str(store), "record": True, "run_id": "second"}):
+        recorded()
+    assert cli.main(["view", str(store), "--text"]) == 1
+    assert "Provide a run ID" in capsys.readouterr().err
 
 
 def test_cli_help_uses_shared_tool_and_parameter_docs(capsys):

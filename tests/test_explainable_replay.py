@@ -175,3 +175,9 @@ def test_finder_recording_reads_and_replays_offline(monkeypatch, tmp_path):
         assert all(
             edge["retained_provider"] == "answer" for edge in merge["edges"].values()
         )
+        report = evidence(request | {"view": "page"})["html"]
+        assert "Merged edge provenance" in report
+        assert "fixture-edge-255" in report
+        assert query_urls["error"] in report
+        assert "http_error" in report
+        assert "infores:fixture" in report
