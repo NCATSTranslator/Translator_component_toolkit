@@ -1,7 +1,8 @@
 """Opt-in HTTP response reuse. Imported only when execution caching is enabled.
 
-Only JSON object key order is canonicalized. Arrays, query IDs, predicate order,
-URLs, and literal values retain their meaning. Snapshots are not answer proofs.
+JSON object keys are sorted for hashing. Arrays, query IDs, predicate order,
+URLs, and literal values retain their meaning. Requests' connect/read timeout
+tuple has its own representation in the hash. Snapshots are not answer proofs.
 """
 
 from base64 import b64decode, b64encode
@@ -59,6 +60,19 @@ def canonical_bytes(value):
 
 def digest(value):
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
+
+
+def _request_for_hash(method, url, arguments):
+    request = {"method": method.upper(), "url": url, "arguments": arguments}
+    timeout = arguments.get("timeout")
+    if isinstance(timeout, tuple):
+        if len(timeout) != 2 or any(
+            limit is not None and type(limit) not in (int, float) for limit in timeout
+        ):
+            raise TypeError("Invalid connect/read timeout tuple for cache identity")
+        request["arguments"] = dict(arguments, timeout=list(timeout))
+        request["timeout_type"] = "connect_read"
+    return request
 
 
 def validate_policy(value, *, partial=False):
@@ -344,9 +358,11 @@ class CacheSession:
         if auth and not self.policy.get("authorization_partition"):
             raise ValueError("Authenticated caching requires authorization_partition")
         runtime = get_runtime_config()
-        request = {"method": method.upper(), "url": url, "arguments": arguments}
+        request = _request_for_hash(method, url, arguments)
         original_request = (
-            request | {"arguments": original} if original is not None else request
+            _request_for_hash(method, url, original)
+            if original is not None
+            else request
         )
         original_hash = digest(original_request)
         key = digest(
