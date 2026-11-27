@@ -151,6 +151,14 @@ machine. Add `--output report.html` to save it without opening a browser, or
 `--text` to print the trace as JSON. You can omit the run ID when the store
 contains a single run. The report works offline.
 
+Compare saved runs using `"view":"diff"` and an `against` selector for the
+baseline. It compares exact merged edge payloads by query and edge ID, and
+counts service outcomes by endpoint. Run IDs and elapsed times are excluded.
+
+```bash
+tct evidence --request '{"action":"export","view":"diff","store":"./recordings","run_id":"latest","against":{"store":"./recordings","run_id":"baseline"}}'
+```
+
 The [metformin recording example](examples/workflows/record_metformin.py)
 uses an explicit Node Normalizer URL and one or two provider URLs in CI. Use
 `record` for the live capture and `verify` to replay it from disk:

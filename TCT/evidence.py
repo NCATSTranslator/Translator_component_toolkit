@@ -760,24 +760,7 @@ def reduce_evidence(events, composition, version="1.5.0"):
     return report
 
 
-def evidence(request):
-    """One operation for inventory, deterministic replay and validated export."""
-    allowed = {"action", "events", "store", "run_id", "composition", "version", "view"}
-    if not isinstance(request, dict) or set(request) - allowed:
-        raise EvidenceError("Unknown evidence request settings")
-    action = request.get("action", "inspect")
-    if action not in {"inspect", "replay", "export"}:
-        raise EvidenceError("action must be inspect, replay or export")
-    view = request.get("view", "trapi")
-    if "view" in request and (action != "export" or not isinstance(view, str)):
-        raise EvidenceError("view requires export and must be a string")
-    render = None
-    if view != "trapi":
-        from .views import VIEWS
-
-        render = VIEWS.get(view)
-        if render is None:
-            raise EvidenceError(f"Unknown evidence view: {view}")
+def _select_events(request):
     if "events" in request:
         if "store" in request or "run_id" in request:
             raise EvidenceError("Choose events or a store/run_id, not both")
@@ -799,6 +782,48 @@ def evidence(request):
             for e in events
             if (e["run_id"], e["call_id"]) != (active["run_id"], active["call_id"])
         ]
+    return events
+
+
+def evidence(request):
+    """One operation for inventory, deterministic replay and validated export."""
+    allowed = {
+        "action",
+        "events",
+        "store",
+        "run_id",
+        "composition",
+        "version",
+        "view",
+        "against",
+    }
+    if not isinstance(request, dict) or set(request) - allowed:
+        raise EvidenceError("Unknown evidence request settings")
+    action = request.get("action", "inspect")
+    if action not in {"inspect", "replay", "export"}:
+        raise EvidenceError("action must be inspect, replay or export")
+    view = request.get("view", "trapi")
+    if "view" in request and (action != "export" or not isinstance(view, str)):
+        raise EvidenceError("view requires export and must be a string")
+    if "against" in request and view != "diff":
+        raise EvidenceError("against requires the diff view")
+    render = None
+    if view != "trapi":
+        from .views import VIEWS
+
+        render = VIEWS.get(view)
+        if render is None:
+            raise EvidenceError(f"Unknown evidence view: {view}")
+    if view == "diff":
+        baseline = request.get("against")
+        if not isinstance(baseline, dict) or set(baseline) - {
+            "events",
+            "store",
+            "run_id",
+        }:
+            raise EvidenceError("Provide against with events or a store and run_id")
+        return render(_select_events(request), _select_events(baseline))
+    events = _select_events(request)
     if render is not None:
         return render(events)
     sources, issues, workflows = inventory(events)

@@ -1,5 +1,8 @@
 """Offline views of execution records."""
 
+from collections import Counter, defaultdict
+import json
+
 
 def trace(events):
     """List captured calls with their parent IDs and observation counts."""
@@ -125,4 +128,86 @@ def page(events):
     return {"html": render_page(events)}
 
 
-VIEWS = {"trace": trace, "providers": providers, "edges": edges, "page": page}
+def _merge_payloads(events):
+    from .evidence import canonical, digest
+
+    payloads = defaultdict(Counter)
+    for event in events:
+        if (
+            event.get("operation") != "parallel_api_query"
+            or event.get("status") != "succeeded"
+        ):
+            continue
+        output = event.get("output")
+        if not isinstance(output, dict):
+            continue
+        query_hash = digest((event.get("inputs") or {}).get("query_json"))
+        for edge_id, edge in output.items():
+            payloads[(query_hash, edge_id)][canonical(edge)] += 1
+    return payloads
+
+
+def _request_outcomes(events):
+    from .evidence import canonical
+
+    return Counter(
+        canonical(
+            {
+                "url": service["url"],
+                **{
+                    key: request[key]
+                    for key in (
+                        "method",
+                        "service_kind",
+                        "outcome",
+                        "status_code",
+                        "error_type",
+                    )
+                },
+            }
+        )
+        for service in providers(events)["services"]
+        for request in service["requests"]
+    )
+
+
+def diff(events, baseline):
+    """Compare exact retained edge payloads and HTTP outcomes across recordings."""
+    old_edges, new_edges = _merge_payloads(baseline), _merge_payloads(events)
+    edge_changes = []
+    for query_hash, edge_id in sorted(old_edges.keys() | new_edges.keys()):
+        before = old_edges.get((query_hash, edge_id), Counter())
+        after = new_edges.get((query_hash, edge_id), Counter())
+        if before != after:
+            edge_changes.append(
+                {
+                    "query_hash": query_hash,
+                    "edge_id": edge_id,
+                    "before": [
+                        {"edge": json.loads(edge), "count": count}
+                        for edge, count in sorted(before.items())
+                    ],
+                    "after": [
+                        {"edge": json.loads(edge), "count": count}
+                        for edge, count in sorted(after.items())
+                    ],
+                }
+            )
+    old_requests, new_requests = _request_outcomes(baseline), _request_outcomes(events)
+    return {
+        "edge_changes": edge_changes,
+        "request_changes": [
+            {**json.loads(key), "before": old_requests[key], "after": new_requests[key]}
+            for key in sorted(old_requests.keys() | new_requests.keys())
+            if old_requests[key] != new_requests[key]
+        ],
+    }
+
+
+VIEWS = {
+    "trace": trace,
+    "providers": providers,
+    "edges": edges,
+    "page": page,
+    "diff": diff,
+}

@@ -96,6 +96,50 @@ def captured(monkeypatch, tmp_path):
     return records, load("composition"), tmp_path, run.run_id
 
 
+def test_diff_compares_retained_edge_payloads_and_service_outcomes():
+    def event(run_id, object_id, http_status):
+        return {
+            "format_version": 1,
+            "run_id": run_id,
+            "call_id": "merge",
+            "operation": "parallel_api_query",
+            "status": "succeeded",
+            "inputs": {"query_json": {"message": {"query_graph": {}}}},
+            "output": {"edge": {"object": object_id}},
+            "observations": [
+                {
+                    "kind": "service",
+                    "status": "received",
+                    "status_code": http_status,
+                    "request": {
+                        "url": "https://example.invalid/query",
+                        "method": "post",
+                    },
+                }
+            ],
+        }
+
+    old = event("old", "TEST:1", 200)
+    new = event("new", "TEST:2", 503)
+    result = evidence(
+        {
+            "action": "export",
+            "view": "diff",
+            "events": [new],
+            "against": {"events": [old]},
+        }
+    )
+
+    (change,) = result["edge_changes"]
+    assert change["edge_id"] == "edge"
+    assert change["before"] == [{"edge": {"object": "TEST:1"}, "count": 1}]
+    assert change["after"] == [{"edge": {"object": "TEST:2"}, "count": 1}]
+    assert {
+        item["outcome"]: (item["before"], item["after"])
+        for item in result["request_changes"]
+    } == {"received": (1, 0), "http_error": (0, 1)}
+
+
 def test_trace_export_reads_a_run_without_composition(captured, capsys):
     from TCT.interfaces.cli import main
     from TCT.interfaces.mcp import mcp
