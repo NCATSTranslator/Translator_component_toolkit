@@ -373,7 +373,7 @@ def query_pathfinder(
     node2_id: str,
     node2_category: str,
     constraints: Optional[Sequence[str]] = None,
-    timeout: Optional[float] = None,
+    timeout: Optional[float] = 300.0,
 ) -> requests.Response:
     """
     Queries an ARA's Pathfinder API, with or without intermediate constraints.
@@ -389,6 +389,8 @@ def query_pathfinder(
     constraints : sequence of str, optional
         Intermediate node categories. Only up to one allowed.
     timeout : float, optional
+        Connect and read inactivity timeout in seconds. Defaults to 300.
+        Pass None to disable the timeout.
 
     Returns
     -------
