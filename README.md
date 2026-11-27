@@ -71,6 +71,11 @@ cd Translator_component_toolkit
 uv sync
 ```
 
+Run the same offline test selection used for pull requests with
+`uv run pytest -m "not live_service"`. Use `uv run pytest -m live_service`
+to check deployed services. Live ARS tests also require `TCT_LIVE_ARS=1`.
+CI runs the full suite on pushes to `main`.
+
 ### Service environment
 
 TCT uses CI service URLs by default. Select another environment explicitly when
@@ -248,6 +253,7 @@ Python names in snake_case.
 | MetaKG extension | `add-custom-api-to-metakg`, `add-plover-apis-to-metakg` |
 | TRAPI query preparation and execution | `optimize-query-for-api`, `query-knowledge-provider`, `parallel-query-apis` |
 | Graph finding | `neighborhood-finder`, `path-finder` |
+| ARS querying | `ars-neighborhood-finder`, `ars-pathfinder`, `submit-ars-query`, `get-ars-status`, `get-ars-results` |
 | Legacy compatibility | `trapi-query-endpoint` |
 
 `trapi-query-endpoint` preserves the existing public tool contract but is a

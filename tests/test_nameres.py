@@ -3,6 +3,9 @@ import TCT
 from TCT.config import reset_config
 
 
+pytestmark = pytest.mark.live_service
+
+
 @pytest.fixture(autouse=True)
 def use_name_resolver_ci():
     """Run legacy Name Resolver integration expectations against CI."""
@@ -61,7 +64,12 @@ def test_nameres_status():
     assert status["status"] == "ok"
     assert status["babel_version"] != ""
     assert status["babel_version_url"] != ""
-    assert status["solr"]["numDocs"] > 425_000_000
+    # Older NameRes releases nest Solr index stats under "solr"; newer ones
+    # report them at the top level.
+    # Babel 2025sep1 indexed ~425M names and Babel 2026jul22 ~331M; the floor
+    # is a sanity check that the index is loaded, not a fixed release size.
+    num_docs = status.get("solr", status)["numDocs"]
+    assert num_docs > 300_000_000
 
 
 def test_nameres_incorrect():
