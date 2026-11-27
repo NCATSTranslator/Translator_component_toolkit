@@ -190,16 +190,28 @@ def test_transform_snapshots_preserve_legacy_mutation():
     assert run[0]["depends_on"] == []
 
 
+def test_provider_pruning_preserves_request_predicate_order():
+    requested = ["biolink:treats", "biolink:affects", "biolink:related_to"]
+    payload = translator_query.format_query_json(
+        ["CHEBI:6801"], predicates=[*requested, requested[0]]
+    )
+    result = translator_query.optimize_query_json(
+        payload, "kp", {"kp": ["biolink:affects", "biolink:treats"]}
+    )
+    assert result["message"]["query_graph"]["edges"]["e00"]["predicates"] == requested[:2]
+
+
 @pytest.mark.parametrize(
-    "status,body",
+    "status,body,outcome",
     [
-        (200, {"message": {"knowledge_graph": {"edges": {}}}}),
-        (503, {"error": "fixture unavailable"}),
-        (200, b"not json"),
+        (200, {"message": {"knowledge_graph": {"edges": {}}}}, "empty"),
+        (503, {"error": "fixture unavailable"}, "http_error"),
+        (200, b"not json", "non_json"),
+        (200, {"status": "Error", "message": {}}, "application_error"),
     ],
 )
 def test_provider_empty_http_and_parse_failure_remain_distinct(
-    monkeypatch, status, body
+    monkeypatch, status, body, outcome
 ):
     monkeypatch.setattr(requests, "post", lambda *a, **kw: response(body, status))
     args = (
@@ -221,6 +233,12 @@ def test_provider_empty_http_and_parse_failure_remain_distinct(
             assert translator_query.query_KP(*args) is None
         assert services(run)[0]["body_json"] == body
     assert services(run)[0]["status_code"] == status
+    view = tools.evidence({"action": "export", "view": "providers", "events": list(run)})
+    assert view["request_count"] == 1
+    (service,) = view["services"]
+    (request,) = service["requests"]
+    assert request["outcome"] == outcome
+    assert request["elapsed_ms"] >= 0
 
 
 def test_parallel_capture_retains_envelopes_and_collision_decisions(monkeypatch):
@@ -295,6 +313,21 @@ def test_parallel_capture_retains_envelopes_and_collision_decisions(monkeypatch)
     assert merges[1]["overwritten_edge_ids"] == ["collision"]
     assert all(r["depends_on"] == [] for r in run)
 
+    view = tools.evidence({"action": "export", "view": "edges", "events": list(run)})
+    (merge,) = view["merges"]
+    assert merge["call_id"] == run[0]["call_id"]
+    assert merge["edge_count"] == 1
+    edge = merge["edges"]["collision"]
+    assert edge["retained_provider"] == "b"
+    assert edge["contributors"] == [
+        {
+            "provider": name,
+            "source_edge_id": "collision",
+            "sources": [{"resource_id": name}],
+        }
+        for name in ("a", "b")
+    ]
+
 
 def test_disabled_does_not_read_body(monkeypatch):
     class NativeResponse:
@@ -359,7 +392,7 @@ def test_discovery_metadata_and_cached_resources_keep_full_observations(monkeypa
     }
     plover = {
         "nodes": {"biolink:Gene": {"id_prefixes": ["X"]}},
-        "edges": [],
+        "edges": [{"subject": "biolink:Gene", "predicate": "biolink:affects", "object": "biolink:Gene"}],
         "extra": "synthetic",
     }
 
@@ -387,6 +420,8 @@ def test_discovery_metadata_and_cached_resources_keep_full_observations(monkeypa
         pd.testing.assert_frame_equal(captured.meta_kg, baseline.meta_kg)
         assert captured.api_predicates == baseline.api_predicates
         assert calls == baseline_calls
+        assert any(record["operation"] == "add_plover_API" for record in run)
+        assert all(record["operation"] != "add_new_API_for_query" for record in run)
         bodies = [o["body_json"] for o in services(run)]
         assert registry in bodies and metadata in bodies and plover in bodies
         assert len(bodies) == len(baseline_calls)

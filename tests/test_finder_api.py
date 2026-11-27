@@ -75,6 +75,24 @@ def test_translator_resources_cache_lifecycle(monkeypatch):
     assert tct_main._DEFAULT_TRANSLATOR_RESOURCES is None
 
 
+def test_selected_predicates_have_stable_order():
+    metadata = pd.DataFrame(
+        {
+            "API": ["provider"] * 3,
+            "Subject": ["biolink:Drug"] * 3,
+            "Object": ["biolink:Disease"] * 3,
+            "Predicate": ["biolink:treats", "biolink:affects", "biolink:treats"],
+        }
+    )
+    predicates, _, _ = tct_main.sele_predicates_API(
+        ["biolink:Drug"],
+        ["biolink:Disease"],
+        metadata,
+        {"provider": "https://fixture.invalid/query"},
+    )
+    assert predicates == ["biolink:affects", "biolink:treats"]
+
+
 def test_resolve_node_normalizes_curie_without_name_lookup(monkeypatch):
     name_lookup_calls = []
 

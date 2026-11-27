@@ -1,12 +1,17 @@
 """Local immutable observations and transactional execution index (opt-in only)."""
 
 from contextlib import contextmanager
+import gzip
 import hashlib
 import json
 import os
 from pathlib import Path
 import sqlite3
 import tempfile
+
+
+INLINE_LIMIT = 64 * 1024
+REFERENCED_FIELDS = ("inputs", "inputs_after", "output", "observations", "trapi")
 
 
 class ArtifactStore:
@@ -17,16 +22,22 @@ class ArtifactStore:
         self.artifacts = self.root / "artifacts"
         self.artifacts.mkdir(parents=True, exist_ok=True)
 
-    def artifact(self, value):
+    @staticmethod
+    def encode(value):
         from .interfaces.serialization import to_jsonable
 
-        payload = json.dumps(
+        return json.dumps(
             to_jsonable(value),
             sort_keys=True,
             separators=(",", ":"),
             ensure_ascii=False,
             allow_nan=False,
         ).encode()
+
+    def artifact(self, value):
+        return self.write_artifact(self.encode(value))
+
+    def write_artifact(self, payload):
         digest = hashlib.sha256(payload).hexdigest()
         destination = self.artifacts / digest
         if destination.exists():
@@ -75,8 +86,15 @@ class Journal(ArtifactStore):
         finally:
             connection.close()
 
+    def _write_snapshot(self, payload):
+        if len(payload) > INLINE_LIMIT:
+            compressed = gzip.compress(payload, compresslevel=1, mtime=0)
+            if len(compressed) < len(payload):
+                payload = compressed
+        return self.write_artifact(payload)
+
     def begin(self, record):
-        input_hash = self.artifact(record["inputs"])
+        input_hash = self._write_snapshot(self.encode(record["inputs"]))
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             db.execute("INSERT OR IGNORE INTO runs VALUES (?, 1)", (record["run_id"],))
@@ -109,7 +127,18 @@ class Journal(ArtifactStore):
             )
 
     def finish(self, record):
-        event_hash = self.artifact(record)
+        event = dict(record)
+        references = {}
+        for field in REFERENCED_FIELDS:
+            if field in record:
+                payload = self.encode(record[field])
+                if len(payload) > INLINE_LIMIT:
+                    references[field] = self._write_snapshot(payload)
+                    del event[field]
+        if references:
+            event["format_version"] = 2
+            event["artifact_references"] = references
+        event_hash = self.artifact(event)
         with self.connect() as db:
             cursor = db.execute(
                 "UPDATE calls SET status=?, event_hash=? WHERE run_id=? AND step_id=? AND call_id=? AND status=?",

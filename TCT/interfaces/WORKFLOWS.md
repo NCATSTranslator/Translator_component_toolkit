@@ -258,8 +258,9 @@ though the number of public tool calls and service requests does not.
 Each operation records bound inputs before execution, inputs after successful
 execution (including legacy mutations), and its native output or exception type.
 Buffered service requests retain the requested URL/arguments, HTTP status, exact
-body bytes as base64, and decoded JSON when available. Recording reads an already
-buffered body; it neither repeats the request nor calls `response.json()` again.
+body bytes as base64, decoded JSON when available, and elapsed time. Recording
+reads an already buffered body; it neither repeats the request nor calls
+`response.json()` again.
 This preserves normalization equivalences and unmatched identifiers, name lookup
 candidates and scores, discovery metadata, and full provider envelopes including
 nodes, bindings, analyses, qualifiers, sources, and supporting graphs.
@@ -284,6 +285,12 @@ they cannot recover the original HTTP bodies from a fetch made before capture.
 No extra fetch is performed to fill that gap. Missing/incompatible buffered bodies
 produce explicit capture diagnostics; durable recording reports a completed-call
 capture failure rather than silently claiming complete evidence.
+
+Bulk Plover discovery records the completed metadata table and its HTTP
+responses at the discovery boundary. Durable journals store large call fields
+in content-addressed artifacts and compress them when it saves space. The evidence
+reader verifies stored bytes before decoding and continues to read earlier inline
+and uncompressed records.
 
 Compatibility fixtures in `tests/test_toolkit_capture.py` cover all 18 working
 boundaries across Python, shared invocation, CLI and registered MCP adapters.
@@ -478,6 +485,10 @@ To replay a saved run, use the original cache identity settings with
 Replay performs no service requests. Missing, exhausted or damaged snapshots fail
 locally; there is no fallback to live HTTP. Occurrences of the same effective request
 are consumed in their recorded order; independent requests can be interleaved.
+`neighborhood_finder` and `query_TCT_pathfinder` use a stable order for
+discovered predicates. Provider pruning retains the input predicate order.
+Older snapshots match when the effective request, including predicate order,
+matches the request produced by the current toolkit.
 `replay.sqlite3` stores transactional cursors so continuation works across separate
 CLI processes and MCP calls. Use a fresh replay run ID to start again. The source
 cache index and artifacts remain unchanged. Transport exception classes can be

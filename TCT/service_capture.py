@@ -7,6 +7,7 @@ These observations describe transport, not successful biomedical answers.
 from base64 import b64encode
 from copy import deepcopy
 import json
+from time import perf_counter
 
 from .execution import cache_session, observation_target
 
@@ -42,7 +43,11 @@ def capture_request(
 
     if target is None:
         return perform()
-    observation = {"kind": "service", "status": "pending"}
+    observation = {
+        "kind": "service",
+        "service_kind": cache_kind,
+        "status": "pending",
+    }
     if cache is not None:
         observation["cache"] = receipt
     target.setdefault("observations", []).append(observation)
@@ -54,11 +59,14 @@ def capture_request(
         }
     except Exception as error:
         target.setdefault("observation_errors", []).append(type(error).__name__)
+    started = perf_counter()
     try:
         response = perform()
     except BaseException as error:
         observation.update(status="transport_error", error_type=type(error).__name__)
         raise
+    finally:
+        observation["elapsed_ms"] = round((perf_counter() - started) * 1000, 3)
     try:
         observation.update(status="received", status_code=response.status_code)
         # All call sites using this helper request buffered responses. Never

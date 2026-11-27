@@ -446,6 +446,9 @@ def replay_query_workflow(
 def evidence(request: dict[str, Any]) -> dict[str, Any]:
     """Inspect captured evidence, replay composition, or export validated TRAPI.
 
+    Export with view="trace" for recorded calls or view="providers" for service
+    outcomes, or view="edges" for merge provenance. These views work offline
+    from captured evidence.
     Inspect first to obtain source IDs and local query graphs. Composition requires
     closed=true, query_graph, sources, workflow and selection. sources maps each
     source ID to nodes/edges/paths dictionaries mapping local query IDs to global
@@ -465,11 +468,11 @@ def evidence(request: dict[str, Any]) -> dict[str, Any]:
 
     Args:
         request: Object with action (inspect, replay, export), either events or
-            store/run_id, and an explicit composition for replay/export. Version
+            store/run_id. Replay and TRAPI export require a composition. Version
             defaults to 1.5.0; 2.0.0-beta2 is an explicit prerelease target.
 
     Returns:
-        Inventory, replay diagnostics, or a validated TRAPI response. No network
+        Inventory, replay diagnostics, a run view, or a validated TRAPI response. No network
         calls occur. Invalid or unsupported exports raise an error.
     """
     return _evidence(request)

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar, copy_context
 from copy import deepcopy
 from functools import wraps
-from inspect import signature
+from inspect import getdoc, signature
 import logging
 import os
 from uuid import uuid4
@@ -207,6 +207,7 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
         parent = _active.get()
         same_run = parent and parent["run_id"] == run.run_id
         call_id = uuid4().hex
+        doc = getdoc(function)
         record = {
             "format_version": 1,
             "run_id": run.run_id,
@@ -215,6 +216,7 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
             "parent_call_id": parent["call_id"] if same_run else None,
             "depends_on": list(settings.get("depends_on", [])) if not same_run else [],
             "operation": function.__name__,
+            "label": doc.splitlines()[0] if doc else function.__name__,
             "module": function.__module__,
             "interface": interface or "python",
             "status": "running",

@@ -5,12 +5,15 @@ Call nesting is never interpreted as data lineage.
 """
 
 from copy import deepcopy
+import gzip
 import hashlib
 import json
 from pathlib import Path
 import sqlite3
+from zlib import error as ZlibError
 
 from .interfaces.serialization import to_jsonable
+from .journal import REFERENCED_FIELDS
 
 REDUCER_VERSION = 1
 MAX_EVENTS = 10000
@@ -60,6 +63,24 @@ def accumulate(*collections):
     return [events[key] for key in sorted(events)]
 
 
+def _read_artifact(root, checksum):
+    if (
+        not isinstance(checksum, str)
+        or len(checksum) != 64
+        or any(char not in "0123456789abcdef" for char in checksum)
+    ):
+        raise EvidenceError("Invalid artifact digest")
+    try:
+        raw = (root / "artifacts" / checksum).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != checksum:
+            raise EvidenceError("Execution artifact checksum mismatch")
+        if raw.startswith(b"\x1f\x8b"):
+            raw = gzip.decompress(raw)
+        return json.loads(raw)
+    except (OSError, EOFError, ZlibError, UnicodeError, json.JSONDecodeError) as error:
+        raise EvidenceError("Cannot read execution artifact") from error
+
+
 def read_run(store, run_id):
     """Read a journal snapshot without creating files or trusting artifact names."""
     root = Path(store).expanduser().resolve()
@@ -70,12 +91,13 @@ def read_run(store, run_id):
     connection = sqlite3.connect(database.as_uri() + "?mode=ro", uri=True)
     try:
         rows = connection.execute(
-            "SELECT call_id, step_id, status, event_hash FROM calls WHERE run_id=? ORDER BY step_id",
+            """SELECT call_id, step_id, parent_call_id, operation, status, event_hash
+               FROM calls WHERE run_id=? ORDER BY step_id""",
             (run_id,),
         ).fetchall()
         if not rows:
             raise EvidenceError("Run does not exist or has no recorded calls")
-        for call_id, step_id, status, checksum in rows:
+        for call_id, step_id, parent_call_id, operation, status, checksum in rows:
             if not checksum:
                 records.append(
                     {
@@ -83,18 +105,29 @@ def read_run(store, run_id):
                         "run_id": run_id,
                         "call_id": call_id,
                         "step_id": step_id,
+                        "parent_call_id": parent_call_id,
+                        "operation": operation,
                         "status": status,
                     }
                 )
                 continue
-            if len(checksum) != 64 or any(
-                x not in "0123456789abcdef" for x in checksum
-            ):
-                raise EvidenceError("Invalid artifact digest")
-            raw = (root / "artifacts" / checksum).read_bytes()
-            if hashlib.sha256(raw).hexdigest() != checksum:
-                raise EvidenceError("Execution artifact checksum mismatch")
-            record = json.loads(raw)
+            record = _read_artifact(root, checksum)
+            if not isinstance(record, dict):
+                raise EvidenceError("Invalid execution record")
+            if record.get("format_version") == 2:
+                references = record.pop("artifact_references", None)
+                if (
+                    not isinstance(references, dict)
+                    or not references
+                    or any(
+                        field not in REFERENCED_FIELDS or field in record
+                        for field in references
+                    )
+                ):
+                    raise EvidenceError("Invalid execution artifact references")
+                for field, reference in references.items():
+                    record[field] = _read_artifact(root, reference)
+                record["format_version"] = 1
             if (
                 record.get("run_id"),
                 record.get("call_id"),
@@ -715,12 +748,22 @@ def reduce_evidence(events, composition, version="1.5.0"):
 
 def evidence(request):
     """One operation for inventory, deterministic replay and validated export."""
-    allowed = {"action", "events", "store", "run_id", "composition", "version"}
+    allowed = {"action", "events", "store", "run_id", "composition", "version", "view"}
     if not isinstance(request, dict) or set(request) - allowed:
         raise EvidenceError("Unknown evidence request settings")
     action = request.get("action", "inspect")
     if action not in {"inspect", "replay", "export"}:
         raise EvidenceError("action must be inspect, replay or export")
+    view = request.get("view", "trapi")
+    if "view" in request and (action != "export" or not isinstance(view, str)):
+        raise EvidenceError("view requires export and must be a string")
+    render = None
+    if view != "trapi":
+        from .views import VIEWS
+
+        render = VIEWS.get(view)
+        if render is None:
+            raise EvidenceError(f"Unknown evidence view: {view}")
     if "events" in request:
         if "store" in request or "run_id" in request:
             raise EvidenceError("Choose events or a store/run_id, not both")
@@ -742,6 +785,8 @@ def evidence(request):
             for e in events
             if (e["run_id"], e["call_id"]) != (active["run_id"], active["call_id"])
         ]
+    if render is not None:
+        return render(events)
     sources, issues, workflows = inventory(events)
     if action == "inspect":
         return {

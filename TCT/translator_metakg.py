@@ -132,6 +132,14 @@ def add_new_API_for_query(APInames:dict[str, str], metaKG:pd.DataFrame, newAPIna
     >>> APInames, metaKG = add_new_API_for_query(APInames, metaKG, "BigGIM_BMG", "http://127.0.0.1:8000/find_path_by_predicate", "Gene-physically_interacts_with-gene", "Gene", "Gene")
 
     '''
+    return _append_api(
+        APInames, metaKG, newAPIname, newAPIurl, newAPIpredicate, newAPIsubject, newAPIobject
+    )
+
+
+def _append_api(APInames, metaKG, newAPIname, newAPIurl, newAPIpredicate, newAPIsubject, newAPIobject):
+    # Bulk discovery records the finished MetaKG and its HTTP responses at
+    # the add_plover_API boundary. Avoid recording every intermediate table.
     APInames[newAPIname] = newAPIurl
 
     new_row = pd.DataFrame({"API":newAPIname,
@@ -180,7 +188,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
+                APInames, metaKG = _append_api(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0",
                                                          CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query", 
                                                          data["edges"][i]['predicate'], 
                                                          data["edges"][i]['subject'], 
@@ -191,7 +199,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0", 
+                    APInames, metaKG = _append_api(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0",
                                                              DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query", 
                                                              data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
@@ -211,14 +219,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                    APInames, metaKG = _append_api(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "PharmacogenomicsKG and " + DEV_URL_PREFIX + "PharmacogenomicsKG. Status codes:", response.status_code, response_dev.status_code)
         else:
@@ -235,14 +243,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", CI_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", CI_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", DEV_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                    APInames, metaKG = _append_api(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", DEV_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "ctkp and " + DEV_URL_PREFIX + "ctkp. Status codes:", response.status_code, response_dev.status_code)
         else:
@@ -259,14 +267,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", CI_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", CI_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", DEV_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                    APInames, metaKG = _append_api(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", DEV_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "dakp and " + DEV_URL_PREFIX + "dakp. Status codes:", response.status_code, response_dev.status_code)
         else:
@@ -283,14 +291,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", CI_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                    APInames, metaKG = _append_api(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mokp and " + DEV_URL_PREFIX + "mokp. Status codes:", response.status_code, response_dev.status_code)
         else:
@@ -305,14 +313,14 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", CI_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", CI_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         elif response.status_code == 404:
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
-                    APInames, metaKG = add_new_API_for_query(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                    APInames, metaKG = _append_api(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
                 print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mbkp and " + DEV_URL_PREFIX + "mbkp. Status codes:", response.status_code, response_dev.status_code)
         else:
@@ -327,7 +335,7 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
-                APInames, metaKG = add_new_API_for_query(APInames, metaKG, "RTX KG2 - TRAPI 1.5.0", "https://kg2cploverdb.ci.transltr.io/kg2c/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                APInames, metaKG = _append_api(APInames, metaKG, "RTX KG2 - TRAPI 1.5.0", "https://kg2cploverdb.ci.transltr.io/kg2c/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         else:
             print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io. Status code:", response.status_code)
     except requests.exceptions.RequestException:
