@@ -3,6 +3,9 @@ import TCT
 from TCT.config import reset_config
 
 
+pytestmark = pytest.mark.live_service
+
+
 @pytest.fixture(autouse=True)
 def use_name_resolver_ci():
     """Run legacy Name Resolver integration expectations against CI."""

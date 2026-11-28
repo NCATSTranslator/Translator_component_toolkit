@@ -34,6 +34,10 @@ def _service_outcome(observation):
     if observation.get("body_json_status") == "not_json":
         return "non_json"
     body = observation.get("body_json")
+    if observation.get("service_kind") == "ars_result":
+        from .evidence import ars_response
+
+        body = ars_response(body)
     message = body.get("message") if isinstance(body, dict) else None
     is_trapi = observation.get("service_kind") == "trapi" or isinstance(message, dict)
     if (
@@ -56,6 +60,8 @@ def _service_outcome(observation):
 
 def providers(events):
     """Summarize service outcomes from captured HTTP observations."""
+    from .evidence import ars_exchange
+
     by_url = {}
     for event in events:
         for observation in event.get("observations", []):
@@ -72,6 +78,7 @@ def providers(events):
                     "status_code": observation.get("status_code"),
                     "error_type": observation.get("error_type"),
                     "elapsed_ms": observation.get("elapsed_ms"),
+                    **ars_exchange(observation),
                 }
             )
     return {
@@ -85,6 +92,8 @@ def providers(events):
 
 def edges(events):
     """Explain edge provenance for each recorded provider merge."""
+    from .evidence import ars_exchange
+
     merges = []
     for event in events:
         observations = event.get("observations", [])
@@ -118,6 +127,29 @@ def edges(events):
                 "edges": dict(sorted(retained.items())),
             }
         )
+    for event, observation, _, payload in _ars_merged_edges(events):
+        merges.append(
+            {
+                "run_id": event["run_id"],
+                "call_id": event["call_id"],
+                "policy": "ars_merged_response",
+                "edge_count": len(payload),
+                **ars_exchange(observation),
+                "edges": {
+                    edge_id: {
+                        "retained_provider": "ARS",
+                        "contributors": [
+                            {
+                                "provider": "ARS",
+                                "source_edge_id": edge_id,
+                                "sources": edge.get("sources", []),
+                            }
+                        ],
+                    }
+                    for edge_id, edge in sorted(payload.items())
+                },
+            }
+        )
     return {"merges": merges}
 
 
@@ -126,6 +158,34 @@ def page(events):
     from .evidence_page import render_page
 
     return {"html": render_page(events)}
+
+
+def _ars_merged_edges(events):
+    from .evidence import _ars_query_links, ars_result_source
+
+    queries = _ars_query_links(events)
+    for event in events:
+        if (
+            event.get("status") != "succeeded"
+            or event.get("operation") != "fetch_ars_results"
+        ):
+            continue
+        for observation in event.get("observations", []):
+            if (
+                observation.get("service_kind") != "ars_result"
+                or observation.get("status_code") != 200
+            ):
+                continue
+            query, response = ars_result_source(event, observation, queries)
+            message = response.get("message") if isinstance(response, dict) else None
+            graph = (
+                message.get("knowledge_graph") if isinstance(message, dict) else None
+            )
+            edges = graph.get("edges") if isinstance(graph, dict) else None
+            if isinstance(edges, dict) and all(
+                isinstance(edge, dict) for edge in edges.values()
+            ):
+                yield event, observation, query, edges
 
 
 def _merge_payloads(events):
@@ -144,6 +204,10 @@ def _merge_payloads(events):
         query_hash = digest((event.get("inputs") or {}).get("query_json"))
         for edge_id, edge in output.items():
             payloads[(query_hash, edge_id)][canonical(edge)] += 1
+    for _, _, query, edges in _ars_merged_edges(events):
+        query_hash = digest(query)
+        for edge_id, edge in edges.items():
+            payloads[(query_hash, edge_id)][canonical(edge)] += 1
     return payloads
 
 
@@ -153,7 +217,12 @@ def _request_outcomes(events):
     return Counter(
         canonical(
             {
-                "url": service["url"],
+                "url": (
+                    request["endpoint"] + "/messages/{pk}"
+                    if request.get("endpoint")
+                    and request["service_kind"] in ("ars_status", "ars_result")
+                    else service["url"]
+                ),
                 **{
                     key: request[key]
                     for key in (

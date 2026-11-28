@@ -162,6 +162,75 @@ tct path-finder \
   --intermediate-categories biolink:Gene
 ```
 
+## ARS queries
+
+The Autonomous Relay System (ARS) fans a query out to every registered ARA and
+merges the answers. A full run typically takes 15 seconds to several minutes,
+so prefer the submit/poll/fetch workflow over the blocking finders.
+
+Find neighbors for one or more concepts across all ARAs (blocking):
+
+```bash
+tct ARS-neighborhood-finder --node asthma --neighbor-categories ChemicalEntity
+```
+
+Find paths between two concepts across all ARAs (blocking):
+
+```bash
+tct ARS-pathfinder   --start asthma   --end albuterol   --intermediate-categories Gene
+```
+
+Submit a query and poll instead of blocking:
+
+```bash
+tct submit-ars-query --node asthma --neighbor-categories Drug
+# -> {"pk": "...", "status": "Running", ...}
+
+tct get-ars-status --pk <pk>          # repeat every ~15 s until Done
+tct get-ars-results --pk <pk> --top-n 20
+```
+
+`get-ars-results --top-n 0` returns the full merged TRAPI message instead of
+summary rows; it can be tens of megabytes.
+
+On MCP, the same tools are exposed plus a `query_ars` tool that runs the whole
+flow as an MCP task (SEP-1686): task-aware clients receive a task ID
+immediately and can poll progress, while task-unaware clients get a blocking
+call:
+
+```json
+{"name": "query_ars", "arguments": {"node": ["asthma"], "neighbor_categories": ["Drug"]}}
+```
+
+To record an ARS task locally, add execution settings to the MCP arguments:
+
+```json
+{
+  "node": ["asthma"],
+  "neighbor_categories": ["Drug"],
+  "execution": {
+    "store": "./recordings",
+    "run_id": "ars-query",
+    "record": true,
+    "cache": true
+  }
+}
+```
+
+The recording retains the parent and merged message IDs, status polls, and the
+full ARS envelope even when the tool returns only ranked rows. Use
+`tct view ./recordings ars-query` or the MCP `evidence` tool to inspect it.
+The merged TRAPI response can also serve as an evidence composition source.
+
+To replay, repeat the same call with a new run ID and
+`"cache": {"mode": "replay", "snapshot_run": "ars-query"}`. Keep the same
+service configuration and store. The replay consumes saved HTTP responses
+in order and preserves the polling cadence and recorded stopping decision.
+Live ARS calls always reach the service, even with caching enabled, so
+submission and poll results stay fresh.
+The saved envelope contains the merged answer and trace observations contain
+the agent statuses.
+
 ## Python use of the shared surface
 
 Developers can continue using TCT's public Python APIs. Interface integrations

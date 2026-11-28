@@ -155,9 +155,85 @@ def read_run(store, run_id):
     return accumulate(records)
 
 
+def ars_exchange(observation):
+    """Extract ARS message IDs from a captured submit, poll, or fetch."""
+    kind = observation.get("service_kind")
+    url = (observation.get("request") or {}).get("url")
+    if not isinstance(url, str):
+        return {}
+    body = observation.get("body_json")
+    body = body if isinstance(body, dict) else {}
+    if kind == "ars_submit" and url.endswith("/submit"):
+        return {"endpoint": url.removesuffix("/submit"), "parent_pk": body.get("pk")}
+    if kind in ("ars_status", "ars_result"):
+        root, separator, pk = url.rpartition("/messages/")
+        if separator and pk:
+            if kind == "ars_status":
+                return {
+                    "endpoint": root,
+                    "parent_pk": pk,
+                    "merged_pk": body.get("merged_version"),
+                    "status": body.get("status"),
+                }
+            return {"endpoint": root, "message_pk": pk}
+    return {}
+
+
+def ars_response(body):
+    """Return the TRAPI payload inside a saved ARS message envelope."""
+    fields = body.get("fields") if isinstance(body, dict) else None
+    return fields.get("data") if isinstance(fields, dict) else None
+
+
+def _ars_query_links(records):
+    queries = {}
+    merges = {}
+    for record in records:
+        if record.get("status") != "succeeded":
+            continue
+        for observation in record.get("observations", []):
+            kind = observation.get("service_kind")
+            if kind not in ("ars_submit", "ars_status"):
+                continue
+            exchange = ars_exchange(observation)
+            parent = exchange.get("parent_pk")
+            if not isinstance(parent, str) or not parent:
+                continue
+            scope = (record["run_id"], exchange["endpoint"])
+            if kind == "ars_submit":
+                query = observation["request"].get("arguments", {}).get("json")
+                if isinstance(query, dict):
+                    queries[(*scope, parent)] = query
+            else:
+                merged = exchange.get("merged_pk")
+                if isinstance(merged, str) and merged:
+                    merges[(*scope, merged)] = (*scope, parent)
+    return queries | {
+        target: queries[parent]
+        for target, parent in merges.items()
+        if parent in queries
+    }
+
+
+def ars_result_source(record, observation, queries):
+    """Read the merged TRAPI response and recover its original query."""
+    exchange = ars_exchange(observation)
+    query = queries.get(
+        (record["run_id"], exchange.get("endpoint"), exchange.get("message_pk"))
+    )
+    response = ars_response(observation.get("body_json"))
+    message = response.get("message") if isinstance(response, dict) else None
+    graph = message.get("query_graph") if isinstance(message, dict) else None
+    if query is None and isinstance(graph, dict):
+        query = {"message": {"query_graph": graph}}
+    return query, response
+
+
 def inventory(events):
     sources, issues, workflows = {}, [], {}
-    for record in accumulate(events):
+    records = accumulate(events)
+    ars_queries = _ars_query_links(records)
+    for record in records:
         event_id = digest(record)
         if (
             record.get("status") != "succeeded"
@@ -204,6 +280,16 @@ def inventory(events):
             response = observation.get("body_json")
             request = observation.get("request", {})
             query = request.get("arguments", {}).get("json")
+            service_kind = observation.get("service_kind")
+            if service_kind in ("ars_submit", "ars_status"):
+                # Submission and polling are part of the trace. Only a
+                # fetched ARS message can supply a TRAPI composition source.
+                continue
+            if (
+                service_kind == "ars_result"
+                and record.get("operation") != "fetch_ars_results"
+            ):
+                continue
             if observation.get("eligible") is False:
                 issues.append(
                     {
@@ -225,6 +311,8 @@ def inventory(events):
                     }
                 )
                 continue
+            if service_kind == "ars_result":
+                query, response = ars_result_source(record, observation, ars_queries)
             if not isinstance(response, dict) or not isinstance(
                 response.get("message"), dict
             ):
@@ -247,6 +335,7 @@ def inventory(events):
                 and not record.get("capture_error")
                 and not record.get("observation_errors")
                 and observation.get("eligible", True)
+                and (service_kind != "ars_result" or query is not None)
             )
             source["origins"].append(
                 {

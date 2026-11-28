@@ -25,6 +25,7 @@ from .journal import ArtifactStore
 POLICY_VERSION = "tct.http-cache.v1"
 CANONICALIZER_VERSION = "json-object-order.v1"
 DEFAULT_TTL = {"normalization": 86400, "capabilities": 3600, "trapi": 900}
+SNAPSHOT_ONLY_KINDS = frozenset({"ars_submit", "ars_status", "ars_result"})
 
 
 class CacheError(ExecutionRecordingError):
@@ -275,7 +276,11 @@ def _response(snapshot):
 
 
 def _cacheable(snapshot, kind):
-    if "transport_error" in snapshot or snapshot["status_code"] != 200:
+    if (
+        kind in SNAPSHOT_ONLY_KINDS
+        or "transport_error" in snapshot
+        or snapshot["status_code"] != 200
+    ):
         return False
     if any(k.lower() == "set-cookie" for k in snapshot["headers"]):
         return False
@@ -429,6 +434,39 @@ class CacheSession:
                 run_id=self.run.run_id,
             ) from error
 
+    def _take_replay(self, key):
+        return self.store.take_replay(
+            self.run.run_id, self.policy["snapshot_run"], key, self.replay[key]
+        )
+
+    def snapshot_decision(self, kind, inputs, decision):
+        """Preserve a time-dependent branch alongside its HTTP snapshots."""
+        if self.store is None:
+            return decision
+        replay = self.policy["mode"] == "replay"
+        try:
+            key = digest(
+                {"decision_kind": kind, "inputs": inputs, "policy": POLICY_VERSION}
+            )
+            if replay:
+                return self._take_replay(key)["decision"]
+            self.store.save(
+                self.run.run_id,
+                key,
+                {"decision": decision},
+                {"decision_kind": kind},
+                pin=False,
+                shared_expiry=None,
+            )
+        except Exception as error:
+            cls = CacheReplayError if replay else CacheError
+            raise cls(
+                f"Cannot {'replay' if replay else 'record'} {kind} decision: {error}",
+                operation_completed=not replay,
+                run_id=self.run.run_id,
+            ) from error
+        return decision
+
     def request(
         self,
         request,
@@ -451,13 +489,8 @@ class CacheSession:
             snapshot = None
             with self.lock:
                 if self.policy["mode"] == "replay":
-                    snapshot = self.store.take_replay(
-                        self.run.run_id,
-                        self.policy["snapshot_run"],
-                        key,
-                        self.replay[key],
-                    )
-                elif self.policy["mode"] == "use":
+                    snapshot = self._take_replay(key)
+                elif self.policy["mode"] == "use" and kind not in SNAPSHOT_ONLY_KINDS:
                     snapshot = self.memory.get(key)
                     if snapshot is None and self.store:
                         snapshot = self.store.lookup(

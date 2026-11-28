@@ -360,9 +360,16 @@ def test_incomplete_requested_capture_surfaces_after_native_operation(
 
 
 def test_working_surface_coverage_and_unsupported_endpoint():
+    # ARS wrappers shape native responses or compose several calls. Their
+    # capture and replay contract is exercised in test_ars_tools.py.
     assert {c[0] for c in CASES} == {f.__name__ for f in tools.TOOLS} - {
         "trapi_query_endpoint",
         "evidence",
+        "ARS_neighborhood_finder",
+        "ARS_pathfinder",
+        "submit_ars_query",
+        "get_ars_status",
+        "get_ars_results",
     }
     assert len(CASES) == 18
     with pytest.raises(TypeError):

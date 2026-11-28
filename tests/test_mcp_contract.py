@@ -64,6 +64,27 @@ EXPECTED_SIGNATURES = {
     "run_query_workflow": "(workflow: 'dict[str, Any]') -> 'dict[str, Any]'",
     "replay_query_workflow": "(bundle: 'dict[str, Any]', mode: 'str' = 'snapshot') -> 'dict[str, Any]'",
     "evidence": "(request: 'dict[str, Any]') -> 'dict[str, Any]'",
+    "ARS_neighborhood_finder": (
+        "(json_file: 'dict[str, Any] | None' = None, "
+        "node: 'list[str] | None' = None, "
+        "neighbor_categories: 'list[str] | None' = None) -> 'Any'"
+    ),
+    "ARS_pathfinder": (
+        "(start: 'str' = '', end: 'str' = '', "
+        "intermediate_categories: 'list[str] | None' = None, "
+        "json_file: 'dict[str, Any] | None' = None) -> 'Any'"
+    ),
+    "submit_ars_query": (
+        "(node: 'list[str]', neighbor_categories: 'list[str]', "
+        "predicates: 'list[str] | None' = None) -> 'Any'"
+    ),
+    "get_ars_status": "(pk: 'str') -> 'Any'",
+    "get_ars_results": "(pk: 'str', top_n: 'int' = 20) -> 'Any'",
+    # Defined without PEP 563, so annotations stay unquoted.
+    "query_ars": (
+        "(node: list[str], neighbor_categories: list[str], "
+        "predicates: list[str] | None = None, top_n: int = 20) -> Any"
+    ),
 }
 
 
@@ -231,6 +252,75 @@ EXPECTED_INPUTS = {
         {"request": {"type": "object", "additionalProperties": True}},
         ["request"],
     ),
+    "ARS_neighborhood_finder": (
+        {
+            "json_file": {
+                "anyOf": [
+                    {"additionalProperties": True, "type": "object"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+            "node": {
+                "anyOf": [{"items": {"type": "string"}, "type": "array"}, {"type": "null"}],
+                "default": None,
+            },
+            "neighbor_categories": {
+                "anyOf": [{"items": {"type": "string"}, "type": "array"}, {"type": "null"}],
+                "default": None,
+            },
+        },
+        [],
+    ),
+    "ARS_pathfinder": (
+        {
+            "start": {"default": "", "type": "string"},
+            "end": {"default": "", "type": "string"},
+            "intermediate_categories": {
+                "anyOf": [
+                    {"items": {"type": "string"}, "type": "array"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+            "json_file": {
+                "anyOf": [
+                    {"additionalProperties": True, "type": "object"},
+                    {"type": "null"},
+                ],
+                "default": None,
+            },
+        },
+        [],
+    ),
+    "submit_ars_query": (
+        {
+            "node": {"items": {"type": "string"}, "type": "array"},
+            "neighbor_categories": {"items": {"type": "string"}, "type": "array"},
+            "predicates": {
+                "anyOf": [{"items": {"type": "string"}, "type": "array"}, {"type": "null"}],
+                "default": None,
+            },
+        },
+        ["node", "neighbor_categories"],
+    ),
+    "get_ars_status": ({"pk": {"type": "string"}}, ["pk"]),
+    "get_ars_results": (
+        {"pk": {"type": "string"}, "top_n": {"default": 20, "type": "integer"}},
+        ["pk"],
+    ),
+    "query_ars": (
+        {
+            "node": {"items": {"type": "string"}, "type": "array"},
+            "neighbor_categories": {"items": {"type": "string"}, "type": "array"},
+            "predicates": {
+                "anyOf": [{"items": {"type": "string"}, "type": "array"}, {"type": "null"}],
+                "default": None,
+            },
+            "top_n": {"default": 20, "type": "integer"},
+        },
+        ["node", "neighbor_categories"],
+    ),
 }
 
 
@@ -251,20 +341,18 @@ def test_published_tool_names_signatures_and_docs_are_stable():
     assert list(tools) == list(EXPECTED_SIGNATURES)
     for name, expected_signature in EXPECTED_SIGNATURES.items():
         tool = tools[name]
-        actual = inspect.signature(tool.fn)
-        assert actual.parameters["execution"].default is None
-        assert (
-            str(
-                actual.replace(
-                    parameters=[
-                        p
-                        for name, p in actual.parameters.items()
-                        if name != "execution"
-                    ]
-                )
-            )
-            == expected_signature
+        signature = inspect.signature(tool.fn)
+        assert signature.parameters["execution"].default is None
+        # query_ars hides the MCP-injected Progress dependency.
+        signature = signature.replace(
+            parameters=[
+                parameter
+                for parameter_name, parameter in signature.parameters.items()
+                if parameter_name != "execution"
+                and not (name == "query_ars" and parameter_name == "progress")
+            ]
         )
+        assert str(signature) == expected_signature
         assert tool.description == inspect.getdoc(tool.fn)
         assert tool.description
 

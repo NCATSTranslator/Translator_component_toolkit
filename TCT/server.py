@@ -6,12 +6,16 @@ consumers may continue importing ``mcp`` and registered tool objects from
 """
 
 from .interfaces.mcp import (
+    ARS_neighborhood_finder,
+    ARS_pathfinder,
     add_custom_api_to_metakg,
     add_plover_apis_to_metakg,
     batch_name_lookup,
     get_api_predicates,
     get_kp_info,
     get_metakg_data,
+    get_ars_results,
+    get_ars_status,
     get_name_synonyms,
     get_translator_resources,
     mcp,
@@ -21,17 +25,23 @@ from .interfaces.mcp import (
     optimize_query_for_api,
     parallel_query_apis,
     path_finder,
+    query_ars,
     query_knowledge_provider,
+    submit_ars_query,
     trapi_query_endpoint,
 )
 
 __all__ = [
+    "ARS_neighborhood_finder",
+    "ARS_pathfinder",
     "add_custom_api_to_metakg",
     "add_plover_apis_to_metakg",
     "batch_name_lookup",
     "get_api_predicates",
     "get_kp_info",
     "get_metakg_data",
+    "get_ars_results",
+    "get_ars_status",
     "get_name_synonyms",
     "get_translator_resources",
     "mcp",
@@ -41,6 +51,8 @@ __all__ = [
     "optimize_query_for_api",
     "parallel_query_apis",
     "path_finder",
+    "query_ars",
     "query_knowledge_provider",
+    "submit_ars_query",
     "trapi_query_endpoint",
 ]
