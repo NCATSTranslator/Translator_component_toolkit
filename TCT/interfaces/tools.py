@@ -488,6 +488,7 @@ def evidence(request: dict[str, Any]) -> dict[str, Any]:
     return _evidence(request)
 
 
+@capture_operation()
 def ARS_neighborhood_finder(
     json_file: dict[str, Any] | None = None,
     node: list[str] | None = None,
@@ -529,6 +530,7 @@ def ARS_neighborhood_finder(
     }
 
 
+@capture_operation()
 def ARS_pathfinder(
     start: str = "",
     end: str = "",
@@ -573,6 +575,7 @@ def ARS_pathfinder(
     }
 
 
+@capture_operation()
 def submit_ars_query(
     node: list[str],
     neighbor_categories: list[str],
@@ -618,6 +621,7 @@ def submit_ars_query(
     }
 
 
+@capture_operation()
 def get_ars_status(pk: str) -> Any:
     """Check progress of an ARS query submitted with submit_ars_query, without blocking.
 
@@ -635,6 +639,7 @@ def get_ars_status(pk: str) -> Any:
     return _get_ARS_status(pk)
 
 
+@capture_operation()
 def get_ars_results(pk: str, top_n: int = 20) -> Any:
     """Fetch the merged answer of a finished ARS query as ranked summary rows.
 

@@ -10,6 +10,8 @@ from __future__ import annotations
 import asyncio
 import importlib
 import inspect
+import json
+from types import SimpleNamespace
 
 import pytest
 import requests
@@ -18,6 +20,7 @@ from mcp.shared.exceptions import McpError
 ars = importlib.import_module("TCT.Query_ARS")
 import TCT.interfaces.tools as tools  # noqa: E402
 from tests.ars_fixtures import (  # noqa: E402
+    BASE,
     MERGED,
     PARENT,
     FakeResponse,
@@ -351,6 +354,190 @@ def test_query_ars_degrades_for_task_unaware_clients(mcp_module, ars_mocks):
             assert result.data["result_count"] == 2
 
     asyncio.run(scenario())
+
+
+def test_query_ars_records_and_replays_task(mcp_module, monkeypatch, tmp_path):
+    from TCT.evidence import evidence, inventory, read_run
+
+    submissions, requests_seen = [], []
+    polls = iter([trace("Running"), done_trace()])
+    raw = envelope(merged_message())
+
+    def transport(session, method, url, **kwargs):
+        requests_seen.append((method, url))
+        if method == "POST" and url.endswith("/submit"):
+            submissions.append(kwargs["json"])
+            payload, status = {"pk": PARENT}, 201
+        elif kwargs.get("params") == {"trace": "y"} and url.endswith(PARENT):
+            payload, status = next(polls), 200
+        else:
+            assert url.endswith(MERGED)
+            payload, status = raw, 200
+        response = requests.Response()
+        response.url = url
+        response.status_code = status
+        response._content = json.dumps(payload).encode()
+        return response
+
+    def reject_http(*args, **kwargs):
+        pytest.fail("ARS replay contacted HTTP")
+
+    monkeypatch.setattr(requests.Session, "request", transport)
+    monkeypatch.setattr(ars.time, "sleep", lambda seconds: None)
+    settings = {
+        "store": str(tmp_path),
+        "run_id": "original",
+        "step_id": "ars-task",
+        "record": True,
+        "cache": True,
+        "langfuse": False,
+    }
+    arguments = {"node": ["asthma"], "neighbor_categories": ["Drug"], "top_n": 0}
+
+    async def scenario():
+        async with _client(mcp_module) as client:
+            task = await client.call_tool(
+                "query_ars", arguments | {"execution": settings}, task=True
+            )
+            original = await task.result()
+            assert original.data["pk"] == PARENT
+            assert original.data["merged_pk"] == MERGED
+            assert original.data["message"] == merged_message()
+            monkeypatch.setattr(requests.Session, "request", reject_http)
+            replay = await client.call_tool(
+                "query_ars",
+                arguments | {"execution": settings | {
+                    "run_id": "replay",
+                    "cache": {"mode": "replay", "snapshot_run": "original"},
+                }},
+                task=True,
+            )
+            assert (await replay.result()).data == original.data
+
+    asyncio.run(scenario())
+    assert requests_seen == [
+        ("POST", BASE + "submit"),
+        ("GET", BASE + f"messages/{PARENT}"),
+        ("GET", BASE + f"messages/{PARENT}"),
+        ("GET", BASE + f"messages/{MERGED}"),
+    ]
+    records = read_run(tmp_path, "original")
+    (task_record,) = [record for record in records if record["step_id"] == "ars-task"]
+    assert task_record["operation"] == "query_ars"
+    assert "progress" not in task_record["inputs"]
+    assert any(record["parent_call_id"] == task_record["call_id"] for record in records)
+    (fetch,) = [record for record in records if record["operation"] == "fetch_ars_results"]
+    assert fetch["output"] == raw
+    sources, issues, _ = inventory(records)
+    assert issues == []
+    (source,) = sources.values()
+    assert source["query"] == submissions[0]
+    assert source["response"] == raw["fields"]["data"]
+    assert source["eligible"] is True
+    view = evidence({
+        "action": "export", "view": "providers", "store": str(tmp_path), "run_id": "original"
+    })
+    exchanges = [request for service in view["services"] for request in service["requests"]]
+    assert {item.get("parent_pk") for item in exchanges if "parent_pk" in item} == {PARENT}
+    assert MERGED in {item.get("merged_pk") for item in exchanges}
+    assert any(item.get("message_pk") == MERGED and item["outcome"] == "answered" for item in exchanges)
+    selection = {"action": "export", "store": str(tmp_path), "run_id": "original"}
+    (merge,) = evidence(selection | {"view": "edges"})["merges"]
+    assert merge["policy"] == "ars_merged_response"
+    assert merge["message_pk"] == MERGED
+    assert merge["edges"]["e1"]["contributors"][0]["sources"] == (
+        merged_message()["knowledge_graph"]["edges"]["e1"]["sources"]
+    )
+    assert evidence(
+        selection | {
+            "view": "diff", "run_id": "replay",
+            "against": {"store": str(tmp_path), "run_id": "original"},
+        }
+    ) == {"edge_changes": [], "request_changes": []}
+
+
+def test_live_ars_submit_and_poll_are_never_reused(monkeypatch):
+    from TCT.execution import execution
+
+    calls = []
+
+    def transport(session, method, url, **kwargs):
+        calls.append(method)
+        body = {"pk": PARENT} if method == "POST" else {"merged_version": MERGED}
+        response = requests.Response()
+        response.status_code = 200
+        response.url = url
+        response._content = json.dumps(body).encode()
+        return response
+
+    monkeypatch.setattr(requests.Session, "request", transport)
+    with execution({"cache": True, "langfuse": False}) as run:
+        for _ in range(2):
+            pk = ars.submit_ARS({"message": {"query_graph": {}}})
+            assert ars.get_ARS_status(pk).merged_version == MERGED
+    assert calls == ["POST", "GET", "POST", "GET"]
+    assert [event["status"] for event in run.cache_events] == ["not_cacheable"] * 4
+
+
+@pytest.mark.parametrize(("status", "polls"), [("Running", 1), ("Done", 2)])
+def test_ars_replay_preserves_timed_poll_outcome(
+    monkeypatch, tmp_path, status, polls
+):
+    from TCT.execution import execution
+
+    elapsed = 0
+    requests_seen = []
+
+    def advance(seconds):
+        nonlocal elapsed
+        elapsed += seconds
+
+    def transport(session, method, url, **kwargs):
+        requests_seen.append(url)
+        advance(5)
+        response = requests.Response()
+        response.status_code = 200
+        response._content = json.dumps(trace(status)).encode()
+        return response
+
+    def reject_http(*args, **kwargs):
+        pytest.fail("ARS replay contacted HTTP")
+
+    def wait():
+        return ars.wait_for_ARS(
+            PARENT,
+            poll_interval=1,
+            max_retries=10 if status == "Done" else 3,
+            merge_grace=4,
+        )
+
+    monkeypatch.setattr(
+        ars, "time", SimpleNamespace(monotonic=lambda: elapsed, sleep=advance)
+    )
+    monkeypatch.setattr(requests.Session, "request", transport)
+    settings = {
+        "store": str(tmp_path), "run_id": "live", "cache": True, "langfuse": False
+    }
+    with execution(settings):
+        if status == "Running":
+            with pytest.raises(ars.ARSTimeoutError) as timeout:
+                wait()
+            original = timeout.value.status
+        else:
+            original = wait()
+    assert requests_seen == [BASE + f"messages/{PARENT}"] * polls
+    elapsed = 0
+    monkeypatch.setattr(requests.Session, "request", reject_http)
+    with execution(settings | {
+        "run_id": "replay",
+        "cache": {"mode": "replay", "snapshot_run": "live"},
+    }):
+        if status == "Running":
+            with pytest.raises(ars.ARSTimeoutError) as timeout:
+                wait()
+            assert timeout.value.status == original
+        else:
+            assert wait() == original
 
 
 def test_query_ars_is_registered_as_optional_task(mcp_module):

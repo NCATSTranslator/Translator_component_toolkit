@@ -188,8 +188,8 @@ def _finish(run, record, completed):
             ) from error
 
 
-def execute(function, args, kwargs, *, interface=None, kind=None):
-    """One execution boundary shared by interface wrappers and decorators."""
+@contextmanager
+def _execution_boundary(function, args, kwargs, interface, kind):
     run = _run.get()
     settings = _settings.get() or {}
     capturing = run is not None and (settings.get("trapi") or settings.get("record"))
@@ -200,7 +200,8 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
             and os.getenv("TCT_LANGFUSE_ENABLED", "").strip().lower()
             in {"", "0", "false", "no", "off"}
         ):
-            return function(*args, **kwargs)
+            yield lambda result: None
+            return
     record = None
     token = None
     if capturing:
@@ -254,8 +255,14 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
         from .interfaces.telemetry import observe_invocation
 
         with observe_invocation(function, args, kwargs, interface) as observe_result:
-            result = function(*args, **kwargs)
-            observe_result(result)
+            result = None
+
+            def complete(value):
+                nonlocal result
+                result = value
+                observe_result(value)
+
+            yield complete
     except BaseException as error:
         if record is not None:
             record.update(status="failed", error_type=type(error).__name__)
@@ -289,10 +296,25 @@ def execute(function, args, kwargs, *, interface=None, kind=None):
                         call_id=record["call_id"],
                     ) from error
             _finish(run, record, True)
-        return result
     finally:
         if token is not None:
             _active.reset(token)
+
+
+def execute(function, args, kwargs, *, interface=None, kind=None):
+    """Run a synchronous callable within the shared execution boundary."""
+    with _execution_boundary(function, args, kwargs, interface, kind) as complete:
+        result = function(*args, **kwargs)
+        complete(result)
+    return result
+
+
+async def execute_async(function, args, kwargs, *, interface=None, kind=None):
+    """Capture the result of an async call after awaiting it."""
+    with _execution_boundary(function, args, kwargs, interface, kind) as complete:
+        result = await function(*args, **kwargs)
+        complete(result)
+    return result
 
 
 def capture_trapi(kind=None):

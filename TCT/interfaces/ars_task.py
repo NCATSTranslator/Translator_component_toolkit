@@ -13,9 +13,11 @@ from asyncio import to_thread as asyncio_to_thread
 from typing import Any
 
 from fastmcp.dependencies import Progress
+from fastmcp.exceptions import ToolError
 from fastmcp.server.tasks import TaskConfig
 
 from .. import Query_ARS as ars
+from ..execution import ExecutionRecordingError, execute_async, interface_execution
 from . import tools as shared_tools
 
 
@@ -25,6 +27,8 @@ async def query_ars(
     predicates: list[str] | None = None,
     top_n: int = 20,
     progress: Progress = Progress(),
+    *,
+    execution: dict[str, Any] | None = None,
 ) -> Any:
     """Query the Translator ARS end to end and return ranked answer rows.
 
@@ -44,44 +48,63 @@ async def query_ars(
             predicate; defaults to biolink:related_to.
         top_n: Number of ranked rows to return (default 20); pass 0 only to
             export the full merged TRAPI message, which can be tens of MB.
+        execution: Optional recording or snapshot replay settings for the task.
 
     Returns:
         The pk, merged pk, final status, resolved input nodes, and either
         ranked summary rows or the full merged TRAPI message.
     """
-    resolved = await asyncio_to_thread(shared_tools._resolve_nodes, node)
-    query = ars.format_query_json_forARS_neighborhood(
-        subject_ids=[resolved_node.curie for resolved_node in resolved],
-        object_categories=shared_tools._normalize_categories(neighbor_categories),
-        predicates=predicates,
-    )
-    pk = await asyncio_to_thread(ars.submit_ARS, query)
 
-    await progress.set_total(2)
-    await progress.set_message("submitted; waiting for ARA answers")
-    status = await asyncio_to_thread(
-        ars.wait_for_ARS, pk, poll_interval=15.0, max_retries=60
-    )
-    await progress.set_message(f"ARS status: {status.status}")
-    await progress.increment()
-    result = await asyncio_to_thread(ars.get_ARS_result, status)
-    await progress.increment()
+    async def run(node, neighbor_categories, predicates, top_n):
+        resolved = await asyncio_to_thread(shared_tools._resolve_nodes, node)
+        query = ars.format_query_json_forARS_neighborhood(
+            subject_ids=[resolved_node.curie for resolved_node in resolved],
+            object_categories=shared_tools._normalize_categories(neighbor_categories),
+            predicates=predicates,
+        )
+        pk = await asyncio_to_thread(ars.submit_ARS, query)
 
-    payload: dict[str, Any] = {
-        "pk": result.pk,
-        "merged_pk": result.merged_pk,
-        "status": result.status.status,
-        "resolved_nodes": {
-            f"node_{index}": resolved_node
-            for index, resolved_node in enumerate(resolved)
-        },
-        "result_count": len(result.results),
-    }
-    if top_n <= 0:
-        payload["message"] = result.raw
-    else:
-        payload["results"] = result.summarize(top_n)
-    return payload
+        await progress.set_total(2)
+        await progress.set_message("submitted; waiting for ARA answers")
+        status = await asyncio_to_thread(
+            ars.wait_for_ARS, pk, poll_interval=15.0, max_retries=60
+        )
+        await progress.set_message(f"ARS status: {status.status}")
+        await progress.increment()
+        result = await asyncio_to_thread(ars.get_ARS_result, status)
+        await progress.increment()
+
+        payload: dict[str, Any] = {
+            "pk": result.pk,
+            "merged_pk": result.merged_pk,
+            "status": result.status.status,
+            "resolved_nodes": {
+                f"node_{index}": resolved_node
+                for index, resolved_node in enumerate(resolved)
+            },
+            "result_count": len(result.results),
+        }
+        if top_n <= 0:
+            payload["message"] = result.raw
+        else:
+            payload["results"] = result.summarize(top_n)
+        return payload
+
+    run.__name__ = query_ars.__name__
+    run.__doc__ = query_ars.__doc__
+    try:
+        with interface_execution(execution):
+            return await execute_async(
+                run, (node, neighbor_categories, predicates, top_n), {}, interface="mcp"
+            )
+    except (
+        ExecutionRecordingError,
+        ars.ARSError,
+        LookupError,
+        ValueError,
+        OSError,
+    ) as error:
+        raise ToolError(str(error)) from error
 
 
 def register(mcp) -> Any:

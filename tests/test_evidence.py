@@ -686,6 +686,65 @@ def test_sources_from_existing_workflow_evidence_are_reused(captured):
     assert not issues and len(workflows) == 1
 
 
+def test_ars_result_can_supply_a_trapi_composition_source(captured):
+    events, composition, _, _ = captured
+    sources, _, _ = inventory(events)
+    old_id, gene_source = next(
+        (key, source)
+        for key, source in sources.items()
+        if source["response"] == load("gene")
+    )
+    endpoint = "https://ars.fixture.invalid/api/"
+    observations = [
+        ("submit", "ars_submit", 201, {"pk": "parent"}, {"json": gene_source["query"]}),
+        (
+            "messages/parent",
+            "ars_status",
+            200,
+            {"merged_version": "merged"},
+            {"params": {"trace": "y"}},
+        ),
+        (
+            "messages/merged",
+            "ars_result",
+            200,
+            {"fields": {"data": gene_source["response"]}},
+            {},
+        ),
+    ]
+    ars_events = [
+        {
+            "format_version": 1,
+            "run_id": "ars",
+            "call_id": path,
+            "operation": "fetch_ars_results" if kind == "ars_result" else kind,
+            "status": "succeeded",
+            "observations": [
+                {
+                    "kind": "service",
+                    "service_kind": kind,
+                    "status": "received",
+                    "status_code": code,
+                    "body_json": body,
+                    "request": {"url": endpoint + path, "arguments": arguments},
+                }
+            ],
+        }
+        for path, kind, code, body, arguments in observations
+    ]
+    (new_id,) = inventory(ars_events)[0]
+    recipe = deepcopy(composition)
+    recipe["sources"][new_id] = recipe["sources"].pop(old_id)
+    for step in recipe["workflow"]["steps"]:
+        if step.get("source_id") == old_id:
+            step["source_id"] = new_id
+    recipe["selection"]["edges"]["associated"]["source_id"] = new_id
+    report = reduce_evidence(events + ars_events, recipe)
+    assert report["status"] == "valid", report.get("error", report.get("validation"))
+    assert len(report["draft"]["message"]["results"]) == 1
+    assert new_id in report["draft"]["x-tct"]["source_mappings"]
+
+
 def test_rollup_is_detached_and_failed_workflow_inputs_are_not_selected(captured):
     events, composition, _, _ = captured
     original_events, original_composition = deepcopy(events), deepcopy(composition)

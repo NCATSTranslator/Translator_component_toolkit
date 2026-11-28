@@ -88,9 +88,8 @@ class _TraceContextMiddleware(Middleware):
             message = message.model_copy(update={"arguments": arguments})
             context = context.copy(message=message)
 
-        with interface_execution(arguments.get("execution")):
-            with use_incoming_trace_context(metadata):
-                return await call_next(context)
+        with use_incoming_trace_context(metadata):
+            return await call_next(context)
 
 
 mcp.add_middleware(_TraceContextMiddleware())

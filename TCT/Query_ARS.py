@@ -31,6 +31,8 @@ from typing import Any, Optional, Union
 import requests
 
 from .config import service_url
+from .execution import cache_session, capture_operation
+from .service_capture import capture_request
 from .TCT import (
     CategoryList,
     FinderResult,
@@ -219,11 +221,25 @@ def _ars_root(url: Optional[str] = None) -> str:
 
 
 def _post(url: str, json_body: dict[str, Any]) -> requests.Response:
-    return _session().post(url, json=json_body, timeout=HTTP_TIMEOUT)
+    return capture_request(
+        _session().post,
+        url,
+        json=json_body,
+        timeout=HTTP_TIMEOUT,
+        cache_kind="ars_submit",
+        method="post",
+    )
 
 
 def _get(url: str, params: Optional[dict[str, str]] = None) -> requests.Response:
-    return _session().get(url, params=params, timeout=HTTP_TIMEOUT)
+    return capture_request(
+        _session().get,
+        url,
+        params=params,
+        timeout=HTTP_TIMEOUT,
+        cache_kind="ars_status" if params else "ars_result",
+        method="get",
+    )
 
 
 def _message_from_envelope(envelope: dict[str, Any]) -> Optional[dict[str, Any]]:
@@ -302,6 +318,7 @@ def format_query_json_forARS_pathfinder(
 # ---------------------------------------------------------------------------
 # submit / poll / fetch
 # ---------------------------------------------------------------------------
+@capture_operation()
 def submit_ARS(query_json: dict[str, Any], *, url: str | None = None) -> str:
     """Validate and submit a TRAPI query to the ARS; return the parent pk."""
     message = query_json.get("message") if isinstance(query_json, dict) else None
@@ -383,6 +400,7 @@ def parse_trace(pk: str, trace: dict[str, Any]) -> ARSStatus:
     )
 
 
+@capture_operation()
 def get_message(pk: str, *, trace: bool = False, url: str | None = None) -> dict[str, Any]:
     """Fetch one ARS message by pk, optionally in lightweight trace form."""
     params = {"trace": "y"} if trace else None
@@ -397,6 +415,7 @@ def get_message(pk: str, *, trace: bool = False, url: str | None = None) -> dict
     return response.json()
 
 
+@capture_operation()
 def get_ARS_status(pk: str, *, url: str | None = None) -> ARSStatus:
     """Return the current status of a submitted query and its ARA children."""
     return parse_trace(pk, get_message(pk, trace=True, url=url))
@@ -427,6 +446,7 @@ def check_ars_results(
     ).merged_version
 
 
+@capture_operation()
 def wait_for_ARS(
     pk: str,
     *,
@@ -456,6 +476,7 @@ def wait_for_ARS(
 
     deadline_polls = time.monotonic() + max_retries * poll_interval
     parent_done_at: Optional[float] = None
+    cache = cache_session()
     attempt = 0
     while True:
         attempt += 1
@@ -463,6 +484,7 @@ def wait_for_ARS(
         logger.info("ARS %s: %s (%s)", pk, status.status, status.summary())
         if status.status == "Error":
             raise ARSError(f"ARS query {pk} finished with status Error ({status.summary()})")
+        decision = "poll"
         if status.is_terminal:
             if status.merged_ready:
                 return status
@@ -470,18 +492,31 @@ def wait_for_ARS(
             if parent_done_at is None:
                 parent_done_at = now
             if not status.merge_pending and now - parent_done_at >= merge_grace:
-                logger.warning(
-                    "ARS %s: parent Done but merged message not ready after %.0fs; "
-                    "returning as is",
-                    pk,
-                    merge_grace,
-                )
-                return status
-        if attempt >= max_retries or time.monotonic() >= deadline_polls:
+                decision = "merge_grace"
+        if decision == "poll" and (
+            attempt >= max_retries or time.monotonic() >= deadline_polls
+        ):
+            decision = "timeout"
+        if cache is not None:
+            decision = cache.snapshot_decision(
+                "ars_poll",
+                [_ars_root(url), pk, max_retries, poll_interval, merge_grace, attempt],
+                decision,
+            )
+        if decision == "merge_grace":
+            logger.warning(
+                "ARS %s: parent Done but merged message not ready after %.0fs; "
+                "returning as is",
+                pk,
+                merge_grace,
+            )
+            return status
+        if decision == "timeout":
             raise ARSTimeoutError(status, max_retries * poll_interval)
         time.sleep(poll_interval)
 
 
+@capture_operation()
 def fetch_ars_results(merged_pk: str, *, url: str | None = None) -> dict[str, Any]:
     """Fetch the full merged ARS message, including ``fields.data.message``."""
     if not merged_pk:
@@ -495,6 +530,7 @@ def fetch_ars_results(merged_pk: str, *, url: str | None = None) -> dict[str, An
     return response.json()
 
 
+@capture_operation()
 def get_ARS_result(
     pk_or_status: Union[str, ARSStatus],
     *,
@@ -673,6 +709,7 @@ def _node_keyed_inputs(
     return {f"node_{index}": resolved for index, resolved in enumerate(resolved_nodes)}
 
 
+@capture_operation()
 def ARS_neighborhood_finder(
     node: Union[NodeInput, list[NodeInput], None] = None,
     neighbor_categories: CategoryList | None = None,
@@ -739,6 +776,7 @@ def ARS_neighborhood_finder(
     )
 
 
+@capture_operation()
 def ARS_pathfinder(
     start: NodeInput | None = None,
     end: NodeInput | None = None,

@@ -342,8 +342,7 @@ def test_published_tool_names_signatures_and_docs_are_stable():
     for name, expected_signature in EXPECTED_SIGNATURES.items():
         tool = tools[name]
         signature = inspect.signature(tool.fn)
-        if name != "query_ars":
-            assert signature.parameters["execution"].default is None
+        assert signature.parameters["execution"].default is None
         # query_ars hides the MCP-injected Progress dependency.
         signature = signature.replace(
             parameters=[
@@ -366,14 +365,13 @@ def test_generated_mcp_input_schemas_are_stable():
         schema = _without_titles(tools[name].parameters)
         assert schema["type"] == "object"
         expected = dict(properties)
-        if name != "query_ars":
-            expected["execution"] = {
-                "anyOf": [
-                    {"type": "object", "additionalProperties": True},
-                    {"type": "null"},
-                ],
-                "default": None,
-            }
+        expected["execution"] = {
+            "anyOf": [
+                {"type": "object", "additionalProperties": True},
+                {"type": "null"},
+            ],
+            "default": None,
+        }
         assert schema["properties"] == expected
         assert schema.get("required", []) == required
 

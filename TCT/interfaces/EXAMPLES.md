@@ -202,6 +202,35 @@ call:
 {"name": "query_ars", "arguments": {"node": ["asthma"], "neighbor_categories": ["Drug"]}}
 ```
 
+To record an ARS task locally, add execution settings to the MCP arguments:
+
+```json
+{
+  "node": ["asthma"],
+  "neighbor_categories": ["Drug"],
+  "execution": {
+    "store": "./recordings",
+    "run_id": "ars-query",
+    "record": true,
+    "cache": true
+  }
+}
+```
+
+The recording retains the parent and merged message IDs, status polls, and the
+full ARS envelope even when the tool returns only ranked rows. Use
+`tct view ./recordings ars-query` or the MCP `evidence` tool to inspect it.
+The merged TRAPI response can also serve as an evidence composition source.
+
+To replay, repeat the same call with a new run ID and
+`"cache": {"mode": "replay", "snapshot_run": "ars-query"}`. Keep the same
+service configuration and store. The replay consumes saved HTTP responses
+in order and preserves the polling cadence and recorded stopping decision.
+Live ARS calls always reach the service, even with caching enabled, so
+submission and poll results stay fresh.
+The saved envelope contains the merged answer and trace observations contain
+the agent statuses.
+
 ## Python use of the shared surface
 
 Developers can continue using TCT's public Python APIs. Interface integrations
