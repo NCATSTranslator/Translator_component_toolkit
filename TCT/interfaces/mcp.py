@@ -20,7 +20,7 @@ from fastmcp.exceptions import ToolError
 from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.tools.tool import ToolResult
 
-from . import tools as shared_tools
+from . import ars_task, tools as shared_tools
 from .invocation import ToolInvocationError, invoke as invoke_tool
 from .observability import flush_observability, use_incoming_trace_context
 
@@ -32,6 +32,9 @@ mcp = FastMCP("TCT")
 # services, so openWorldHint is always true.
 _READ_ONLY_TOOLS = frozenset(
     {
+        # ARS submitters intentionally absent: each creates an ARS submission.
+        "get_ars_status",
+        "get_ars_results",
         "get_translator_resources",
         "name_lookup",
         "get_name_synonyms",
@@ -145,6 +148,10 @@ for _tool in shared_tools.TOOLS:
     globals()[_tool.__name__] = _register_tool(_tool)
 
 
+# MCP-only background-task surface (see TCT.interfaces.ars_task).
+query_ars = ars_task.register(mcp)
+
+
 def main() -> None:
     """Entry point for the installed ``tct-server`` command."""
     try:
@@ -154,4 +161,4 @@ def main() -> None:
         flush_observability()
 
 
-__all__ = ["main", "mcp", *[tool.__name__ for tool in shared_tools.TOOLS]]
+__all__ = ["main", "mcp", "query_ars", *[tool.__name__ for tool in shared_tools.TOOLS]]

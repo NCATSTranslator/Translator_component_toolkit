@@ -1,8 +1,14 @@
-from .service_capture import capture_request
-from .execution import capture_operation
-import requests
 import json
+import logging
+
 import pandas as pd
+import requests
+
+from .execution import capture_operation
+from .service_capture import capture_request
+
+
+logger = logging.getLogger(__name__)
 
 
 def find_link(name, use_new_url=True):
@@ -150,6 +156,15 @@ def _append_api(APInames, metaKG, newAPIname, newAPIurl, newAPIpredicate, newAPI
     return APInames, metaKG
 
 
+def _log_fallback(provider: str, environment: str, query_url: str) -> None:
+    logger.warning(
+        "Registered %s from the %s fallback. Queries will use %s",
+        provider,
+        environment,
+        query_url,
+    )
+
+
 @capture_operation()
 def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[str, str], pd.DataFrame]:
     '''
@@ -181,8 +196,10 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
     import requests
     CI_URL_PREFIX = "https://multiomics.ci.transltr.io/"
     DEV_URL_PREFIX = "https://multiomics.rtx.ai:9990/"
+    TEST_URL_PREFIX = "https://multiomics.test.transltr.io/"
     url = CI_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'BigGIM_DrugResponse_PerformancePhase/meta_knowledge_graph'
     try:
         response = capture_request(requests.get, url, timeout=5, cache_kind="capabilities", method="get")
         if response.status_code == 200:
@@ -197,23 +214,43 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
+                _log_fallback(
+                    "CATRAX BigGIM DrugResponse Performance Phase KP", "dev", DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query",
+                )
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0",
                                                              DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query", 
                                                              data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase and " + DEV_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = capture_request(requests.get, url_test, timeout=5, cache_kind="capabilities", method="get")
+                if response_test.status_code == 200:
+                    _log_fallback(
+                        "CATRAX BigGIM DrugResponse Performance Phase KP", "test", TEST_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query",
+                    )
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = _append_api(APInames, metaKG, "CATRAX BigGIM DrugResponse Performance Phase KP - TRAPI 1.5.0",
+                                                                 TEST_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase/query",
+                                                                 data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    logger.warning(
+                        "Could not load MetaKG from %s (%s), %s (%s), or %s (%s)",
+                        url, response.status_code, url_dev, response_dev.status_code,
+                        url_test, response_test.status_code,
+                    )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase. Status code:", response.status_code)
+            logger.warning("Could not load MetaKG from %s (HTTP %s)", url, response.status_code)
 
 
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "BigGIM_DrugResponse_PerformancePhase")
+        logger.warning("Could not load MetaKG from %s", url)
 
 
     url = CI_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'PharmacogenomicsKG/meta_knowledge_graph'
     try: 
         response = capture_request(requests.get, url, cache_kind="capabilities", method="get")
         if response.status_code == 200:
@@ -224,15 +261,32 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
+                _log_fallback(
+                    "CATRAX Pharmacogenomics KP", "dev", DEV_URL_PREFIX + "PharmacogenomicsKG/query",
+                )
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "PharmacogenomicsKG and " + DEV_URL_PREFIX + "PharmacogenomicsKG. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = capture_request(requests.get, url_test, timeout=5, cache_kind="capabilities", method="get")
+                if response_test.status_code == 200:
+                    _log_fallback(
+                        "CATRAX Pharmacogenomics KP", "test", TEST_URL_PREFIX + "PharmacogenomicsKG/query",
+                    )
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = _append_api(APInames, metaKG, "CATRAX Pharmacogenomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "PharmacogenomicsKG/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    logger.warning(
+                        "Could not load MetaKG from %s (%s), %s (%s), or %s (%s)",
+                        url, response.status_code, url_dev, response_dev.status_code,
+                        url_test, response_test.status_code,
+                    )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "PharmacogenomicsKG. Status code:", response.status_code)
+            logger.warning("Could not load MetaKG from %s (HTTP %s)", url, response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "PharmacogenomicsKG")
+        logger.warning("Could not load MetaKG from %s", url)
 
     
     url = CI_URL_PREFIX + 'ctkp/meta_knowledge_graph'
@@ -252,14 +306,18 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "Clinical Trials KP - TRAPI 1.5.0", DEV_URL_PREFIX + "ctkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "ctkp and " + DEV_URL_PREFIX + "ctkp. Status codes:", response.status_code, response_dev.status_code)
+                logger.warning(
+                    "Could not load MetaKG from %s (%s) or %s (%s)",
+                    url, response.status_code, url_dev, response_dev.status_code,
+                )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "ctkp. Status code:", response.status_code)
+            logger.warning("Could not load MetaKG from %s (HTTP %s)", url, response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "ctkp")
+        logger.warning("Could not load MetaKG from %s", url)
 
     url = CI_URL_PREFIX + 'dakp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'dakp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'dakp/meta_knowledge_graph'
 
     #url = 'https://multiomics.rtx.ai:9990/dakp/meta_knowledge_graph'
     try:
@@ -272,19 +330,37 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
+                _log_fallback(
+                    "Drug Approvals KP", "dev", DEV_URL_PREFIX + "dakp/query",
+                )
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", DEV_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "dakp and " + DEV_URL_PREFIX + "dakp. Status codes:", response.status_code, response_dev.status_code)
+                # Try the test URL if both the CI and dev URLs return a 404
+                response_test = capture_request(requests.get, url_test, timeout=5, cache_kind="capabilities", method="get")
+                if response_test.status_code == 200:
+                    _log_fallback(
+                        "Drug Approvals KP", "test", TEST_URL_PREFIX + "dakp/query",
+                    )
+                    data = response_test.json()
+                    for i in range(len(data["edges"])):
+                        APInames, metaKG = _append_api(APInames, metaKG, "Drug Approvals KP - TRAPI 1.5.0", TEST_URL_PREFIX + "dakp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+                else:
+                    logger.warning(
+                        "Could not load MetaKG from %s (%s), %s (%s), or %s (%s)",
+                        url, response.status_code, url_dev, response_dev.status_code,
+                        url_test, response_test.status_code,
+                    )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "dakp. Status code:", response.status_code)
+            logger.warning("Could not load MetaKG from %s (HTTP %s)", url, response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "dakp")
+        logger.warning("Could not load MetaKG from %s", url)
     
 
     url = CI_URL_PREFIX + 'mokp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'mokp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'mokp/meta_knowledge_graph'
     #url = 'https://multiomics.rtx.ai:9990/mokp/meta_knowledge_graph'
     try:
         response = capture_request(requests.get, url, cache_kind="capabilities", method="get")
@@ -296,20 +372,40 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
+                _log_fallback(
+                    "Multiomics KP", "dev", DEV_URL_PREFIX + "mokp/query",
+                )
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mokp and " + DEV_URL_PREFIX + "mokp. Status codes:", response.status_code, response_dev.status_code)
+                logger.warning(
+                    "Could not load MetaKG from %s (%s) or %s (%s)",
+                    url, response.status_code, url_dev, response_dev.status_code,
+                )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mokp. Status code:", response.status_code)
+            # Try the test URL if the CI URL returns a non-404 status code
+            response_test = capture_request(requests.get, url_test, timeout=5, cache_kind="capabilities", method="get")
+            if response_test.status_code == 200:
+                _log_fallback(
+                    "Multiomics KP", "test", TEST_URL_PREFIX + "mokp/query",
+                )
+                data = response_test.json()
+                for i in range(len(data["edges"])):
+                    APInames, metaKG = _append_api(APInames, metaKG, "Multiomics KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mokp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+            else:
+                logger.warning(
+                    "Could not load MetaKG from %s (%s) or %s (%s)",
+                    url, response.status_code, url_test, response_test.status_code,
+                )
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mokp")
+        logger.warning("Could not load MetaKG from %s", url)
     
     url = CI_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     url_dev = DEV_URL_PREFIX + 'mbkp/meta_knowledge_graph'
+    url_test = TEST_URL_PREFIX + 'mbkp/meta_knowledge_graph'
     try:
-        response = capture_request(requests.get, url, cache_kind="capabilities", method="get")
+        response = capture_request(requests.get, url, timeout=5, cache_kind="capabilities", method="get")
         if response.status_code == 200:
             data = response.json()
             for i in range(len(data["edges"])):
@@ -318,15 +414,34 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             # Try the dev URL if the CI URL returns a 404
             response_dev = capture_request(requests.get, url_dev, timeout=5, cache_kind="capabilities", method="get")
             if response_dev.status_code == 200:
+                _log_fallback(
+                    "Microbiome KP", "dev", DEV_URL_PREFIX + "mbkp/query",
+                )
                 data = response_dev.json()
                 for i in range(len(data["edges"])):
                     APInames, metaKG = _append_api(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", DEV_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
             else:
-                print("Warning: Failed to retrieve data from both the " + CI_URL_PREFIX + "mbkp and " + DEV_URL_PREFIX + "mbkp. Status codes:", response.status_code, response_dev.status_code)
+                logger.warning(
+                    "Could not load MetaKG from %s (%s) or %s (%s)",
+                    url, response.status_code, url_dev, response_dev.status_code,
+                )
         else:
-            print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mbkp. Status code:", response.status_code)
+            # Try the test URL if the CI URL returns a non-404 status code
+            response_test = capture_request(requests.get, url_test, timeout=5, cache_kind="capabilities", method="get")
+            if response_test.status_code == 200:
+                _log_fallback(
+                    "Microbiome KP", "test", TEST_URL_PREFIX + "mbkp/query",
+                )
+                data = response_test.json()
+                for i in range(len(data["edges"])):
+                    APInames, metaKG = _append_api(APInames, metaKG, "Microbiome KP - TRAPI 1.5.0", TEST_URL_PREFIX + "mbkp/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
+            else:
+                logger.warning(
+                    "Could not load MetaKG from %s (%s) or %s (%s)",
+                    url, response.status_code, url_test, response_test.status_code,
+                )
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the " + CI_URL_PREFIX + "mbkp")
+        logger.warning("Could not load MetaKG from %s", url)
     
 
     url = 'https://kg2cploverdb.ci.transltr.io/meta_knowledge_graph'
@@ -337,9 +452,9 @@ def add_plover_API(APInames:dict[str, str], metaKG:pd.DataFrame) -> tuple[dict[s
             for i in range(len(data["edges"])):
                 APInames, metaKG = _append_api(APInames, metaKG, "RTX KG2 - TRAPI 1.5.0", "https://kg2cploverdb.ci.transltr.io/kg2c/query", data["edges"][i]['predicate'], data["edges"][i]['subject'], data["edges"][i]['object'])
         else:
-            print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io. Status code:", response.status_code)
+            logger.warning("Could not load MetaKG from %s (HTTP %s)", url, response.status_code)
     except requests.exceptions.RequestException:
-        print("Warning: Failed to retrieve data from the https://kg2cploverdb.ci.transltr.io")
+        logger.warning("Could not load MetaKG from %s", url)
 
     return APInames, metaKG
 

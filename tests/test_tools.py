@@ -29,6 +29,11 @@ EXPECTED_TOOL_NAMES = [
     "run_query_workflow",
     "replay_query_workflow",
     "evidence",
+    "ARS_neighborhood_finder",
+    "ARS_pathfinder",
+    "submit_ars_query",
+    "get_ars_status",
+    "get_ars_results",
 ]
 
 
@@ -58,7 +63,7 @@ class RejectMcpImports:
 sys.meta_path.insert(0, RejectMcpImports())
 from TCT.interfaces.cli import build_parser
 from TCT.interfaces.tools import TOOLS
-assert len(TOOLS) == 20
+assert len(TOOLS) == 25
 assert build_parser().prog == "tct"
 """
 

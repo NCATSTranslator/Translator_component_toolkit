@@ -73,6 +73,7 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+markers = ["live_service: tests that contact deployed Translator services"]
 addopts = [
     "--cov=TCT",
     "--cov-report=term-missing",

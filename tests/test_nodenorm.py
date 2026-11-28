@@ -1,6 +1,9 @@
 import pytest
 import TCT
 
+
+pytestmark = pytest.mark.live_service
+
 # Some example queries for these tests.
 EXAMPLE_QUERIES = [
     {
